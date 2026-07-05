@@ -5883,6 +5883,25 @@ if (pb) {
         
         // ============ P9: 3D模型生成（Meshy API） ============
         
+        // 统一调试面板：在页面底部显示黄色调试信息
+        function showMeshyDebug(stage, message, detail) {
+            console.error('[Meshy Debug]', stage, message, detail);
+            var dbg = document.getElementById('meshy-debug');
+            if (!dbg) {
+                dbg = document.createElement('div');
+                dbg.id = 'meshy-debug';
+                dbg.style.cssText = 'position:fixed;bottom:10px;left:10px;right:10px;background:#fff3cd;border:2px solid #e6a700;border-radius:10px;padding:12px;font-size:12px;color:#856404;z-index:99999;max-height:180px;overflow:auto;word-break:break-all;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+                document.body.appendChild(dbg);
+            }
+            dbg.innerHTML = '<b>🔍 3D生成调试信息</b><br/>' +
+                '<b>阶段:</b> ' + stage + '<br/>' +
+                '<b>错误:</b> ' + (message || '无') + '<br/>' +
+                (detail ? '<b>详情:</b> ' + detail : '') + '<br/>' +
+                '<b>API Key:</b> ' + (MESHY_CONFIG.apiKey ? MESHY_CONFIG.apiKey.substring(0, 8) + '...' : '未设置') + '<br/>' +
+                '<b>代理地址:</b> ' + MESHY_CONFIG.proxyUrl + '<br/>' +
+                '<span style="cursor:pointer;color:#c04830;font-weight:bold;" onclick="this.parentNode.remove()">点击关闭</span>';
+        }
+        
         // 确保图片为 data URI 格式（如果已是 data URI 则直接返回）
         function imageUrlToBase64(url) {
             if (url && url.indexOf('data:image') === 0) {
@@ -6030,6 +6049,7 @@ if (pb) {
             })
             .catch(function(err) {
                 console.error('[Meshy] 提交任务失败:', err);
+                showMeshyDebug('提交阶段错误', err.message || String(err), '');
                 showToastMessage('⚠️ 3D生成失败：' + err.message);
                 showFallbackSVG();
             });
@@ -6090,7 +6110,6 @@ if (pb) {
                         // 加载3D模型到 viewer
                         loadMeshyModel(state.meshyModelUrl);
                     } else if (status === 'FAILED' || status === 'CANCELED') {
-                        // 详细错误解析
                         var errMsg = '未知错误';
                         if (data.task_error) {
                             errMsg = data.task_error.message || JSON.stringify(data.task_error);
@@ -6099,18 +6118,8 @@ if (pb) {
                         } else if (data.error) {
                             errMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
                         }
-                        var fullErr = JSON.stringify(data).substring(0, 500);
-                        console.error('[Meshy] 任务失败，完整响应:', fullErr);
-                        showToastMessage('⚠️ 3D生成失败：' + errMsg + '（点击查看详情）', 8000);
-                        // 在控制台和页面上显示详细错误供调试
-                        var dbg = document.getElementById('meshy-debug');
-                        if (!dbg) {
-                            dbg = document.createElement('div');
-                            dbg.id = 'meshy-debug';
-                            dbg.style.cssText = 'position:fixed;bottom:10px;left:10px;right:10px;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px;font-size:11px;color:#856404;z-index:99999;max-height:120px;overflow:auto;word-break:break-all;';
-                            document.body.appendChild(dbg);
-                        }
-                        dbg.innerHTML = '<b>🔍 调试信息</b><br/>状态: ' + status + '<br/>错误: ' + errMsg + '<br/>完整响应: ' + fullErr;
+                        showMeshyDebug('Meshy任务失败 (' + status + ')', errMsg, JSON.stringify(data).substring(0, 400));
+                        showToastMessage('⚠️ 3D生成失败：' + errMsg, 8000);
                         showFallbackSVG();
                     } else {
                         // PENDING 或 IN_PROGRESS，继续轮询
@@ -6130,6 +6139,7 @@ if (pb) {
                     if (window._meshyPollErrors < 3) {
                         pollMeshyTask(taskId, elapsed + MESHY_CONFIG.pollInterval);
                     } else {
+                        showMeshyDebug('轮询网络错误', err.message || String(err), '连续失败' + window._meshyPollErrors + '次');
                         showToastMessage('⚠️ 网络连接异常，请检查网络');
                         showFallbackSVG();
                         window._meshyPollErrors = 0;
