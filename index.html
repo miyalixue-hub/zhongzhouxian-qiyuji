@@ -4743,9 +4743,9 @@ if (typeof goToStation === 'function') {
                             <div style="font-size:18px;font-weight:600;color:var(--text-dark);">✅ 3D模型已就绪！</div>
                             <div style="font-size:13px;color:var(--text-light);margin-top:4px;">适配拓竹A2L打印机 · 预计打印时间约45分钟</div>
                         </div>
-                        <button class="btn-3d-print">🖨️ 立即发送到打印机</button>
-                        <button class="btn-save-3d">💾 下载STL文件</button>
-                        <button class="btn-save-3d">📋 保存神兽档案</button>
+                        <button class="btn-3d-print" id="btn-3d-print">🖨️ 立即发送到打印机</button>
+                        <button class="btn-save-3d" id="btn-download-stl">💾 下载STL文件</button>
+                        <button class="btn-save-3d" id="btn-save-profile-3d">📋 保存神兽档案</button>
                         <button class="btn-restart" id="btn-restart-3d">🔄 重新创造一只</button>
                     </div>
                 </div>
@@ -6017,9 +6017,15 @@ if (pb) {
                 }
             });
             
-            // P9 restart button
+            // P9 buttons
             var restartBtn = $('#btn-restart-3d');
             if (restartBtn) restartBtn.addEventListener('click', resetAndGoHome);
+            var print3dBtn = $('#btn-3d-print');
+            if (print3dBtn) print3dBtn.addEventListener('click', handlePrintToPrinter);
+            var downloadStlBtn = $('#btn-download-stl');
+            if (downloadStlBtn) downloadStlBtn.addEventListener('click', handleDownloadSTL);
+            var saveProfile3dBtn = $('#btn-save-profile-3d');
+            if (saveProfile3dBtn) saveProfile3dBtn.addEventListener('click', saveToAlbum);
 
             // P10 buttons
             var saveAlbumBtn = $('#btn-save-album');
@@ -6425,6 +6431,96 @@ if (pb) {
             var toast = document.createElement('div');
             toast.className = 'save-success-toast';
             toast.innerHTML = '✅ 已保存到相册<br><span style="font-size:13px;opacity:0.8;">长按图片可保存到本地</span>';
+            document.body.appendChild(toast);
+            setTimeout(function() { toast.remove(); }, 2500);
+        }
+
+        // 生成打印说明文件（包含神兽参数，用于对接3D打印服务）
+        function handleDownloadSTL() {
+            var creatureName = '';
+            if (state.selectedCreature) {
+                var cr = findById(creatures, state.selectedCreature);
+                if (cr) creatureName = cr.name;
+            }
+            var patternNames = [];
+            if (state.selectedPatterns && state.selectedPatterns.length > 0) {
+                state.selectedPatterns.forEach(function(p) {
+                    var pp = findById(patterns, p);
+                    if (pp) patternNames.push(pp.name);
+                });
+            }
+            var expressionName = '';
+            if (state.selectedExpression) {
+                var ex = findById(expressions, state.selectedExpression);
+                if (ex) expressionName = ex.name;
+            }
+            var colorNames = [];
+            if (state.selectedColors && state.selectedColors.length > 0) {
+                state.selectedColors.forEach(function(c) {
+                    var cc = findById(colors, c);
+                    if (cc) colorNames.push(cc.name + '(' + cc.hex + ')');
+                });
+            }
+            var elementNames = [];
+            if (state.selectedElements && state.selectedElements.length > 0) {
+                state.selectedElements.forEach(function(e) {
+                    var ee = findById(elements, e);
+                    if (ee) elementNames.push(ee.name);
+                });
+            }
+            var aiPrompt = state._lastAiPrompt || '';
+
+            var content = '=== 中轴奇游记·神兽3D打印工单 ===\n\n';
+            content += '神兽名称：' + (creatureName || '未命名') + '\n';
+            content += '纹饰风格：' + (patternNames.join('、') || '无') + '\n';
+            content += '表情姿态：' + (expressionName || '未选择') + '\n';
+            content += '传统色彩：' + (colorNames.join('、') || '未选择') + '\n';
+            content += '附加元素：' + (elementNames.join('、') || '无') + '\n';
+            content += 'AI提示词：' + (aiPrompt || '无') + '\n\n';
+            content += '=== 打印参数 ===\n';
+            content += '适配打印机：拓竹A2L\n';
+            content += '建议层高：0.2mm\n';
+            content += '建议填充：15%\n';
+            content += '建议材料：PLA\n';
+            content += '预估时间：约45分钟\n\n';
+            content += '生成时间：' + new Date().toLocaleString('zh-CN') + '\n';
+            content += '来源：中轴奇游记·正阳门神兽工坊\n';
+
+            var blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = '神兽打印工单_' + (creatureName || '未命名') + '.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToastMessage('📄 打印工单已下载');
+        }
+
+        // 发送到打印机（提示引导）
+        function handlePrintToPrinter() {
+            var panel = document.createElement('div');
+            panel.className = 'share-fallback-panel';
+            panel.innerHTML = '<div class="share-fallback-content">' +
+                '<h3>🖨️ 3D打印服务</h3>' +
+                '<p style="font-size:14px;color:#3a2a1a;line-height:1.8;">' +
+                '请将下载的打印工单文件发送给工作人员，<br/>' +
+                '我们将使用<strong>拓竹A2L打印机</strong>为你制作实体模型。</p>' +
+                '<div style="background:#FFF8E1;border-radius:8px;padding:12px;margin:12px 0;font-size:13px;color:#7a6a56;">' +
+                '💡 提示：先点击"下载STL文件"获取打印工单<br/>' +
+                '预计打印时间约45分钟</div>' +
+                '<button class="btn-copy-url" onclick="this.parentNode.parentNode.parentNode.remove()" style="background:#c04830;color:white;border:none;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;">我知道了</button>' +
+                '</div>';
+            document.body.appendChild(panel);
+            panel.addEventListener('click', function(e) { if (e.target === panel) panel.remove(); });
+        }
+
+        function showToastMessage(message) {
+            var toast = document.createElement('div');
+            toast.className = 'save-success-toast';
+            toast.innerHTML = message;
             document.body.appendChild(toast);
             setTimeout(function() { toast.remove(); }, 2500);
         }
