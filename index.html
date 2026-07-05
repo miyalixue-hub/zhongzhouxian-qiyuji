@@ -5475,7 +5475,23 @@ if (pb) {
             }
             var data = await response.json();
             if (data.data && data.data.length > 0 && data.data[0].url) {
-                return data.data[0].url;
+                var url = data.data[0].url;
+                // 立即将临时URL转为base64 data URI，避免URL过期
+                try {
+                    var imgResp = await fetch(url);
+                    var blob = await imgResp.blob();
+                    var dataUri = await new Promise(function(resolve, reject) {
+                        var reader = new FileReader();
+                        reader.onloadend = function() { resolve(reader.result); };
+                        reader.onerror = function() { reject(new Error('base64转换失败')); };
+                        reader.readAsDataURL(blob);
+                    });
+                    console.log('[Seedream] 图片已转为base64，长度:', dataUri.length);
+                    return dataUri;
+                } catch(e) {
+                    console.warn('[Seedream] base64转换失败，使用原始URL:', e);
+                    return url; // 降级：返回原始URL
+                }
             }
             throw new Error('API返回数据异常');
         }
@@ -5866,6 +5882,39 @@ if (pb) {
         }
         
         // ============ P9: 3D模型生成（Meshy API） ============
+        
+        // 确保图片为 data URI 格式（如果已是 data URI 则直接返回）
+        function imageUrlToBase64(url) {
+            if (url && url.indexOf('data:image') === 0) {
+                console.log('[Base64] 已是data URI，跳过转换，长度:', url.length);
+                return Promise.resolve(url);
+            }
+            return new Promise(function(resolve, reject) {
+                var img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = function() {
+                    try {
+                        var canvas = document.createElement('canvas');
+                        canvas.width = img.naturalWidth;
+                        canvas.height = img.naturalHeight;
+                        var ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        var dataUri = canvas.toDataURL('image/png');
+                        console.log('[Base64] 转换成功，尺寸:', img.naturalWidth, 'x', img.naturalHeight, 'data URI长度:', dataUri.length);
+                        resolve(dataUri);
+                    } catch(e) {
+                        console.error('[Base64] canvas转换失败(CORS限制):', e);
+                        resolve(url);
+                    }
+                };
+                img.onerror = function() {
+                    console.warn('[Base64] 图片加载失败，使用原始URL:', url.substring(0, 80));
+                    resolve(url);
+                };
+                img.src = url;
+            });
+        }
+        
         function start3DGeneration() {
             var viewer = $('#model-viewer-3d');
             var progress = $('#gen-progress-fill');
@@ -5922,47 +5971,50 @@ if (pb) {
             if (stage1) stage1.classList.add('active');
             if (progress) progress.style.width = '10%';
             
-            // 提交 image-to-3d 任务
-            console.log('[Meshy] 提交 image-to-3d 任务，图片URL:', imageUrl);
+            // 先将图片转为base64 data URI（避免临时URL过期导致Meshy无法下载）
+            console.log('[Meshy] 正在将图片转为base64...', imageUrl.substring(0, 80));
             
-            var requestBody = {
-                image_url: imageUrl,
-                ai_model: MESHY_CONFIG.aiModel,
-                topology: MESHY_CONFIG.topology,
-                target_polycount: MESHY_CONFIG.targetPolycount,
-                should_texture: MESHY_CONFIG.shouldTexture,
-                enable_pbr: MESHY_CONFIG.enablePbr
-            };
-            console.log('[Meshy] 提交 image-to-3d 任务，图片URL:', imageUrl);
-            console.log('[Meshy] 请求参数:', JSON.stringify(requestBody));
-            
-            fetch(MESHY_CONFIG.proxyUrl + '/api/image-to-3d', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Meshy-Key': MESHY_CONFIG.apiKey
-                },
-                body: JSON.stringify(requestBody)
-            })
-            .then(function(resp) {
-                return resp.text().then(function(text) {
-                    console.log('[Meshy] 响应状态:', resp.status, '响应内容:', text);
-                    var data;
-                    try { data = JSON.parse(text); } catch(e) { data = null; }
-                    if (!resp.ok) {
-                        var errMsg = 'HTTP ' + resp.status;
-                        if (data) {
-                            if (data.error && typeof data.error === 'string') errMsg += ': ' + data.error;
-                            else if (data.error && data.error.message) errMsg += ': ' + data.error.message;
-                            else if (data.message) errMsg += ': ' + data.message;
-                            else errMsg += ': ' + text;
+            imageUrlToBase64(imageUrl)
+            .then(function(dataUri) {
+                console.log('[Meshy] 图片已转为base64，长度:', dataUri.length);
+                
+                var requestBody = {
+                    image_url: dataUri,
+                    ai_model: MESHY_CONFIG.aiModel,
+                    topology: MESHY_CONFIG.topology,
+                    target_polycount: MESHY_CONFIG.targetPolycount,
+                    should_texture: MESHY_CONFIG.shouldTexture,
+                    enable_pbr: MESHY_CONFIG.enablePbr
+                };
+                console.log('[Meshy] 提交 image-to-3d 任务（base64模式）');
+                
+                return fetch(MESHY_CONFIG.proxyUrl + '/api/image-to-3d', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Meshy-Key': MESHY_CONFIG.apiKey
+                    },
+                    body: JSON.stringify(requestBody)
+                }).then(function(resp) {
+                    return resp.text().then(function(text) {
+                        console.log('[Meshy] 响应状态:', resp.status, '响应内容:', text.substring(0, 500));
+                        var data;
+                        try { data = JSON.parse(text); } catch(e) { data = null; }
+                        if (!resp.ok) {
+                            var errMsg = 'HTTP ' + resp.status;
+                            if (data) {
+                                if (data.error && typeof data.error === 'string') errMsg += ': ' + data.error;
+                                else if (data.error && data.error.message) errMsg += ': ' + data.error.message;
+                                else if (data.message) errMsg += ': ' + data.message;
+                                else errMsg += ': ' + text.substring(0, 200);
+                            }
+                            throw new Error(errMsg);
                         }
-                        throw new Error(errMsg);
-                    }
-                    if (!data || !data.result) {
-                        throw new Error('无效的响应格式: ' + text);
-                    }
-                    return data;
+                        if (!data || !data.result) {
+                            throw new Error('无效的响应格式: ' + text.substring(0, 200));
+                        }
+                        return data;
+                    });
                 });
             })
             .then(function(data) {
