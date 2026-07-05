@@ -4901,10 +4901,11 @@ showPage(2);
             // Meshy API Key（用户通过设置面板输入，存储在 localStorage）
             apiKey: localStorage.getItem('meshy_api_key') || '',
             // 3D模型参数
-            aiModel: 'meshy-6',        // 使用 Meshy 6 模型
-            topology: 'tri',           // 三角面片（适合3D打印）
-            targetCount: 30000,        // 目标面数
-            negativeText: 'low quality, blurry, deformed',
+            aiModel: 'latest',         // 使用最新模型（Meshy 6）
+            topology: 'triangle',      // 三角面片（适合3D打印）
+            targetPolycount: 30000,    // 目标面数
+            shouldTexture: true,       // 生成纹理
+            enablePbr: true,           // 生成PBR贴图
             // 轮询配置
             pollInterval: 3000,        // 每3秒轮询一次
             maxPollTime: 180000        // 最长等待3分钟
@@ -5924,34 +5925,47 @@ if (pb) {
             // 提交 image-to-3d 任务
             console.log('[Meshy] 提交 image-to-3d 任务，图片URL:', imageUrl);
             
+            var requestBody = {
+                image_url: imageUrl,
+                ai_model: MESHY_CONFIG.aiModel,
+                topology: MESHY_CONFIG.topology,
+                target_polycount: MESHY_CONFIG.targetPolycount,
+                should_texture: MESHY_CONFIG.shouldTexture,
+                enable_pbr: MESHY_CONFIG.enablePbr
+            };
+            console.log('[Meshy] 提交 image-to-3d 任务，图片URL:', imageUrl);
+            console.log('[Meshy] 请求参数:', JSON.stringify(requestBody));
+            
             fetch(MESHY_CONFIG.proxyUrl + '/api/image-to-3d', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-Meshy-Key': MESHY_CONFIG.apiKey
                 },
-                body: JSON.stringify({
-                    image_url: imageUrl,
-                    ai_model: MESHY_CONFIG.aiModel,
-                    topology: MESHY_CONFIG.topology,
-                    target_count: MESHY_CONFIG.targetCount,
-                    negative_text: MESHY_CONFIG.negativeText
-                })
+                body: JSON.stringify(requestBody)
             })
             .then(function(resp) {
-                if (!resp.ok) {
-                    return resp.json().then(function(err) {
-                        throw new Error(err.error || ('HTTP ' + resp.status));
-                    }).catch(function() {
-                        throw new Error('HTTP ' + resp.status);
-                    });
-                }
-                return resp.json();
+                return resp.text().then(function(text) {
+                    console.log('[Meshy] 响应状态:', resp.status, '响应内容:', text);
+                    var data;
+                    try { data = JSON.parse(text); } catch(e) { data = null; }
+                    if (!resp.ok) {
+                        var errMsg = 'HTTP ' + resp.status;
+                        if (data) {
+                            if (data.error && typeof data.error === 'string') errMsg += ': ' + data.error;
+                            else if (data.error && data.error.message) errMsg += ': ' + data.error.message;
+                            else if (data.message) errMsg += ': ' + data.message;
+                            else errMsg += ': ' + text;
+                        }
+                        throw new Error(errMsg);
+                    }
+                    if (!data || !data.result) {
+                        throw new Error('无效的响应格式: ' + text);
+                    }
+                    return data;
+                });
             })
             .then(function(data) {
-                if (!data.result) {
-                    throw new Error('无效的响应格式');
-                }
                 var taskId = data.result;
                 state.meshyTaskId = taskId;
                 console.log('[Meshy] 任务已提交，task_id:', taskId);
@@ -6005,20 +6019,18 @@ if (pb) {
                 })
                 .then(function(resp) { return resp.json(); })
                 .then(function(data) {
-                    var result = data.result || data;
-                    var status = result.status;
-                    console.log('[Meshy] 任务状态:', status, '已用时:', elapsed/1000, '秒');
+                    console.log('[Meshy] 轮询响应:', JSON.stringify(data).substring(0, 300));
+                    var status = data.status;
+                    var progress = data.progress || 0;
+                    console.log('[Meshy] 任务状态:', status, '进度:', progress + '%', '已用时:', elapsed/1000, '秒');
                     
                     if (status === 'SUCCEEDED') {
                         // 成功！获取模型URL
-                        var modelUrls = result.model_urls || {};
+                        var modelUrls = data.model_urls || {};
                         var glbUrl = modelUrls.glb;
-                        var objUrl = modelUrls.obj;
-                        var fbxUrl = modelUrls.fbx;
-                        var usdzUrl = modelUrls.usdz;
                         
                         console.log('[Meshy] 模型生成成功！', modelUrls);
-                        state.meshyModelUrl = glbUrl || objUrl || fbxUrl;
+                        state.meshyModelUrl = glbUrl;
                         
                         // 更新进度到75%，激活第4阶段
                         activateStage(3, 75);
@@ -6026,15 +6038,16 @@ if (pb) {
                         // 加载3D模型到 viewer
                         loadMeshyModel(state.meshyModelUrl);
                     } else if (status === 'FAILED' || status === 'CANCELED') {
-                        console.error('[Meshy] 任务失败:', result);
-                        showToastMessage('⚠️ 3D生成失败：' + (result.message || '未知错误'));
+                        var errMsg = (data.task_error && data.task_error.message) ? data.task_error.message : '未知错误';
+                        console.error('[Meshy] 任务失败:', data);
+                        showToastMessage('⚠️ 3D生成失败：' + errMsg);
                         showFallbackSVG();
                     } else {
                         // PENDING 或 IN_PROGRESS，继续轮询
                         var newElapsed = elapsed + MESHY_CONFIG.pollInterval;
-                        // 根据进度更新UI
-                        var pct = Math.min(65, 25 + (newElapsed / MESHY_CONFIG.maxPollTime) * 40);
-                        var stageIdx = pct < 35 ? 1 : (pct < 50 ? 2 : 3);
+                        // 根据实际进度更新UI
+                        var pct = Math.min(70, 10 + (progress / 100) * 60);
+                        var stageIdx = pct < 30 ? 1 : (pct < 50 ? 2 : 3);
                         activateStage(stageIdx, Math.round(pct));
                         pollMeshyTask(taskId, newElapsed);
                     }
