@@ -6049,7 +6049,12 @@ if (pb) {
             })
             .catch(function(err) {
                 console.error('[Meshy] 提交任务失败:', err);
-                showMeshyDebug('提交阶段错误', err.message || String(err), '');
+                var detail = '错误: ' + (err.message || String(err)) + '\n';
+                detail += '代理: ' + MESHY_CONFIG.proxyUrl + '\n';
+                detail += 'Key: ' + (MESHY_CONFIG.apiKey ? MESHY_CONFIG.apiKey.substring(0,8) + '...' : '无') + '\n';
+                detail += '图片: ' + (imageUrl ? imageUrl.substring(0,50) + '...' : '无');
+                try { showMeshyDebug('提交阶段错误', err.message || String(err), ''); } catch(e2) {}
+                alert('🔍 3D生成失败详情:\n\n' + detail);
                 showToastMessage('⚠️ 3D生成失败：' + err.message);
                 showFallbackSVG();
             });
