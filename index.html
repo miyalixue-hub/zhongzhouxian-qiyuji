@@ -6249,8 +6249,10 @@ if (pb) {
                 '<input id="meshy-key-input" type="password" placeholder="输入 Meshy Key (如 msy_xxx...)" value="' + (MESHY_CONFIG.apiKey || '') + '" style="width:100%;padding:10px 12px;border:1.5px solid #e8dcc4;border-radius:8px;font-size:14px;outline:none;margin-bottom:12px;box-sizing:border-box;" />' +
                 '<label style="font-size:12px;color:#3a2a1a;font-weight:600;display:block;margin-bottom:4px;">代理服务器地址 <span style="font-weight:400;color:#7a6a56;">(Cloudflare Worker URL)</span></label>' +
                 '<input id="meshy-proxy-input" type="text" placeholder="https://your-worker.workers.dev" value="' + (MESHY_CONFIG.proxyUrl || '') + '" style="width:100%;padding:10px 12px;border:1.5px solid #e8dcc4;border-radius:8px;font-size:13px;outline:none;margin-bottom:16px;box-sizing:border-box;" />' +
+                '<div id="meshy-test-result" style="display:none;margin-bottom:12px;padding:10px;border-radius:8px;font-size:12px;line-height:1.5;"></div>' +
                 '<div style="display:flex;gap:10px;">' +
                 '<button id="meshy-key-cancel" style="flex:1;padding:10px;border:1.5px solid #e8dcc4;background:white;border-radius:8px;font-size:14px;cursor:pointer;">取消</button>' +
+                '<button id="meshy-key-test" style="flex:1;padding:10px;border:1.5px solid #c04830;background:white;color:#c04830;border-radius:8px;font-size:14px;cursor:pointer;font-weight:bold;">🔍 测试连接</button>' +
                 '<button id="meshy-key-save" style="flex:1;padding:10px;border:none;background:#c04830;color:white;border-radius:8px;font-size:14px;cursor:pointer;font-weight:bold;">保存并开始</button>' +
                 '</div></div>';
             document.body.appendChild(overlay);
@@ -6258,6 +6260,67 @@ if (pb) {
             document.getElementById('meshy-key-cancel').onclick = function() { 
                 overlay.remove(); 
                 showFallbackSVG();
+            };
+            document.getElementById('meshy-key-test').onclick = function() {
+                var key = document.getElementById('meshy-key-input').value.trim();
+                var proxy = document.getElementById('meshy-proxy-input').value.trim();
+                var resultDiv = document.getElementById('meshy-test-result');
+                if (!key) {
+                    resultDiv.style.display = 'block';
+                    resultDiv.style.background = '#FFEBEE';
+                    resultDiv.style.color = '#C62828';
+                    resultDiv.textContent = '❌ 请先输入 API Key';
+                    return;
+                }
+                if (!proxy) {
+                    resultDiv.style.display = 'block';
+                    resultDiv.style.background = '#FFEBEE';
+                    resultDiv.style.color = '#C62828';
+                    resultDiv.textContent = '❌ 请先输入代理服务器地址';
+                    return;
+                }
+                resultDiv.style.display = 'block';
+                resultDiv.style.background = '#FFF8E1';
+                resultDiv.style.color = '#856404';
+                resultDiv.textContent = '⏳ 正在测试连接...';
+                
+                fetch(proxy + '/api/balance', {
+                    method: 'GET',
+                    headers: { 'X-Meshy-Key': key }
+                })
+                .then(function(resp) { return resp.text().then(function(text) { return { status: resp.status, text: text }; }); })
+                .then(function(result) {
+                    try {
+                        var data = JSON.parse(result.text);
+                        if (result.status === 200) {
+                            var credits = data.balance !== undefined ? data.balance : '未知';
+                            resultDiv.style.background = '#E8F5E9';
+                            resultDiv.style.color = '#2E7D32';
+                            resultDiv.innerHTML = '✅ <b>连接成功！</b><br/>可用积分: ' + credits + '<br/>状态: 正常';
+                        } else if (result.status === 401) {
+                            resultDiv.style.background = '#FFEBEE';
+                            resultDiv.style.color = '#C62828';
+                            resultDiv.innerHTML = '❌ <b>认证失败</b><br/>API Key 无效或已过期<br/>请检查后重试';
+                        } else if (result.status === 402) {
+                            resultDiv.style.background = '#FFEBEE';
+                            resultDiv.style.color = '#C62828';
+                            resultDiv.innerHTML = '❌ <b>积分不足</b><br/>Meshy 积分已用完<br/>请充值后再试';
+                        } else {
+                            resultDiv.style.background = '#FFEBEE';
+                            resultDiv.style.color = '#C62828';
+                            resultDiv.innerHTML = '❌ <b>请求失败</b><br/>HTTP ' + result.status + '<br/>' + (data.message || data.error || result.text).substring(0, 100);
+                        }
+                    } catch(e) {
+                        resultDiv.style.background = '#FFEBEE';
+                        resultDiv.style.color = '#C62828';
+                        resultDiv.innerHTML = '❌ <b>解析失败</b><br/>HTTP ' + result.status + '<br/>响应: ' + result.text.substring(0, 150);
+                    }
+                })
+                .catch(function(err) {
+                    resultDiv.style.background = '#FFEBEE';
+                    resultDiv.style.color = '#C62828';
+                    resultDiv.innerHTML = '❌ <b>网络错误</b><br/>无法连接到代理服务器<br/>请检查代理地址是否正确<br/><span style="font-size:10px;opacity:0.7;">' + err.message + '</span>';
+                });
             };
             document.getElementById('meshy-key-save').onclick = function() {
                 var key = document.getElementById('meshy-key-input').value.trim();

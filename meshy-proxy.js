@@ -62,10 +62,10 @@ export default {
       } else if (path.match(/^\/api\/image-to-3d\/[\w-]+$/) && request.method === 'GET') {
         const taskId = path.split('/').pop();
         targetUrl = meshyBaseUrl + '/v1/image-to-3d/' + taskId;
-      } else if (path === '/api/me' && request.method === 'GET') {
-        targetUrl = meshyBaseUrl + '/v1/me';
+      } else if (path === '/api/balance' && request.method === 'GET') {
+        targetUrl = meshyBaseUrl + '/v1/balance';
       } else {
-        return new Response(JSON.stringify({ error: 'Invalid route. Use POST /api/image-to-3d or GET /api/image-to-3d/{taskId}' }), {
+        return new Response(JSON.stringify({ error: 'Invalid route. Use POST /api/image-to-3d, GET /api/image-to-3d/{taskId}, or GET /api/balance' }), {
           status: 404,
           headers: { 'Content-Type': 'application/json', ...corsHeaders }
         });
