@@ -3324,6 +3324,8 @@
         }
 
         </style>
+    <!-- Google model-viewer: 3D模型展示组件 -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
 </head>
 <body>
 
@@ -4692,14 +4694,22 @@ if (typeof goToStation === 'function') {
             <div class="page-content">
                 <div class="page-header">
                     <h2 class="page-title">🖨️ 3D模型工坊</h2>
-                    <p class="page-subtitle">正在将你的神兽变成3D打印模型</p>
+                    <p class="page-subtitle">正在通过 Meshy AI 将你的神兽变成3D打印模型</p>
                 </div>
                 
                 <div class="stage-3d">
                     <div class="model-viewer-3d" id="model-viewer-3d">
                         <div class="spinner-3d"></div>
                         <div class="model-done">
-                            <svg width="100" height="100" viewBox="0 0 100 100" id="model-3d-result">
+                            <model-viewer id="meshy-model" 
+                                camera-controls 
+                                auto-rotate 
+                                shadow-intensity="1" 
+                                style="width:100%;height:100%;background:transparent;display:none;"
+                                alt="3D神兽模型">
+                            </model-viewer>
+                            <!-- 降级：如果model-viewer无法加载或Meshy未配置，显示SVG -->
+                            <svg width="100" height="100" viewBox="0 0 100 100" id="model-3d-result" style="display:none;">
                                 <ellipse cx="50" cy="80" rx="30" ry="8" fill="#E8E0D0"/>
                                 <ellipse cx="50" cy="60" rx="25" ry="18" fill="#C45C5C" id="m3d-body"/>
                                 <circle cx="50" cy="40" r="18" fill="#C45C5C" id="m3d-head"/>
@@ -4743,9 +4753,10 @@ if (typeof goToStation === 'function') {
                             <div style="font-size:18px;font-weight:600;color:var(--text-dark);">✅ 3D模型已就绪！</div>
                             <div style="font-size:13px;color:var(--text-light);margin-top:4px;">适配拓竹A2L打印机 · 预计打印时间约45分钟</div>
                         </div>
-                        <button class="btn-3d-print" id="btn-3d-print">🖨️ 立即发送到打印机</button>
-                        <button class="btn-save-3d" id="btn-download-stl">💾 下载STL文件</button>
+                        <button class="btn-3d-print" id="btn-3d-print">🖨️ 联系打印服务</button>
+                        <button class="btn-save-3d" id="btn-download-stl">💾 下载3D模型 + 工单</button>
                         <button class="btn-save-3d" id="btn-save-profile-3d">📋 保存神兽档案</button>
+                        <a href="javascript:showMeshyKeyDialog()" style="display:block;text-align:center;margin-top:8px;font-size:11px;color:#7a6a56;text-decoration:underline;">⚙️ 设置3D生成密钥</a>
                         <button class="btn-restart" id="btn-restart-3d">🔄 重新创造一只</button>
                     </div>
                 </div>
@@ -4881,6 +4892,23 @@ showPage(2);
             if (savedKey) AI_CONFIG.apiKey = savedKey;
         })();
 
+        // ============ Meshy 3D 生成配置 ============
+        var MESHY_CONFIG = {
+            // Cloudflare Worker 代理地址（部署后填入）
+            // 部署方式：参见仓库中 meshy-proxy.js 文件
+            proxyUrl: localStorage.getItem('meshy_proxy_url') || 'https://meshy-proxy.miyalixue.workers.dev',
+            // Meshy API Key（用户通过设置面板输入，存储在 localStorage）
+            apiKey: localStorage.getItem('meshy_api_key') || '',
+            // 3D模型参数
+            aiModel: 'meshy-6',        // 使用 Meshy 6 模型
+            topology: 'tri',           // 三角面片（适合3D打印）
+            targetCount: 30000,        // 目标面数
+            negativeText: 'low quality, blurry, deformed',
+            // 轮询配置
+            pollInterval: 3000,        // 每3秒轮询一次
+            maxPollTime: 180000        // 最长等待3分钟
+        };
+
         var state = { 
             currentPage: 1, 
             selectedCreature: null, 
@@ -4896,7 +4924,9 @@ showPage(2);
             tramDecors: [],
             // AI 生成相关
             _lastAiPrompt: '',
-            _generatedImageUrls: []
+            _generatedImageUrls: [],
+            meshyModelUrl: null,
+            meshyTaskId: null
         };
         var creatures = [{ id: 'gongfu', name: '蚣蝮', desc: '镇水兽·龙生九子', color: '#4A7FB5' }, { id: 'chaofeng', name: '嘲风', desc: '殿角兽·好望远', color: '#D4A843' }, { id: 'bixi', name: '赑屃', desc: '碑下兽·好负重', color: '#6B7B8C' }];
         
@@ -5833,57 +5863,327 @@ if (pb) {
             };
         }
         
-        // ============ P9: 3D模型生成动画 ============
+        // ============ P9: 3D模型生成（Meshy API） ============
         function start3DGeneration() {
             var viewer = $('#model-viewer-3d');
             var progress = $('#gen-progress-fill');
             var opts = $('#print-options');
+            var modelEl = $('#meshy-model');
+            var svgEl = $('#model-3d-result');
+            
+            // 重置UI状态
             if (viewer) viewer.classList.remove('ready');
             if (opts) opts.style.display = 'none';
-            // 重置P9返回按钮和返回首页按钮为禁用状态
-            var p9rb = $('#btn-back-9');
-            if (p9rb) { p9rb.disabled = true; p9rb.style.opacity = '0.4'; p9rb.style.cursor = 'not-allowed'; }
-            var p9hm = $('#btn-home-p9');
-            if (p9hm) { p9hm.disabled = true; p9hm.style.opacity = '0.4'; p9hm.style.cursor = 'not-allowed'; }
+            if (modelEl) { modelEl.style.display = 'none'; modelEl.removeAttribute('src'); }
+            if (svgEl) svgEl.style.display = 'none';
+            state.meshyModelUrl = null;
+            state.meshyTaskId = null;
             
+            // 重置进度和阶段
             var stages = ['stage-1','stage-2','stage-3','stage-4'];
             stages.forEach(function(id) {
                 var el = $('#' + id);
                 if (el) { el.classList.remove('active','done'); }
             });
+            if (progress) progress.style.width = '0%';
             
-            var progressVals = [0, 25, 50, 75, 100];
-            var delay = [0, 1200, 2400, 3600, 4800];
+            // 禁用返回按钮（生成中不可切换）
+            var p9rb = $('#btn-back-9');
+            if (p9rb) { p9rb.disabled = true; p9rb.style.opacity = '0.4'; p9rb.style.cursor = 'not-allowed'; }
+            var p9hm = $('#btn-home-p9');
+            if (p9hm) { p9hm.disabled = true; p9hm.style.opacity = '0.4'; p9hm.style.cursor = 'not-allowed'; }
             
-            delay.forEach(function(d, i) {
-                setTimeout(function() {
-                    if (progress) progress.style.width = progressVals[i] + '%';
-                    if (i > 0) {
-                        var prev = $('#' + stages[i-1]);
-                        if (prev) { prev.classList.remove('active'); prev.classList.add('done'); }
-                    }
-                    if (i < 4) {
-                        var cur = $('#' + stages[i]);
-                        if (cur) cur.classList.add('active');
-                    }
-                    if (i === 4) {
-                        // Done!
-                        if (viewer) viewer.classList.add('ready');
-                        if (opts) opts.style.display = 'flex';
-                        // 启用P9返回按钮和返回首页按钮
-                        var p9back = $('#btn-back-9');
-                        if (p9back) { p9back.disabled = false; p9back.style.opacity = '1'; p9back.style.cursor = 'pointer'; }
-                        var p9home = $('#btn-home-p9');
-                        if (p9home) { p9home.disabled = false; p9home.style.opacity = '1'; p9home.style.cursor = 'pointer'; }
-                        // Apply colors to 3D model
-                        var color = state.selectedColors.length > 0 ? findById(colors, state.selectedColors[0]).hex : '#C45C5C';
-                        var m3dBody = $('#m3d-body'); if(m3dBody) m3dBody.setAttribute('fill', color);
-                        var m3dHead = $('#m3d-head'); if(m3dHead) m3dHead.setAttribute('fill', color);
-                        var m3dHL = $('#m3d-horn-l'); if(m3dHL) m3dHL.setAttribute('fill', color);
-                        var m3dHR = $('#m3d-horn-r'); if(m3dHR) m3dHR.setAttribute('fill', color);
-                    }
-                }, d);
+            // 检查 Meshy API Key
+            if (!MESHY_CONFIG.apiKey) {
+                console.warn('[Meshy] 未配置 API Key，使用降级SVG模型');
+                showMeshyKeyDialog(function() {
+                    // 用户输入后重试
+                    start3DGeneration();
+                });
+                return;
+            }
+            
+            // 获取选中的AI生成图片URL
+            var imageUrl = null;
+            if (state.selectedCandidate !== null && state.selectedCandidate !== undefined) {
+                imageUrl = state._generatedImageUrls[state.selectedCandidate];
+            }
+            
+            if (!imageUrl) {
+                console.warn('[Meshy] 没有选中的图片，使用降级SVG模型');
+                showFallbackSVG();
+                return;
+            }
+            
+            // 激活第1阶段
+            var stage1 = $('#stage-1');
+            if (stage1) stage1.classList.add('active');
+            if (progress) progress.style.width = '10%';
+            
+            // 提交 image-to-3d 任务
+            console.log('[Meshy] 提交 image-to-3d 任务，图片URL:', imageUrl);
+            
+            fetch(MESHY_CONFIG.proxyUrl + '/api/image-to-3d', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Meshy-Key': MESHY_CONFIG.apiKey
+                },
+                body: JSON.stringify({
+                    image_url: imageUrl,
+                    ai_model: MESHY_CONFIG.aiModel,
+                    topology: MESHY_CONFIG.topology,
+                    target_count: MESHY_CONFIG.targetCount,
+                    negative_text: MESHY_CONFIG.negativeText
+                })
+            })
+            .then(function(resp) {
+                if (!resp.ok) {
+                    return resp.json().then(function(err) {
+                        throw new Error(err.error || ('HTTP ' + resp.status));
+                    }).catch(function() {
+                        throw new Error('HTTP ' + resp.status);
+                    });
+                }
+                return resp.json();
+            })
+            .then(function(data) {
+                if (!data.result) {
+                    throw new Error('无效的响应格式');
+                }
+                var taskId = data.result;
+                state.meshyTaskId = taskId;
+                console.log('[Meshy] 任务已提交，task_id:', taskId);
+                
+                // 更新进度到25%，激活第2阶段
+                activateStage(1, 25);
+                
+                // 开始轮询任务状态
+                pollMeshyTask(taskId, 0);
+            })
+            .catch(function(err) {
+                console.error('[Meshy] 提交任务失败:', err);
+                showToastMessage('⚠️ 3D生成失败：' + err.message);
+                showFallbackSVG();
             });
+        }
+        
+        // 激活指定阶段（0-indexed）
+        function activateStage(index, progressVal) {
+            var stages = ['stage-1','stage-2','stage-3','stage-4'];
+            var progress = $('#gen-progress-fill');
+            
+            if (index > 0) {
+                var prev = $('#' + stages[index - 1]);
+                if (prev) { prev.classList.remove('active'); prev.classList.add('done'); }
+            }
+            if (index < 4) {
+                var cur = $('#' + stages[index]);
+                if (cur) cur.classList.add('active');
+            }
+            if (progress && progressVal !== undefined) {
+                progress.style.width = progressVal + '%';
+            }
+        }
+        
+        // 轮询 Meshy 任务状态
+        function pollMeshyTask(taskId, elapsed) {
+            if (elapsed > MESHY_CONFIG.maxPollTime) {
+                console.error('[Meshy] 任务超时');
+                showToastMessage('⚠️ 3D生成超时，请稍后重试');
+                showFallbackSVG();
+                return;
+            }
+            
+            setTimeout(function() {
+                fetch(MESHY_CONFIG.proxyUrl + '/api/image-to-3d/' + taskId, {
+                    method: 'GET',
+                    headers: {
+                        'X-Meshy-Key': MESHY_CONFIG.apiKey
+                    }
+                })
+                .then(function(resp) { return resp.json(); })
+                .then(function(data) {
+                    var result = data.result || data;
+                    var status = result.status;
+                    console.log('[Meshy] 任务状态:', status, '已用时:', elapsed/1000, '秒');
+                    
+                    if (status === 'SUCCEEDED') {
+                        // 成功！获取模型URL
+                        var modelUrls = result.model_urls || {};
+                        var glbUrl = modelUrls.glb;
+                        var objUrl = modelUrls.obj;
+                        var fbxUrl = modelUrls.fbx;
+                        var usdzUrl = modelUrls.usdz;
+                        
+                        console.log('[Meshy] 模型生成成功！', modelUrls);
+                        state.meshyModelUrl = glbUrl || objUrl || fbxUrl;
+                        
+                        // 更新进度到75%，激活第4阶段
+                        activateStage(3, 75);
+                        
+                        // 加载3D模型到 viewer
+                        loadMeshyModel(state.meshyModelUrl);
+                    } else if (status === 'FAILED' || status === 'CANCELED') {
+                        console.error('[Meshy] 任务失败:', result);
+                        showToastMessage('⚠️ 3D生成失败：' + (result.message || '未知错误'));
+                        showFallbackSVG();
+                    } else {
+                        // PENDING 或 IN_PROGRESS，继续轮询
+                        var newElapsed = elapsed + MESHY_CONFIG.pollInterval;
+                        // 根据进度更新UI
+                        var pct = Math.min(65, 25 + (newElapsed / MESHY_CONFIG.maxPollTime) * 40);
+                        var stageIdx = pct < 35 ? 1 : (pct < 50 ? 2 : 3);
+                        activateStage(stageIdx, Math.round(pct));
+                        pollMeshyTask(taskId, newElapsed);
+                    }
+                })
+                .catch(function(err) {
+                    console.error('[Meshy] 轮询失败:', err);
+                    // 网络错误时重试（最多连续3次失败才放弃）
+                    if (!window._meshyPollErrors) window._meshyPollErrors = 0;
+                    window._meshyPollErrors++;
+                    if (window._meshyPollErrors < 3) {
+                        pollMeshyTask(taskId, elapsed + MESHY_CONFIG.pollInterval);
+                    } else {
+                        showToastMessage('⚠️ 网络连接异常，请检查网络');
+                        showFallbackSVG();
+                        window._meshyPollErrors = 0;
+                    }
+                });
+            }, MESHY_CONFIG.pollInterval);
+        }
+        
+        // 加载 Meshy 生成的模型到 model-viewer
+        function loadMeshyModel(modelUrl) {
+            var modelEl = $('#meshy-model');
+            var svgEl = $('#model-3d-result');
+            var viewer = $('#model-viewer-3d');
+            var progress = $('#gen-progress-fill');
+            var opts = $('#print-options');
+            
+            if (!modelEl || !modelUrl) {
+                showFallbackSVG();
+                return;
+            }
+            
+            // 设置模型URL，model-viewer会自动加载
+            modelEl.setAttribute('src', modelUrl);
+            modelEl.style.display = 'block';
+            if (svgEl) svgEl.style.display = 'none';
+            
+            // 监听模型加载完成
+            modelEl.addEventListener('load', function onLoad() {
+                modelEl.removeEventListener('load', onLoad);
+                console.log('[Meshy] 3D模型加载完成');
+                
+                // 更新进度到100%
+                activateStage(3, 100);
+                if (progress) progress.style.width = '100%';
+                
+                // 显示完成状态
+                if (viewer) viewer.classList.add('ready');
+                if (opts) opts.style.display = 'flex';
+                
+                // 启用返回按钮
+                var p9back = $('#btn-back-9');
+                if (p9back) { p9back.disabled = false; p9back.style.opacity = '1'; p9back.style.cursor = 'pointer'; }
+                var p9home = $('#btn-home-p9');
+                if (p9home) { p9home.disabled = false; p9home.style.opacity = '1'; p9home.style.cursor = 'pointer'; }
+                
+                showToastMessage('✅ 3D模型生成完成！');
+            });
+            
+            // 监听加载错误
+            modelEl.addEventListener('error', function onError(e) {
+                modelEl.removeEventListener('error', onError);
+                console.error('[Meshy] 模型加载失败:', e);
+                showToastMessage('⚠️ 模型加载失败，显示预览图');
+                showFallbackSVG();
+            });
+        }
+        
+        // 降级：显示SVG占位模型
+        function showFallbackSVG() {
+            var modelEl = $('#meshy-model');
+            var svgEl = $('#model-3d-result');
+            var viewer = $('#model-viewer-3d');
+            var progress = $('#gen-progress-fill');
+            var opts = $('#print-options');
+            
+            if (modelEl) modelEl.style.display = 'none';
+            if (svgEl) {
+                svgEl.style.display = 'block';
+                // 应用选中颜色
+                var color = state.selectedColors.length > 0 ? findById(colors, state.selectedColors[0]).hex : '#C45C5C';
+                var m3dBody = $('#m3d-body'); if(m3dBody) m3dBody.setAttribute('fill', color);
+                var m3dHead = $('#m3d-head'); if(m3dHead) m3dHead.setAttribute('fill', color);
+                var m3dHL = $('#m3d-horn-l'); if(m3dHL) m3dHL.setAttribute('fill', color);
+                var m3dHR = $('#m3d-horn-r'); if(m3dHR) m3dHR.setAttribute('fill', color);
+            }
+            
+            if (progress) progress.style.width = '100%';
+            if (viewer) viewer.classList.add('ready');
+            if (opts) opts.style.display = 'flex';
+            
+            var p9back = $('#btn-back-9');
+            if (p9back) { p9back.disabled = false; p9back.style.opacity = '1'; p9back.style.cursor = 'pointer'; }
+            var p9home = $('#btn-home-p9');
+            if (p9home) { p9home.disabled = false; p9home.style.opacity = '1'; p9home.style.cursor = 'pointer'; }
+        }
+        
+        // 显示 Meshy API Key 输入对话框
+        function showMeshyKeyDialog(onSuccess) {
+            var existing = document.getElementById('meshy-key-dialog');
+            if (existing) existing.remove();
+            
+            var overlay = document.createElement('div');
+            overlay.id = 'meshy-key-dialog';
+            overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
+            overlay.innerHTML = '<div style="background:#FAF8F0;border-radius:16px;padding:24px;max-width:420px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.3);">' +
+                '<h3 style="margin:0 0 12px;color:#3a2a1a;font-size:16px;">🎮 设置 3D 模型生成密钥</h3>' +
+                '<p style="font-size:12px;color:#7a6a56;line-height:1.6;margin-bottom:8px;">需要 Meshy API Key 才能将神兽变成3D模型。<br/>获取方式：登录 <a href="https://www.meshy.ai/settings/api" target="_blank" style="color:#c04830;">meshy.ai/settings/api</a></p>' +
+                '<div style="background:#FFF8E1;border-radius:8px;padding:10px;margin-bottom:12px;font-size:11px;color:#7a6a56;line-height:1.5;">' +
+                '💡 Meshy Pro 会员每天有免费积分额度<br/>' +
+                '🔒 密钥仅保存在你的浏览器中，不会上传服务器</div>' +
+                '<label style="font-size:12px;color:#3a2a1a;font-weight:600;display:block;margin-bottom:4px;">Meshy API Key</label>' +
+                '<input id="meshy-key-input" type="password" placeholder="输入 Meshy Key (如 msy_xxx...)" value="' + (MESHY_CONFIG.apiKey || '') + '" style="width:100%;padding:10px 12px;border:1.5px solid #e8dcc4;border-radius:8px;font-size:14px;outline:none;margin-bottom:12px;box-sizing:border-box;" />' +
+                '<label style="font-size:12px;color:#3a2a1a;font-weight:600;display:block;margin-bottom:4px;">代理服务器地址 <span style="font-weight:400;color:#7a6a56;">(Cloudflare Worker URL)</span></label>' +
+                '<input id="meshy-proxy-input" type="text" placeholder="https://your-worker.workers.dev" value="' + (MESHY_CONFIG.proxyUrl || '') + '" style="width:100%;padding:10px 12px;border:1.5px solid #e8dcc4;border-radius:8px;font-size:13px;outline:none;margin-bottom:16px;box-sizing:border-box;" />' +
+                '<div style="display:flex;gap:10px;">' +
+                '<button id="meshy-key-cancel" style="flex:1;padding:10px;border:1.5px solid #e8dcc4;background:white;border-radius:8px;font-size:14px;cursor:pointer;">取消</button>' +
+                '<button id="meshy-key-save" style="flex:1;padding:10px;border:none;background:#c04830;color:white;border-radius:8px;font-size:14px;cursor:pointer;font-weight:bold;">保存并开始</button>' +
+                '</div></div>';
+            document.body.appendChild(overlay);
+            
+            document.getElementById('meshy-key-cancel').onclick = function() { 
+                overlay.remove(); 
+                showFallbackSVG();
+            };
+            document.getElementById('meshy-key-save').onclick = function() {
+                var key = document.getElementById('meshy-key-input').value.trim();
+                var proxy = document.getElementById('meshy-proxy-input').value.trim();
+                if (key) {
+                    MESHY_CONFIG.apiKey = key;
+                    localStorage.setItem('meshy_api_key', key);
+                }
+                if (proxy) {
+                    MESHY_CONFIG.proxyUrl = proxy;
+                    localStorage.setItem('meshy_proxy_url', proxy);
+                }
+                overlay.remove();
+                if (typeof onSuccess === 'function') onSuccess();
+            };
+            overlay.onclick = function(e) { 
+                if (e.target === overlay) {
+                    overlay.remove();
+                    showFallbackSVG();
+                }
+            };
+            setTimeout(function() { 
+                var inp = document.getElementById('meshy-key-input');
+                if (inp) inp.focus();
+            }, 100);
         }
         
         function init() {
@@ -6442,6 +6742,54 @@ if (pb) {
                 var cr = findById(creatures, state.selectedCreature);
                 if (cr) creatureName = cr.name;
             }
+            var fileName = '神兽_' + (creatureName || '模型');
+            
+            // 如果有 Meshy 生成的真实3D模型，下载 GLB 文件
+            if (state.meshyModelUrl) {
+                showToastMessage('⏳ 正在下载3D模型...');
+                
+                // 用 fetch 下载模型文件，然后转为 blob 下载
+                fetch(state.meshyModelUrl)
+                    .then(function(resp) {
+                        if (!resp.ok) throw new Error('下载失败');
+                        return resp.blob();
+                    })
+                    .then(function(blob) {
+                        var url = URL.createObjectURL(blob);
+                        var a = document.createElement('a');
+                        a.href = url;
+                        a.download = fileName + '.glb';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        showToastMessage('✅ 3D模型已下载 (.glb)');
+                    })
+                    .catch(function(err) {
+                        console.error('下载模型失败:', err);
+                        // 降级：直接打开链接让用户浏览器下载
+                        var a = document.createElement('a');
+                        a.href = state.meshyModelUrl;
+                        a.download = fileName + '.glb';
+                        a.target = '_blank';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        showToastMessage('📎 正在打开模型下载链接...');
+                    });
+                
+                // 同时下载打印工单（附带）
+                downloadPrintWorkOrder(creatureName, fileName);
+                return;
+            }
+            
+            // 没有 Meshy 模型时，仅下载打印工单文本
+            downloadPrintWorkOrder(creatureName, fileName);
+            showToastMessage('📄 打印工单已下载');
+        }
+        
+        // 下载打印工单文本文件
+        function downloadPrintWorkOrder(creatureName, fileName) {
             var patternNames = [];
             if (state.selectedPatterns && state.selectedPatterns.length > 0) {
                 state.selectedPatterns.forEach(function(p) {
@@ -6469,6 +6817,7 @@ if (pb) {
                 });
             }
             var aiPrompt = state._lastAiPrompt || '';
+            var hasRealModel = !!state.meshyModelUrl;
 
             var content = '=== 中轴奇游记·神兽3D打印工单 ===\n\n';
             content += '神兽名称：' + (creatureName || '未命名') + '\n';
@@ -6477,7 +6826,13 @@ if (pb) {
             content += '传统色彩：' + (colorNames.join('、') || '未选择') + '\n';
             content += '附加元素：' + (elementNames.join('、') || '无') + '\n';
             content += 'AI提示词：' + (aiPrompt || '无') + '\n\n';
-            content += '=== 打印参数 ===\n';
+            content += '=== 3D模型 ===\n';
+            content += '模型来源：' + (hasRealModel ? 'Meshy AI 生成' : '示意图（未生成真实3D模型）') + '\n';
+            if (hasRealModel) {
+                content += '模型格式：GLB\n';
+                content += '模型下载地址：' + state.meshyModelUrl + '\n';
+            }
+            content += '\n=== 打印参数 ===\n';
             content += '适配打印机：拓竹A2L\n';
             content += '建议层高：0.2mm\n';
             content += '建议填充：15%\n';
@@ -6490,13 +6845,11 @@ if (pb) {
             var url = URL.createObjectURL(blob);
             var a = document.createElement('a');
             a.href = url;
-            a.download = '神兽打印工单_' + (creatureName || '未命名') + '.txt';
+            a.download = fileName + '_打印工单.txt';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-
-            showToastMessage('📄 打印工单已下载');
         }
 
         // 发送到打印机（提示引导）
@@ -6587,6 +6940,7 @@ if (pb) {
         window.generatePromptSummary = generatePromptSummary;
         // Expose API key dialog and SVG fallback for inline onclick handlers
         window.showApiKeyDialog = showApiKeyDialog;
+        window.showMeshyKeyDialog = showMeshyKeyDialog;
         window.generateSVGFallback = generateSVGFallback;
 
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
