@@ -6090,9 +6090,27 @@ if (pb) {
                         // 加载3D模型到 viewer
                         loadMeshyModel(state.meshyModelUrl);
                     } else if (status === 'FAILED' || status === 'CANCELED') {
-                        var errMsg = (data.task_error && data.task_error.message) ? data.task_error.message : '未知错误';
-                        console.error('[Meshy] 任务失败:', data);
-                        showToastMessage('⚠️ 3D生成失败：' + errMsg);
+                        // 详细错误解析
+                        var errMsg = '未知错误';
+                        if (data.task_error) {
+                            errMsg = data.task_error.message || JSON.stringify(data.task_error);
+                        } else if (data.message) {
+                            errMsg = data.message;
+                        } else if (data.error) {
+                            errMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
+                        }
+                        var fullErr = JSON.stringify(data).substring(0, 500);
+                        console.error('[Meshy] 任务失败，完整响应:', fullErr);
+                        showToastMessage('⚠️ 3D生成失败：' + errMsg + '（点击查看详情）', 8000);
+                        // 在控制台和页面上显示详细错误供调试
+                        var dbg = document.getElementById('meshy-debug');
+                        if (!dbg) {
+                            dbg = document.createElement('div');
+                            dbg.id = 'meshy-debug';
+                            dbg.style.cssText = 'position:fixed;bottom:10px;left:10px;right:10px;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px;font-size:11px;color:#856404;z-index:99999;max-height:120px;overflow:auto;word-break:break-all;';
+                            document.body.appendChild(dbg);
+                        }
+                        dbg.innerHTML = '<b>🔍 调试信息</b><br/>状态: ' + status + '<br/>错误: ' + errMsg + '<br/>完整响应: ' + fullErr;
                         showFallbackSVG();
                     } else {
                         // PENDING 或 IN_PROGRESS，继续轮询
