@@ -3325,7 +3325,7 @@
 
         </style>
     <!-- Google model-viewer: 3D模型展示组件（使用 jsdelivr CDN 国内可访问） -->
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js?v=20260706b"></script>
 </head>
 <body>
 
@@ -4705,7 +4705,7 @@ if (typeof goToStation === 'function') {
                                 camera-controls 
                                 auto-rotate 
                                 shadow-intensity="1" 
-                                style="width:100%;height:100%;background:transparent;display:none;"
+                                style="width:100%;height:100%;background:transparent;visibility:hidden;position:absolute;top:0;left:0;z-index:0;"
                                 alt="3D神兽模型">
                             </model-viewer>
                             <!-- 降级：如果model-viewer无法加载或Meshy未配置，显示SVG -->
@@ -5960,7 +5960,7 @@ if (pb) {
             // 重置UI状态
             if (viewer) viewer.classList.remove('ready');
             if (opts) opts.style.display = 'none';
-            if (modelEl) { modelEl.style.display = 'none'; modelEl.removeAttribute('src'); }
+            if (modelEl) { modelEl.style.visibility = 'hidden'; modelEl.style.position = 'absolute'; modelEl.style.zIndex = '0'; modelEl.removeAttribute('src'); }
             if (svgEl) svgEl.style.display = 'none';
             var thumbEl = document.getElementById('meshy-thumbnail');
             if (thumbEl) { thumbEl.style.display = 'none'; thumbEl.removeAttribute('src'); }
@@ -6256,6 +6256,11 @@ if (pb) {
             var retryArea = document.getElementById('meshy-retry-area');
             var directDlBtn = document.getElementById('btn-download-stl-direct');
             
+            console.log('[Meshy] loadMeshyModel 调用，modelUrl:', modelUrl ? modelUrl.substring(0, 80) + '...' : 'null');
+            console.log('[Meshy] meshyStlUrl:', state.meshyStlUrl ? state.meshyStlUrl.substring(0, 80) + '...' : 'null');
+            console.log('[Meshy] meshyThumbnail:', state.meshyThumbnail ? state.meshyThumbnail.substring(0, 80) + '...' : 'null');
+            console.log('[Meshy] meshyAllUrls 格式:', state.meshyAllUrls ? Object.keys(state.meshyAllUrls).join(', ') : 'null');
+            
             if (!modelUrl) {
                 showFallbackSVG();
                 return;
@@ -6265,13 +6270,19 @@ if (pb) {
             if (thumbEl && state.meshyThumbnail) {
                 thumbEl.src = state.meshyThumbnail;
                 thumbEl.style.display = 'block';
+                thumbEl.style.position = 'relative';
+                thumbEl.style.zIndex = '5';
                 if (svgEl) svgEl.style.display = 'none';
-                if (modelEl) modelEl.style.display = 'none';
+                // model-viewer 保持 visibility:hidden 但已在DOM中有尺寸，后台开始加载
             }
             
-            // 显示下载按钮（即使model-viewer加载慢，用户也能直接下载）
+            // 显示下载按钮和格式信息
             if (retryArea) retryArea.style.display = 'block';
             if (directDlBtn && state.meshyStlUrl) directDlBtn.style.display = 'inline-block';
+            
+            // 提示用户可用格式
+            var availFormats = state.meshyAllUrls ? Object.keys(state.meshyAllUrls).join(', ') : '未知';
+            showToastMessage('🎨 预览图已显示！3D交互模型后台加载中...\n可用格式: ' + availFormats);
             
             // === model-viewer 后台加载 3D 模型 ===
             var mvReady = typeof customElements !== 'undefined' 
@@ -6288,6 +6299,8 @@ if (pb) {
                     return;
                 }
                 
+                console.log('[Meshy] model-viewer 自定义元素已注册，开始加载GLB...');
+                
                 var loadFired = false;
                 
                 modelEl.addEventListener('load', function onLoad() {
@@ -6299,9 +6312,11 @@ if (pb) {
                     clearTimeout(hintTimeout);
                     console.log('[Meshy] 3D模型加载完成');
                     
-                    // 切换到 3D 交互视图
+                    // 切换到 3D 交互视图（用visibility替代display，避免web component初始化问题）
                     if (thumbEl) thumbEl.style.display = 'none';
-                    modelEl.style.display = 'block';
+                    modelEl.style.visibility = 'visible';
+                    modelEl.style.position = 'relative';
+                    modelEl.style.zIndex = '10';
                     
                     activateStage(3, 100);
                     if (progress) progress.style.width = '100%';
@@ -6347,8 +6362,12 @@ if (pb) {
                     showThumbnailFallback();
                 }, 90000);
                 
-                // 开始加载 3D 模型（后台）
+                // 开始加载 3D 模型（model-viewer保持可见但在预览图后面）
                 modelEl.setAttribute('src', modelUrl);
+                console.log('[Meshy] 已设置model-viewer src，等待加载...');
+            }).catch(function(err) {
+                console.error('[Meshy] customElements.whenDefined 失败:', err);
+                showThumbnailFallback();
             });
             
             // 无论model-viewer是否成功，都显示完成状态和选项按钮
@@ -6374,7 +6393,12 @@ if (pb) {
             var opts = $('#print-options');
             var retryArea = document.getElementById('meshy-retry-area');
             
-            if (modelEl) modelEl.style.display = 'none';
+            // 隐藏model-viewer（用visibility而非display，避免web component问题）
+            if (modelEl) {
+                modelEl.style.visibility = 'hidden';
+                modelEl.style.position = 'absolute';
+                modelEl.style.zIndex = '0';
+            }
             
             // 如果有Meshy预览图，优先显示
             if (thumbEl && state.meshyThumbnail) {
@@ -6411,7 +6435,8 @@ if (pb) {
             var progress = $('#gen-progress-fill');
             var opts = $('#print-options');
             
-            if (modelEl) modelEl.style.display = 'none';
+            // 隐藏model-viewer（用visibility）
+            if (modelEl) { modelEl.style.visibility = 'hidden'; modelEl.style.position = 'absolute'; modelEl.style.zIndex = '0'; }
             if (svgEl) {
                 svgEl.style.display = 'block';
                 // 应用选中颜色
