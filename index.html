@@ -3687,12 +3687,12 @@ if (typeof goToStation === 'function') {
                         <div class="option-desc">镇水兽 · 龙生九子<br>好水而立桥头</div>
                     </div>
                     
-                    <div class="option-card" data-id="chaofeng">
+                    <div class="option-card" data-id="xishui">
                         <div class="option-icon" style="padding:4px;">
                             <img src="https://zhongzhouxian-1413555799.cos.ap-guangzhou.myqcloud.com/assets/xishui_shou.png" alt="吸水兽" style="width:100%;max-height:140px;object-fit:contain;border-radius:8px;">
                         </div>
                         <div class="option-title">吸水兽</div>
-                        <div class="option-desc">殿角兽 · 好望远<br>立于高台守望</div>
+                        <div class="option-desc">桥孔兽 · 好吞吐<br>蹲踞桥孔镇水脉</div>
                     </div>
                     
                     <div class="option-card" data-id="dangdangche">
@@ -4946,7 +4946,7 @@ showPage(2);
             meshyThumbnail: null,
             meshyTaskId: null
         };
-        var creatures = [{ id: 'gongfu', name: '蚣蝮', desc: '镇水兽·龙生九子', color: '#4A7FB5' }, { id: 'chaofeng', name: '嘲风', desc: '殿角兽·好望远', color: '#D4A843' }, { id: 'bixi', name: '赑屃', desc: '碑下兽·好负重', color: '#6B7B8C' }];
+        var creatures = [{ id: 'gongfu', name: '蚣蝮', desc: '镇水兽·龙生九子·趴伏桥头守望', color: '#4A7FB5' }, { id: 'xishui', name: '吸水兽', desc: '桥孔兽·好吞吐·蹲踞桥孔吐水', color: '#5B8C6B' }, { id: 'chaofeng', name: '嘲风', desc: '殿角兽·好望远', color: '#D4A843' }, { id: 'bixi', name: '赑屃', desc: '碑下兽·好负重', color: '#6B7B8C' }];
         
         // 铛铛车选项数据
         var tramColors = [
@@ -5371,8 +5371,18 @@ showPage(2);
             var ens = state.selectedElements.map(function(e) { var x = findById(elements, e); return x ? x.name : ''; }).filter(Boolean);
             var colorNameStr = cls.length > 0 ? cls.map(function(c){return c.name;}).join('·') : '绚丽';
             var colorHexStr = cls.length > 0 ? cls.map(function(c){return c.hex;}).join('/') : '#C45C5C';
-            var summonText = '我选择了一只' + (cr ? cr.name : '神秘') + '，' + (pns.length ? '身披' + pns.join('、') + '铠甲' : '通体纯净') + '，' + (ex ? ex.name : '神采奕奕') + '地' + getPoseText(state.selectedExpression) + '，' + colorNameStr + '色彩' + (ens.length ? '，伴随着' + ens.join('和') : '') + '，守护着中轴线上的正阳门...' + (state.fortune && state.fortune.story ? ' 【天赋签】' + state.fortune.story : '');
-            var aiPrompt = '一只可爱的中国神话小神兽（' + (cr ? cr.name : '') + '，水兽衍生造型），' + (ex ? ex.name : '活泼可爱') + '的表情，' + (pns.length ? pns.join('、') + '纹样' : '传统素纹') + '肌理，' + colorNameStr + '主色调（' + colorHexStr + '），中国传统风格，' + (ens.length ? '伴随' + ens.join('和') + '元素，' : '') + '3D渲染，干净背景，儿童插画风格，高质量，萌萌哒';
+            // === 按神兽类型生成差异化文案 ===
+            var creatureId = state.selectedCreature;
+            var summonText = '', aiPrompt = '';
+            if (creatureId === 'xishui') {
+                // 吸水兽：桥孔吐水者，蹲踞桥孔、张嘴吞吐
+                summonText = '我选择了一只' + (cr ? cr.name : '神秘') + '，' + (pns.length ? '身披' + pns.join('、') + '鳞甲' : '通体纯净') + '，' + (ex ? ex.name : '神采奕奕') + '地' + getPoseText(state.selectedExpression) + '，' + colorNameStr + '色彩' + (ens.length ? '，伴随着' + ens.join('和') : '') + '，蹲踞在正阳桥的桥孔之上，张口吞吐江水，镇守着中轴线的水脉...' + (state.fortune && state.fortune.story ? ' 【天赋签】' + state.fortune.story : '');
+                aiPrompt = '一只可爱的中国神话小神兽（吸水兽，龙头狮面，短角粗壮，身披龙鳞，虎尾回蜷，蹲踞在石拱桥孔之上，张嘴吐水造型），' + (ex ? ex.name : '活泼可爱') + '的表情，' + (pns.length ? pns.join('、') + '纹样' : '传统素纹') + '肌理，' + colorNameStr + '主色调（' + colorHexStr + '），桥孔吐水姿态，水花飞溅，中国传统风格，' + (ens.length ? '伴随' + ens.join('和') + '元素，' : '') + '3D渲染，干净背景，儿童插画风格，高质量，萌萌哒';
+            } else {
+                // 镇水兽（蚣蝮）：趴伏桥头守望者，俯卧、背披鳞甲、头部前倾
+                summonText = '我选择了一只' + (cr ? cr.name : '神秘') + '，' + (pns.length ? '身披' + pns.join('、') + '鳞甲' : '通体纯净') + '，' + (ex ? ex.name : '神采奕奕') + '地' + getPoseText(state.selectedExpression) + '，' + colorNameStr + '色彩' + (ens.length ? '，伴随着' + ens.join('和') : '') + '，趴伏在正阳桥头，守望中轴线上的来往行人...' + (state.fortune && state.fortune.story ? ' 【天赋签】' + state.fortune.story : '');
+                aiPrompt = '一只可爱的中国神话小神兽（镇水兽蚣蝮，龙头狮面，背披鳞甲，双目圆睁，头部前倾，趴伏在桥头水波纹石台之上，俯卧守望姿态），' + (ex ? ex.name : '活泼可爱') + '的表情，' + (pns.length ? pns.join('、') + '纹样' : '传统素纹') + '肌理，' + colorNameStr + '主色调（' + colorHexStr + '），沉稳威严的守望者，中国传统风格，' + (ens.length ? '伴随' + ens.join('和') + '元素，' : '') + '3D渲染，干净背景，儿童插画风格，高质量，萌萌哒';
+            }
             // 天赋签内容融入提示词
             if (state.fortune && state.fortune.story) {
                 aiPrompt += '。这只神兽' + state.fortune.origin + '，' + state.fortune.nature + '，拥有' + state.fortune.power + '的能力，平时' + state.fortune.hobby + '。';
@@ -5390,15 +5400,32 @@ if (pb) {
             return { summonText: summonText, cr: cr, pns: pns, ex: ex, cls: cls, ens: ens };
         }
         
-        function getPoseText(id) { var p = { 'cute': '蹲坐在桥头', 'fierce': '威风凛凛地站立', 'cool': '昂首挺胸巡视', 'funny': '欢快地跳跃' }; return p[id] || '静静地守望'; }
-        function getCreatureTitle(id) { var t = { 'gongfu': '镇水兽', 'chaofeng': '殿角兽', 'bixi': '碑下兽' }; return t[id] || '守护神兽'; }
+        function getPoseText(id) {
+            var cid = state.selectedCreature;
+            if (cid === 'xishui') {
+                // 吸水兽姿态：吞吐、蹲踞桥孔
+                var px = { 'cute': '蹲踞在桥孔上吐水', 'fierce': '张开大嘴吞噬洪水', 'cool': '昂首蹲踞桥头吐浪', 'funny': '鼓着腮帮子吹水花' };
+                return px[id] || '静静地蹲踞在桥孔之上';
+            } else {
+                // 镇水兽姿态：趴伏、俯卧、守望
+                var p = { 'cute': '趴伏在桥头守望', 'fierce': '威风凛凛地俯卧巡视', 'cool': '昂首挺胸趴伏桥头', 'funny': '欢快地在桥头跳跃' };
+                return p[id] || '静静地趴伏守望';
+            }
+        }
+        function getCreatureTitle(id) { var t = { 'gongfu': '镇水兽', 'xishui': '吸水兽', 'chaofeng': '殿角兽', 'bixi': '碑下兽' }; return t[id] || '守护神兽'; }
         
         function generateDescription() {
-            var exs = { 'cute': '这只神兽性格温和，喜欢与人亲近，是小朋友们的的好朋友。', 'fierce': '这只神兽威风凛凛，目光如炬，是守护中轴线的忠诚卫士。', 'cool': '这只神兽风度翩翩，气宇轩昂，总是以最帅的姿态示人。', 'funny': '这只神兽古灵精怪，总是能给大家带来欢乐，是气氛担当。' };
+            var exs_zhen = { 'cute': '这只镇水兽性格温和，趴在桥头笑眯眯地看着来往行人，是正阳门最亲切的守护者。', 'fierce': '这只镇水兽威风凛凛，目光如炬，趴伏在桥头日夜巡视，是守护中轴线的忠诚卫士。', 'cool': '这只镇水兽气宇轩昂，昂首俯卧在桥头最高处，以最威严的姿态守护着正阳门。', 'funny': '这只镇水兽古灵精怪，虽然趴在桥头却总是做鬼脸，是气氛担当。' };
+            var exs_xi = { 'cute': '这只吸水兽圆滚滚地蹲在桥孔上，鼓着腮帮子轻轻吐水，像个小喷泉。', 'fierce': '这只吸水兽张开大嘴吞噬洪水，目光如炬，是镇守水脉的勇猛战将。', 'cool': '这只吸水兽昂首蹲踞桥孔之巅，水花从口中喷出如彩虹飞瀑，气势磅礴。', 'funny': '这只吸水兽鼓着腮帮子吹水花玩，把桥下的鱼儿都逗乐了，是快乐源泉。' };
+            var exs = (state.selectedCreature === 'xishui') ? exs_xi : exs_zhen;
             var d = exs[state.selectedExpression] || '这是一只独特的神兽。';
             d += '它身披' + (state.selectedPatterns.map(function(p) { var x = findById(patterns, p); return x ? x.name : ''; }).filter(Boolean).join('和') || '纯净') + '，';
             d += '通体' + (state.selectedColors.length > 0 ? state.selectedColors.map(function(x) { return findById(colors, x) ? findById(colors, x).name : ''; }).filter(Boolean).join('·') : '绚丽') + '色彩，';
-            d += '正在' + getPoseText(state.selectedExpression) + '，守护着北京中轴线上的正阳门。';
+            if (state.selectedCreature === 'xishui') {
+                d += '正在' + getPoseText(state.selectedExpression) + '，镇守着北京中轴线上的水脉。';
+            } else {
+                d += '正在' + getPoseText(state.selectedExpression) + '，守护着北京中轴线上的正阳门。';
+            }
             return d;
         }
         
