@@ -3324,8 +3324,8 @@
         }
 
         </style>
-    <!-- Google model-viewer: 3D模型展示组件 -->
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+    <!-- Google model-viewer: 3D模型展示组件（使用 jsdelivr CDN 国内可访问） -->
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
 </head>
 <body>
 
@@ -6267,10 +6267,18 @@ if (pb) {
             // 监听加载错误
             modelEl.addEventListener('error', function onError(e) {
                 modelEl.removeEventListener('error', onError);
+                clearTimeout(loadTimeout);
                 console.error('[Meshy] 模型加载失败:', e);
                 showToastMessage('⚠️ 模型加载失败，显示预览图');
                 showFallbackSVG();
             });
+            
+            // 安全超时：30秒内 model-viewer 没响应就降级（防止CDN被墙卡死）
+            var loadTimeout = setTimeout(function() {
+                console.warn('[Meshy] model-viewer 加载超时，降级显示SVG');
+                showToastMessage('⚠️ 3D预览加载慢，已切换为预览图');
+                showFallbackSVG();
+            }, 30000);
         }
         
         // 降级：显示SVG占位模型
