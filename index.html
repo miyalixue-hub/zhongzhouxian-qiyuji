@@ -4709,6 +4709,7 @@ if (typeof goToStation === 'function') {
                                 alt="3D神兽模型">
                             </model-viewer>
                             <!-- 降级：如果model-viewer无法加载或Meshy未配置，显示SVG -->
+                            <img id="meshy-thumbnail" style="display:none;max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;" alt="3D模型预览" />
                             <svg width="100" height="100" viewBox="0 0 100 100" id="model-3d-result" style="display:none;">
                                 <ellipse cx="50" cy="80" rx="30" ry="8" fill="#E8E0D0"/>
                                 <ellipse cx="50" cy="60" rx="25" ry="18" fill="#C45C5C" id="m3d-body"/>
@@ -4942,6 +4943,7 @@ showPage(2);
             meshyModelUrl: null,
             meshyStlUrl: null,
             meshyAllUrls: null,
+            meshyThumbnail: null,
             meshyTaskId: null
         };
         var creatures = [{ id: 'gongfu', name: '蚣蝮', desc: '镇水兽·龙生九子', color: '#4A7FB5' }, { id: 'chaofeng', name: '嘲风', desc: '殿角兽·好望远', color: '#D4A843' }, { id: 'bixi', name: '赑屃', desc: '碑下兽·好负重', color: '#6B7B8C' }];
@@ -5960,9 +5962,12 @@ if (pb) {
             if (opts) opts.style.display = 'none';
             if (modelEl) { modelEl.style.display = 'none'; modelEl.removeAttribute('src'); }
             if (svgEl) svgEl.style.display = 'none';
+            var thumbEl = document.getElementById('meshy-thumbnail');
+            if (thumbEl) { thumbEl.style.display = 'none'; thumbEl.removeAttribute('src'); }
             state.meshyModelUrl = null;
             state.meshyStlUrl = null;
             state.meshyAllUrls = null;
+            state.meshyThumbnail = null;
             state.meshyTaskId = null;
             
             // 重置进度和阶段
@@ -6176,6 +6181,9 @@ if (pb) {
                         console.log('[Meshy] 模型生成成功！可用格式:', Object.keys(modelUrls).join(', '));
                         console.log('[Meshy] GLB:', glbUrl ? '有' : '无', 'STL:', stlUrl ? '有' : '无', '3MF:', threemfUrl ? '有' : '无');
                         
+                        // 保存缩略图URL（用于3D预览的2D替代）
+                        state.meshyThumbnail = data.thumbnail_url || null;
+                        
                         // 隐藏状态面板
                         if (statusPanel) statusPanel.style.display = 'none';
                         
@@ -6241,6 +6249,7 @@ if (pb) {
         function loadMeshyModel(modelUrl) {
             var modelEl = $('#meshy-model');
             var svgEl = $('#model-3d-result');
+            var thumbEl = document.getElementById('meshy-thumbnail');
             var viewer = $('#model-viewer-3d');
             var progress = $('#gen-progress-fill');
             var opts = $('#print-options');
@@ -6252,26 +6261,33 @@ if (pb) {
                 return;
             }
             
-            // 显示下载STL按钮（即使model-viewer加载慢，用户也能直接下载）
+            // === 立即显示 Meshy 渲染的预览图（小朋友马上能看到自己的作品） ===
+            if (thumbEl && state.meshyThumbnail) {
+                thumbEl.src = state.meshyThumbnail;
+                thumbEl.style.display = 'block';
+                if (svgEl) svgEl.style.display = 'none';
+                if (modelEl) modelEl.style.display = 'none';
+            }
+            
+            // 显示下载按钮（即使model-viewer加载慢，用户也能直接下载）
             if (retryArea) retryArea.style.display = 'block';
             if (directDlBtn && state.meshyStlUrl) directDlBtn.style.display = 'inline-block';
             
-            // 等待 model-viewer 自定义元素注册完成（最多等10秒）
+            // === model-viewer 后台加载 3D 模型 ===
             var mvReady = typeof customElements !== 'undefined' 
                 ? customElements.whenDefined('model-viewer').catch(function() { return null; })
                 : Promise.resolve(null);
             
             mvReady.then(function() {
-                modelEl = $('#meshy-model'); // 重新获取，确保引用最新
+                modelEl = $('#meshy-model');
+                thumbEl = document.getElementById('meshy-thumbnail');
                 
                 if (!modelEl || typeof modelEl.tagName === 'undefined') {
-                    // model-viewer 组件未定义，直接降级
-                    console.warn('[Meshy] model-viewer 未定义，降级显示SVG');
-                    showFallbackSVG();
+                    console.warn('[Meshy] model-viewer 未定义，保留预览图');
+                    showThumbnailFallback();
                     return;
                 }
                 
-                // 先绑定事件监听器（防止竞态条件）
                 var loadFired = false;
                 
                 modelEl.addEventListener('load', function onLoad() {
@@ -6283,18 +6299,16 @@ if (pb) {
                     clearTimeout(hintTimeout);
                     console.log('[Meshy] 3D模型加载完成');
                     
-                    // 更新进度到100%
+                    // 切换到 3D 交互视图
+                    if (thumbEl) thumbEl.style.display = 'none';
+                    modelEl.style.display = 'block';
+                    
                     activateStage(3, 100);
                     if (progress) progress.style.width = '100%';
-                    
-                    // 显示完成状态
                     if (viewer) viewer.classList.add('ready');
                     if (opts) opts.style.display = 'flex';
-                    
-                    // 隐藏重试区域
                     if (retryArea) retryArea.style.display = 'none';
                     
-                    // 启用返回按钮
                     var p9back = $('#btn-back-9');
                     if (p9back) { p9back.disabled = false; p9back.style.opacity = '1'; p9back.style.cursor = 'pointer'; }
                     var p9home = $('#btn-home-p9');
@@ -6311,33 +6325,82 @@ if (pb) {
                     clearTimeout(loadTimeout);
                     clearTimeout(hintTimeout);
                     console.error('[Meshy] 模型加载失败:', e);
-                    showToastMessage('⚠️ 3D预览加载失败，可点击"直接下载STL文件"按钮');
-                    showFallbackSVG();
+                    showToastMessage('⚠️ 3D预览加载失败，已显示预览图。可下载打印文件');
+                    showThumbnailFallback();
                 });
                 
-                // 15秒提示：还在加载中
+                // 15秒提示
                 var hintTimeout = setTimeout(function() {
                     if (!loadFired) {
-                        showToastMessage('⏳ 3D模型仍在加载中，请耐心等待...');
+                        showToastMessage('⏳ 3D模型仍在加载中，预览图已显示...');
                     }
                 }, 15000);
                 
-                // 安全超时：90秒内 model-viewer 没响应就降级
+                // 90秒超时：保留预览图而非默认SVG
                 var loadTimeout = setTimeout(function() {
                     if (loadFired) return;
                     loadFired = true;
                     modelEl.removeEventListener('load', onLoad);
                     modelEl.removeEventListener('error', onError);
-                    console.warn('[Meshy] model-viewer 加载超时(90s)，降级显示SVG');
-                    showToastMessage('⚠️ 3D预览加载超时，已切换为预览图。可点击下方"直接下载STL文件"');
-                    showFallbackSVG();
+                    console.warn('[Meshy] model-viewer 加载超时(90s)，保留预览图');
+                    showToastMessage('⚠️ 3D交互加载超时，已保留预览图。可下载打印文件');
+                    showThumbnailFallback();
                 }, 90000);
                 
-                // 设置模型URL，触发model-viewer加载
+                // 开始加载 3D 模型（后台）
                 modelEl.setAttribute('src', modelUrl);
-                modelEl.style.display = 'block';
-                if (svgEl) svgEl.style.display = 'none';
             });
+            
+            // 无论model-viewer是否成功，都显示完成状态和选项按钮
+            // 进度到90%（留10%给model-viewer加载）
+            activateStage(3, 90);
+            if (progress) progress.style.width = '90%';
+            if (viewer) viewer.classList.add('ready');
+            if (opts) opts.style.display = 'flex';
+            
+            var p9back = $('#btn-back-9');
+            if (p9back) { p9back.disabled = false; p9back.style.opacity = '1'; p9back.style.cursor = 'pointer'; }
+            var p9home = $('#btn-home-p9');
+            if (p9home) { p9home.disabled = false; p9home.style.opacity = '1'; p9home.style.cursor = 'pointer'; }
+        }
+        
+        // 显示Meshy预览图作为最终降级方案（而非默认SVG）
+        function showThumbnailFallback() {
+            var modelEl = $('#meshy-model');
+            var svgEl = $('#model-3d-result');
+            var thumbEl = document.getElementById('meshy-thumbnail');
+            var viewer = $('#model-viewer-3d');
+            var progress = $('#gen-progress-fill');
+            var opts = $('#print-options');
+            var retryArea = document.getElementById('meshy-retry-area');
+            
+            if (modelEl) modelEl.style.display = 'none';
+            
+            // 如果有Meshy预览图，优先显示
+            if (thumbEl && state.meshyThumbnail) {
+                thumbEl.src = state.meshyThumbnail;
+                thumbEl.style.display = 'block';
+                if (svgEl) svgEl.style.display = 'none';
+            } else if (svgEl) {
+                // 没有预览图才用默认SVG
+                svgEl.style.display = 'block';
+                var color = state.selectedColors.length > 0 ? findById(colors, state.selectedColors[0]).hex : '#C45C5C';
+                var m3dBody = $('#m3d-body'); if(m3dBody) m3dBody.setAttribute('fill', color);
+                var m3dHead = $('#m3d-head'); if(m3dHead) m3dHead.setAttribute('fill', color);
+                var m3dHL = $('#m3d-horn-l'); if(m3dHL) m3dHL.setAttribute('fill', color);
+                var m3dHR = $('#m3d-horn-r'); if(m3dHR) m3dHR.setAttribute('fill', color);
+            }
+            
+            if (progress) progress.style.width = '100%';
+            activateStage(3, 100);
+            if (viewer) viewer.classList.add('ready');
+            if (opts) opts.style.display = 'flex';
+            if (retryArea) retryArea.style.display = 'block';
+            
+            var p9back = $('#btn-back-9');
+            if (p9back) { p9back.disabled = false; p9back.style.opacity = '1'; p9back.style.cursor = 'pointer'; }
+            var p9home = $('#btn-home-p9');
+            if (p9home) { p9home.disabled = false; p9home.style.opacity = '1'; p9home.style.cursor = 'pointer'; }
         }
         
         // 降级：显示SVG占位模型
@@ -6624,11 +6687,13 @@ if (pb) {
             // 3D模型重试按钮
             var meshyRetryBtn = document.getElementById('btn-meshy-retry');
             if (meshyRetryBtn) meshyRetryBtn.addEventListener('click', function() {
-                // 隐藏重试按钮和状态面板
+                // 隐藏重试按钮、状态面板和缩略图
                 var retryArea = document.getElementById('meshy-retry-area');
                 if (retryArea) retryArea.style.display = 'none';
                 var statusPanel = document.getElementById('meshy-live-status');
                 if (statusPanel) { statusPanel.style.display = 'none'; statusPanel.style.background = '#FFF8E1'; statusPanel.style.borderColor = '#e6a700'; }
+                var thumbEl = document.getElementById('meshy-thumbnail');
+                if (thumbEl) { thumbEl.style.display = 'none'; thumbEl.removeAttribute('src'); }
                 start3DGeneration();
             });
             
