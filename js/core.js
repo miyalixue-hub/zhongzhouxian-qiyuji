@@ -387,3 +387,93 @@ showPage(2);
                 });
             }
         }
+        // ============ SVG 辅助函数 ============
+        function getPatternSvg(patternId, color) {
+            var strokeColor = 'rgba(255,215,0,0.85)';
+            var fillColor = 'rgba(255,255,255,0.7)';
+            var svgContent = '';
+            switch(patternId) {
+                case 'cloud':
+                    svgContent = '<path d="M28,82 Q38,68 50,82 Q62,96 74,82 Q84,68 92,82" stroke="' + strokeColor + '" stroke-width="2.5" fill="none"/>' +
+                               '<path d="M32,32 Q42,20 52,32 Q58,24 64,32" stroke="' + strokeColor + '" stroke-width="2.5" fill="none"/>' +
+                               '<circle cx="42" cy="76" r="2" fill="' + fillColor + '"/>' +
+                               '<circle cx="68" cy="76" r="2" fill="' + fillColor + '"/>';
+                    break;
+                case 'hui':
+                    svgContent = '<path d="M28,78 L28,88 L38,88 L38,78 L48,78 L48,88 L58,88 L58,78 L68,78 L68,88 L78,88 L78,78 L88,78" stroke="' + strokeColor + '" stroke-width="2.5" fill="none"/>' +
+                               '<path d="M32,38 L32,48 L42,48 L42,38 L52,38 L52,48 L62,48 L62,38 L72,38 L72,48" stroke="' + strokeColor + '" stroke-width="2.5" fill="none"/>';
+                    break;
+                case 'scale':
+                    svgContent = '<circle cx="38" cy="72" r="6" fill="none" stroke="' + strokeColor + '" stroke-width="2"/>' +
+                               '<circle cx="58" cy="72" r="6" fill="none" stroke="' + strokeColor + '" stroke-width="2"/>' +
+                               '<circle cx="48" cy="60" r="6" fill="none" stroke="' + strokeColor + '" stroke-width="2"/>' +
+                               '<circle cx="78" cy="72" r="6" fill="none" stroke="' + strokeColor + '" stroke-width="2"/>' +
+                               '<circle cx="68" cy="60" r="6" fill="none" stroke="' + strokeColor + '" stroke-width="2"/>';
+                    break;
+                case 'ruyi':
+                    svgContent = '<path d="M42,28 Q52,16 60,28 Q68,16 78,28" stroke="' + strokeColor + '" stroke-width="2.5" fill="none"/>' +
+                               '<path d="M48,22 Q60,10 72,22" stroke="' + strokeColor + '" stroke-width="1.5" fill="none"/>' +
+                               '<circle cx="60" cy="88" r="5" fill="' + strokeColor + '"/>' +
+                               '<circle cx="60" cy="88" r="2.5" fill="' + fillColor + '"/>';
+                    break;
+            }
+            return svgContent;
+        }
+
+        function getDecorSvg(elementId) {
+            var svgContent = '';
+            switch(elementId) {
+                case 'cloud_base':
+                    svgContent = '<path d="M20,105 Q35,95 50,105 Q65,115 80,105 Q95,95 100,105" stroke="rgba(196,92,92,0.5)" stroke-width="2" fill="none"/>';
+                    break;
+                case 'map_base':
+                    svgContent = '<rect x="35" y="100" width="50" height="12" stroke="rgba(74,127,181,0.5)" stroke-width="1.5" fill="none" rx="2"/>' +
+                               '<line x1="60" y1="100" x2="60" y2="112" stroke="rgba(74,127,181,0.5)" stroke-width="1" stroke-dasharray="2,1"/>';
+                    break;
+                case 'km_marker':
+                    svgContent = '<circle cx="95" cy="25" r="10" fill="rgba(196,92,92,0.5)"/>' +
+                               '<text x="95" y="29" text-anchor="middle" fill="white" font-size="8" font-weight="bold">中</text>';
+                    break;
+                case 'plaque':
+                    svgContent = '<rect x="10" y="55" width="20" height="12" stroke="rgba(212,168,67,0.5)" stroke-width="1.5" fill="none"/>' +
+                               '<line x1="14" y1="59" x2="26" y2="59" stroke="rgba(212,168,67,0.5)" stroke-width="0.8"/>';
+                    break;
+                case 'archaeology_tag':
+                    svgContent = '<rect x="90" y="60" width="18" height="14" stroke="rgba(107,123,140,0.5)" stroke-width="1.5" fill="rgba(250,248,240,0.8)"/>' +
+                               '<line x1="93" y1="64" x2="105" y2="64" stroke="rgba(107,123,140,0.5)" stroke-width="0.8"/>';
+                    break;
+                case 'custom_tag':
+                    svgContent = '<rect x="5" y="65" width="22" height="10" stroke="rgba(212,168,67,0.5)" stroke-width="1" fill="rgba(250,248,240,0.8)" rx="2"/>' +
+                               '<text x="16" y="73" text-anchor="middle" fill="rgba(212,168,67,0.8)" font-size="5">神兽</text>';
+                    break;
+            }
+            return svgContent;
+        }
+
+        // ============ 重置并返回首页 ============
+        function resetAndGoHome() {
+            state.selectedCreature = null;
+            state.selectedPatterns = [];
+            state.selectedExpression = null;
+            state.selectedColors = [];
+            state.selectedElements = [];
+            state.selectedCandidate = null;
+            state.isTramMode = false;
+            state.tramColor = null;
+            state.tramEra = null;
+            state.tramDecors = [];
+            var selectedCards = $$('.option-card.selected, .pattern-card.selected, .expression-card.selected, .color-card.selected, .element-card.selected');
+            for (var i = 0; i < selectedCards.length; i++) selectedCards[i].classList.remove('selected');
+            var s = $('#result-showcase');
+            if (s) s.remove();
+            var cg2 = $('#candidate-grid');
+            if (cg2) cg2.style.display = '';
+            var cb = $('#btn-confirm-image');
+            if (cb) cb.disabled = true;
+            var p9rb = $('#btn-back-9');
+            if (p9rb) { p9rb.disabled = true; p9rb.style.opacity = '0.4'; p9rb.style.cursor = 'not-allowed'; }
+            var p9hm = $('#btn-home-p9');
+            if (p9hm) { p9hm.disabled = true; p9hm.style.opacity = '0.4'; p9hm.style.cursor = 'not-allowed'; }
+            showPage(0);
+            goBackToMap();
+        }

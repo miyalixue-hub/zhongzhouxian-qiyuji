@@ -982,4 +982,284 @@
                     generatePromptSummary();
                 });
             }
+
+            // ===== 铛铛车提示词页 =====
+            function showTramPromptPage() {
+                var page9 = document.getElementById('page-9');
+                if (!page9) return;
+                var title = page9.querySelector('.page-title');
+                if (title) title.textContent = '确认铛铛车提示词';
+                var subtitle = page9.querySelector('.page-subtitle');
+                if (subtitle) subtitle.textContent = '确认你的铛铛车设计，准备生成';
+                var progressBar = page9.querySelector('.progress-bar');
+                if (progressBar) {
+                    progressBar.innerHTML = '<div class="progress-step"><div class="progress-circle completed">✓</div><div class="progress-label">车身颜色</div></div>' +
+                        '<div class="progress-step"><div class="progress-circle completed">✓</div><div class="progress-label">车型年代</div></div>' +
+                        '<div class="progress-step"><div class="progress-circle completed">✓</div><div class="progress-label">装饰细节</div></div>' +
+                        '<div class="progress-step"><div class="progress-circle active">4</div><div class="progress-label active">确认提示词</div></div>';
+                }
+                var promptTags = page9.querySelector('.prompt-tags');
+                if (promptTags) promptTags.innerHTML = '';
+                generateTramPromptSummary();
+                var genBtn = page9.querySelector('.btn-generate');
+                if (genBtn) genBtn.textContent = '🎨 开始AI生成';
+                var tipText = page9.querySelector('.tip-text');
+                if (tipText) tipText.textContent = '🎯 点击下方按钮开始AI生成你的铛铛车';
+                state.currentPage = 9;
+                document.querySelectorAll('.page-section').forEach(function(p) { p.classList.remove('active'); });
+                page9.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            function generateTramPromptSummary() {
+                var promptDiv = document.querySelector('#page-9 .prompt-text');
+                if (!promptDiv) return;
+                var colorName = '经典绿';
+                var colorHex = '#2E7D32';
+                if (state.tramColor) {
+                    var tc = tramColors.find(function(c) { return c.id === state.tramColor; });
+                    if (tc) { colorName = tc.name; colorHex = tc.hex; }
+                }
+                var eraName = '1924年老式';
+                if (state.tramEra) {
+                    var te = tramEras.find(function(e) { return e.id === state.tramEra; });
+                    if (te) eraName = te.name;
+                }
+                var decorNames = [];
+                if (state.tramDecors && state.tramDecors.length > 0) {
+                    state.tramDecors.forEach(function(d) {
+                        var td = tramDecors.find(function(x) { return x.id === d; });
+                        if (td) decorNames.push(td.name);
+                    });
+                }
+                var prompt = '中国传统手绘风格，北京正阳门前的有轨铛铛车，' + eraName + '，' + colorName + '车身';
+                if (decorNames.length > 0) prompt += '，' + decorNames.join('、');
+                prompt += '，背景是正阳门城楼和前门大街，水墨淡彩风格，传统工笔画质感，8k高清';
+                var summaryHtml = '<div class="tram-prompt-summary">';
+                summaryHtml += '<h3>🚃 铛铛车设计摘要</h3>';
+                summaryHtml += '<div class="prompt-row"><span class="prompt-label">车身颜色:</span> <span style="color:' + colorHex + ';">●</span> ' + colorName + '</div>';
+                summaryHtml += '<div class="prompt-row"><span class="prompt-label">车型年代:</span> ' + eraName + '</div>';
+                if (decorNames.length > 0) summaryHtml += '<div class="prompt-row"><span class="prompt-label">装饰细节:</span> ' + decorNames.join('、') + '</div>';
+                summaryHtml += '<div class="prompt-text-final">' + prompt + '</div>';
+                summaryHtml += '</div>';
+                promptDiv.innerHTML = summaryHtml;
+                var genBtn = document.querySelector('#page-9 .btn-generate');
+                if (genBtn) genBtn.textContent = '🎨 生成铛铛车';
+            }
+
+            // ===== 完成页功能 =====
+            function populateCompletionPage() {
+                var svgWrap = document.getElementById('creature-card-svg-wrap');
+                var nameEl = document.getElementById('creature-card-name');
+                var tagsEl = document.getElementById('creature-card-tags');
+                if (!svgWrap || !nameEl || !tagsEl) return;
+                if (state.isTramMode) {
+                    var tc = tramColors.find(function(c) { return c.id === state.tramColor; }) || tramColors[0];
+                    svgWrap.innerHTML = '<svg width="160" height="120" viewBox="0 0 140 80">' +
+                        '<rect x="10" y="20" width="120" height="35" rx="5" fill="' + tc.hex + '"/>' +
+                        '<rect x="18" y="25" width="20" height="18" rx="2" fill="white" opacity="0.8"/>' +
+                        '<rect x="42" y="25" width="20" height="18" rx="2" fill="white" opacity="0.8"/>' +
+                        '<rect x="66" y="25" width="20" height="18" rx="2" fill="white" opacity="0.8"/>' +
+                        '<rect x="90" y="25" width="20" height="18" rx="2" fill="white" opacity="0.8"/>' +
+                        '<rect x="8" y="12" width="124" height="12" rx="3" fill="#1B5E20"/>' +
+                        '<circle cx="30" cy="60" r="8" fill="#333"/><circle cx="110" cy="60" r="8" fill="#333"/>' +
+                        '<circle cx="30" cy="60" r="4" fill="#666"/><circle cx="110" cy="60" r="4" fill="#666"/>' +
+                        '<line x1="70" y1="12" x2="70" y2="2" stroke="#555" stroke-width="2"/>' +
+                        '<circle cx="70" cy="2" r="3" fill="#FFC107"/>' +
+                        '</svg>';
+                    var te = tramEras.find(function(e) { return e.id === state.tramEra; }) || tramEras[0];
+                    nameEl.textContent = '我的铛铛车';
+                    var tags = [];
+                    tags.push({text: tc.name + '车身', type: 'normal'});
+                    tags.push({text: te.name, type: 'normal'});
+                    if (state.tramDecors && state.tramDecors.length > 0) {
+                        var decorNames = [];
+                        state.tramDecors.forEach(function(d) {
+                            var td = tramDecors.find(function(x) { return x.id === d; });
+                            if (td) decorNames.push(td.name);
+                        });
+                        if (decorNames.length > 0) tags.push({text: '装饰：' + decorNames.join('、'), type: 'gold'});
+                    }
+                    tagsEl.innerHTML = tags.map(function(t) {
+                        return '<span class="creature-card-tag' + (t.type === 'gold' ? ' gold' : '') + '">' + t.text + '</span>';
+                    }).join('');
+                    return;
+                }
+                var modelSvg = document.querySelector('#model-3d-result');
+                if (modelSvg) {
+                    svgWrap.innerHTML = modelSvg.outerHTML.replace('width="100"', 'width="160"').replace('height="100"', 'height="160"');
+                } else {
+                    svgWrap.innerHTML = '<svg width="160" height="160" viewBox="0 0 120 120"><ellipse cx="60" cy="75" rx="35" ry="28" fill="#C45C5C"/><circle cx="60" cy="48" r="26" fill="#C45C5C"/><ellipse cx="34" cy="28" rx="12" ry="18" fill="#C45C5C"/><ellipse cx="86" cy="28" rx="12" ry="18" fill="#C45C5C"/><circle cx="50" cy="45" r="7" fill="white"/><circle cx="70" cy="45" r="7" fill="white"/><circle cx="50" cy="45" r="3.5" fill="#3a2a1a"/><circle cx="70" cy="45" r="3.5" fill="#3a2a1a"/><ellipse cx="60" cy="58" rx="4" ry="2.5" fill="#8B4513"/></svg>';
+                }
+                var cr = state.selectedCreature ? findById(creatures, state.selectedCreature) : null;
+                nameEl.textContent = cr ? cr.name : '我的神兽';
+                var tags = [];
+                if (cr) tags.push({text: cr.desc, type: 'gold'});
+                if (state.selectedPatterns && state.selectedPatterns.length > 0) {
+                    var pnames = state.selectedPatterns.map(function(p) { var pp = findById(patterns, p); return pp ? pp.name : ''; }).filter(Boolean);
+                    if (pnames.length > 0) tags.push({text: '纹饰：' + pnames.join('、'), type: 'normal'});
+                }
+                if (state.selectedExpression) {
+                    var ex = findById(expressions, state.selectedExpression);
+                    if (ex) tags.push({text: ex.emoji + ' ' + ex.name, type: 'normal'});
+                }
+                if (state.selectedColors && state.selectedColors.length > 0) {
+                    var cnames = state.selectedColors.map(function(c) { var cc = findById(colors, c); return cc ? cc.name : ''; }).filter(Boolean);
+                    if (cnames.length > 0) tags.push({text: '配色：' + cnames.join('、'), type: 'normal'});
+                }
+                if (state.selectedElements && state.selectedElements.length > 0) {
+                    var enames = state.selectedElements.map(function(e) { var ee = findById(elements, e); return ee ? ee.name : ''; }).filter(Boolean);
+                    if (enames.length > 0) tags.push({text: '元素：' + enames.join('、'), type: 'normal'});
+                }
+                tagsEl.innerHTML = tags.map(function(t) {
+                    return '<span class="creature-card-tag' + (t.type === 'gold' ? ' gold' : '') + '">' + t.text + '</span>';
+                }).join('');
+            }
+
+            function saveToAlbum() {
+                var canvas = document.createElement('canvas');
+                canvas.width = 750; canvas.height = 1000;
+                var ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#FAF8F0';
+                ctx.fillRect(0, 0, 750, 1000);
+                ctx.strokeStyle = '#c04830'; ctx.lineWidth = 3; ctx.strokeRect(20, 20, 710, 960);
+                ctx.strokeStyle = '#b8943e'; ctx.lineWidth = 1; ctx.strokeRect(25, 25, 700, 950);
+                ctx.font = 'bold 36px KaiTi, STKaiti, serif'; ctx.fillStyle = '#3a2a1a'; ctx.textAlign = 'center';
+                ctx.fillText('中轴奇游记·神兽档案', 375, 70);
+                ctx.strokeStyle = '#c04830'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(100, 90); ctx.lineTo(650, 90); ctx.stroke();
+                var svgWrap = document.getElementById('creature-card-svg-wrap');
+                var svgEl = svgWrap ? svgWrap.querySelector('svg') : null;
+                if (svgEl) {
+                    var svgData = new XMLSerializer().serializeToString(svgEl);
+                    var img = new Image();
+                    img.onload = function() { ctx.drawImage(img, 225, 120, 300, 300); drawRestOfCard(ctx, canvas); };
+                    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+                } else { drawRestOfCard(ctx, canvas); }
+            }
+
+            function drawRestOfCard(ctx, canvas) {
+                ctx.font = 'bold 30px KaiTi, STKaiti, serif'; ctx.fillStyle = '#3a2a1a'; ctx.textAlign = 'center';
+                var creatureName = '';
+                if (state.selectedCreature) { var cr = findById(creatures, state.selectedCreature); if (cr) creatureName = cr.name; }
+                ctx.fillText(creatureName || '我的神兽', 375, 480);
+                ctx.strokeStyle = '#b8943e'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(200, 500); ctx.lineTo(550, 500); ctx.stroke();
+                ctx.font = '22px KaiTi, STKaiti, serif'; ctx.fillStyle = '#3a2a1a';
+                var y = 540;
+                if (state.selectedCreature) { var cr2 = findById(creatures, state.selectedCreature); if (cr2) { ctx.fillText('种类：' + cr2.desc, 375, y); y += 38; } }
+                if (state.selectedPatterns && state.selectedPatterns.length > 0) {
+                    var pnames = state.selectedPatterns.map(function(p) { var pp = findById(patterns, p); return pp ? pp.name : ''; }).filter(Boolean);
+                    if (pnames.length > 0) { ctx.fillText('纹饰：' + pnames.join('、'), 375, y); y += 38; }
+                }
+                if (state.selectedExpression) { var ex = findById(expressions, state.selectedExpression); if (ex) { ctx.fillText('表情：' + ex.emoji + ' ' + ex.name, 375, y); y += 38; } }
+                if (state.selectedColors && state.selectedColors.length > 0) {
+                    var cnames = state.selectedColors.map(function(c) { var cc = findById(colors, c); return cc ? cc.name : ''; }).filter(Boolean);
+                    if (cnames.length > 0) { ctx.fillText('颜色：' + cnames.join('、'), 375, y); y += 38; }
+                }
+                if (state.selectedElements && state.selectedElements.length > 0) {
+                    var enames = state.selectedElements.map(function(e) { var ee = findById(elements, e); return ee ? ee.name : ''; }).filter(Boolean);
+                    if (enames.length > 0) { ctx.fillText('元素：' + enames.join('、'), 375, y); y += 38; }
+                }
+                ctx.font = '16px KaiTi, STKaiti, serif'; ctx.fillStyle = '#7a6a56';
+                ctx.fillText('北京中轴线 · 正阳门·神兽工坊', 375, 900);
+                ctx.fillText(new Date().toLocaleDateString('zh-CN'), 375, 930);
+                canvas.toBlob(function(blob) {
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url; a.download = '我的神兽_' + (creatureName || '档案') + '.png';
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    showSaveSuccess();
+                }, 'image/png');
+            }
+
+            function showSaveSuccess() {
+                var toast = document.createElement('div');
+                toast.className = 'save-success-toast';
+                toast.innerHTML = '✅ 已保存到相册<br><span style="font-size:13px;opacity:0.8;">长按图片可保存到本地</span>';
+                document.body.appendChild(toast);
+                setTimeout(function() { toast.remove(); }, 2500);
+            }
+
+            function shareToParents() {
+                if (navigator.share) {
+                    navigator.share({ title: '我的中轴奇游记·神兽档案', text: '我在中轴奇游记创建了一只专属神兽！快来看看！', url: window.location.href })
+                    .catch(function(err) { if (err.name !== 'AbortError') showShareFallback(); });
+                } else { showShareFallback(); }
+            }
+
+            function showShareFallback() {
+                var sharePanel = document.createElement('div');
+                sharePanel.className = 'share-fallback-panel';
+                sharePanel.innerHTML = '<div class="share-fallback-content">' +
+                    '<h3>📤 分享给家长</h3>' +
+                    '<p>长按复制链接，发送给爸爸妈妈：</p>' +
+                    '<div class="share-url-box">' + window.location.href + '</div>' +
+                    '<button class="btn-copy-url" id="btn-copy-url-action">📋 复制链接</button>' +
+                    '<button class="btn-close-share" id="btn-close-share-action">关闭</button>' +
+                    '</div>';
+                document.body.appendChild(sharePanel);
+                document.getElementById('btn-copy-url-action').addEventListener('click', function() { copyURL(); });
+                document.getElementById('btn-close-share-action').addEventListener('click', function() { sharePanel.remove(); });
+                sharePanel.addEventListener('click', function(e) { if (e.target === sharePanel) sharePanel.remove(); });
+            }
+
+            function copyURL() {
+                var url = window.location.href;
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(url).then(function() {
+                        var btn = document.getElementById('btn-copy-url-action');
+                        if (btn) { btn.textContent = '✅ 已复制！'; setTimeout(function() { btn.textContent = '📋 复制链接'; }, 2000); }
+                    });
+                } else {
+                    var input = document.createElement('input');
+                    input.value = url; input.style.position = 'fixed'; input.style.left = '-9999px';
+                    document.body.appendChild(input); input.select(); document.execCommand('copy');
+                    document.body.removeChild(input);
+                    var btn = document.getElementById('btn-copy-url-action');
+                    if (btn) { btn.textContent = '✅ 已复制！'; setTimeout(function() { btn.textContent = '📋 复制链接'; }, 2000); }
+                }
+            }
+
+            // ===== 神兽天赋签系统 =====
+            var oracleData = {
+                nature: ['天生好奇，见到什么都要凑过去闻一闻','性格憨厚，走路慢吞吞但特别可靠','机灵古怪，总能想出别人想不到的办法','勇敢无畏，遇到危险总是冲在最前面','贪吃成性，路过厨房就走不动路','爱睡懒觉，晴天喜欢在屋顶晒太阳','温柔善良，看到受伤的小鸟会心疼','调皮捣蛋，最爱偷偷藏起别人的东西'],
+                power: ['能召唤细雨，让干涸的土地重新湿润','脚踩生风，跑起来比马还快','力大无穷，能搬动比自己大十倍的石头','会隐身术，想玩捉迷藏时最厉害','能变小，小到可以钻进钥匙孔','能吐水，像消防栓一样扑灭火灾','能听懂动物的语言，和鸟儿聊天','能预知天气，下雨前一天就知道了'],
+                hobby: ['喜欢在屋顶晒太阳，一看就是一下午','最爱吃糖葫芦，尤其是山楂味的','偷偷收集铜钱，床底下藏了一大罐','在城楼上数星星，每晚都数到睡着','喜欢听故事，尤其是老爷爷讲古','爱在护城河边钓鱼，虽然总是钓不到','喜欢在胡同里探险，每个角落都熟悉','爱画画，用爪子在沙地上画各种图案'],
+                origin: ['生于清晨第一缕阳光中，带着朝露的气息','诞生于雷雨交加之夜，伴随着闪电降临','伴随春风而来，桃花盛开的那天醒来','从正阳门的石缝里钻出来，带着古老的记忆','在月圆之夜凝聚月光而成，全身银光闪闪','从一幅古画中走出，带着千年的色彩','在孩童的笑声中诞生，天生就喜欢热闹','从护城河的水底浮起，带着水草的清香']
+            };
+            var fortune = { nature: '', power: '', hobby: '', origin: '', story: '' };
+
+            function drawOracle() {
+                fortune.nature = oracleData.nature[Math.floor(Math.random() * oracleData.nature.length)];
+                fortune.power = oracleData.power[Math.floor(Math.random() * oracleData.power.length)];
+                fortune.hobby = oracleData.hobby[Math.floor(Math.random() * oracleData.hobby.length)];
+                fortune.origin = oracleData.origin[Math.floor(Math.random() * oracleData.origin.length)];
+                fortune.story = '这只神兽' + fortune.origin + '。它' + fortune.nature + '，拥有' + fortune.power + '的能力。平时' + fortune.hobby + '，是正阳门下独一无二的存在。';
+                document.getElementById('oracle-nature').textContent = '天性：' + fortune.nature;
+                document.getElementById('oracle-power').textContent = '神力：' + fortune.power;
+                document.getElementById('oracle-hobby').textContent = '爱好：' + fortune.hobby;
+                document.getElementById('oracle-origin').textContent = '来历：' + fortune.origin;
+                document.getElementById('oracle-story').textContent = fortune.story;
+                document.getElementById('oracle-tube-wrapper').style.display = 'none';
+                document.getElementById('oracle-result').style.display = 'block';
+                if (window.appState) window.appState.fortune = fortune;
+            }
+
+            function showOracleScreen() {
+                document.getElementById('oracle-screen').style.display = 'flex';
+                document.getElementById('oracle-tube-wrapper').style.display = 'block';
+                document.getElementById('oracle-result').style.display = 'none';
+            }
+
+            function hideOracleScreen() {
+                document.getElementById('oracle-screen').style.display = 'none';
+            }
+
+            // Expose globals
+            window.showPage = showPage;
+            window.appState = state;
+            window.generatePromptSummary = generatePromptSummary;
+            window.generateSVGFallback = generateSVGFallback;
         });
