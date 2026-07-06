@@ -4757,7 +4757,7 @@ if (typeof goToStation === 'function') {
                     <!-- 失败重试按钮 -->
                     <div id="meshy-retry-area" style="display:none;text-align:center;margin-top:12px;">
                         <button id="btn-meshy-retry" style="padding:10px 24px;border:none;background:#c04830;color:white;border-radius:8px;font-size:14px;cursor:pointer;font-weight:bold;">🔄 重新生成3D模型</button>
-                        <button id="btn-download-stl-direct" style="display:none;margin-left:8px;padding:10px 24px;border:none;background:#2E7D32;color:white;border-radius:8px;font-size:14px;cursor:pointer;font-weight:bold;">💾 直接下载STL文件</button>
+                        <button id="btn-download-stl-direct" style="display:none;margin-left:8px;padding:10px 24px;border:none;background:#2E7D32;color:white;border-radius:8px;font-size:14px;cursor:pointer;font-weight:bold;">💾 直接下载打印文件</button>
                     </div>
                     
                     <div class="print-options" id="print-options" style="display:none;">
@@ -4941,6 +4941,7 @@ showPage(2);
             _generatedImageUrls: [],
             meshyModelUrl: null,
             meshyStlUrl: null,
+            meshyAllUrls: null,
             meshyTaskId: null
         };
         var creatures = [{ id: 'gongfu', name: '蚣蝮', desc: '镇水兽·龙生九子', color: '#4A7FB5' }, { id: 'chaofeng', name: '嘲风', desc: '殿角兽·好望远', color: '#D4A843' }, { id: 'bixi', name: '赑屃', desc: '碑下兽·好负重', color: '#6B7B8C' }];
@@ -5961,6 +5962,7 @@ if (pb) {
             if (svgEl) svgEl.style.display = 'none';
             state.meshyModelUrl = null;
             state.meshyStlUrl = null;
+            state.meshyAllUrls = null;
             state.meshyTaskId = null;
             
             // 重置进度和阶段
@@ -6028,7 +6030,8 @@ if (pb) {
                     topology: MESHY_CONFIG.topology,
                     target_polycount: MESHY_CONFIG.targetPolycount,
                     should_texture: MESHY_CONFIG.shouldTexture,
-                    enable_pbr: MESHY_CONFIG.enablePbr
+                    enable_pbr: MESHY_CONFIG.enablePbr,
+                    target_formats: ['glb', 'stl', '3mf']
                 };
                 console.log('[Meshy] 提交 image-to-3d 任务（base64模式）');
                 
@@ -6159,14 +6162,19 @@ if (pb) {
                     if (statusPanel) statusPanel.style.display = 'block';
                     
                     if (status === 'SUCCEEDED') {
-                        // 成功！获取模型URL（GLB用于预览，STL用于打印）
+                        // 成功！获取模型URL（GLB用于预览，STL/3MF用于打印）
                         var modelUrls = data.model_urls || {};
                         var glbUrl = modelUrls.glb;
-                        var stlUrl = modelUrls.stl;
+                        var stlUrl = modelUrls.stl || null;
+                        var threemfUrl = modelUrls['3mf'] || null;
                         
-                        console.log('[Meshy] 模型生成成功！', modelUrls);
+                        // 优先使用3MF（打印最佳），其次STL
                         state.meshyModelUrl = glbUrl;
-                        state.meshyStlUrl = stlUrl || null;
+                        state.meshyStlUrl = threemfUrl || stlUrl;
+                        state.meshyAllUrls = modelUrls; // 保存所有格式URL
+                        
+                        console.log('[Meshy] 模型生成成功！可用格式:', Object.keys(modelUrls).join(', '));
+                        console.log('[Meshy] GLB:', glbUrl ? '有' : '无', 'STL:', stlUrl ? '有' : '无', '3MF:', threemfUrl ? '有' : '无');
                         
                         // 隐藏状态面板
                         if (statusPanel) statusPanel.style.display = 'none';
@@ -7072,20 +7080,21 @@ if (pb) {
                     }
                 }
                 
-                // 下载 STL
+                // 下载 STL/3MF（根据实际URL判断格式）
                 if (state.meshyStlUrl) {
                     (function() {
-                        var url = URL.createObjectURL ? null : null;
+                        // 根据URL判断文件扩展名
+                        var stlExt = state.meshyStlUrl.indexOf('.3mf') !== -1 ? '.3mf' : '.stl';
                         fetch(state.meshyStlUrl)
                             .then(function(resp) {
-                                if (!resp.ok) throw new Error('STL下载失败');
+                                if (!resp.ok) throw new Error('打印文件下载失败');
                                 return resp.blob();
                             })
                             .then(function(blob) {
                                 var blobUrl = URL.createObjectURL(blob);
                                 var a = document.createElement('a');
                                 a.href = blobUrl;
-                                a.download = fileName + '.stl';
+                                a.download = fileName + stlExt;
                                 document.body.appendChild(a);
                                 a.click();
                                 document.body.removeChild(a);
@@ -7094,11 +7103,11 @@ if (pb) {
                                 checkAllDone();
                             })
                             .catch(function(err) {
-                                console.error('STL下载失败:', err);
+                                console.error('打印文件下载失败:', err);
                                 // 降级：直接打开链接
                                 var a = document.createElement('a');
                                 a.href = state.meshyStlUrl;
-                                a.download = fileName + '.stl';
+                                a.download = fileName + stlExt;
                                 a.target = '_blank';
                                 document.body.appendChild(a);
                                 a.click();
