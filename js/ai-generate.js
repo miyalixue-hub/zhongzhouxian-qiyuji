@@ -1,0 +1,437 @@
+/**
+ * ai-generate.js - 火山引擎Seedream API调用、图片生成逻辑
+ */
+
+        // ============ AI 图片生成 API 层 ============
+        
+        // 调用火山引擎 Seedream 4.5 API 生成单张图片
+        async function callSeedreamAPI(prompt) {
+            if (!AI_CONFIG.apiKey) {
+                throw new Error('未配置API Key');
+            }
+            var response = await fetch(AI_CONFIG.baseUrl + '/images/generations', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + AI_CONFIG.apiKey
+                },
+                body: JSON.stringify({
+                    model: AI_CONFIG.model,
+                    prompt: prompt,
+                    size: AI_CONFIG.size,
+                    response_format: 'url',
+                    watermark: false
+                })
+            });
+            if (!response.ok) {
+                var errText = '';
+                try { var errData = await response.json(); errText = (errData.error && errData.error.message) ? errData.error.message : JSON.stringify(errData); } catch(e) { errText = response.statusText; }
+                throw new Error('API错误(' + response.status + '): ' + errText);
+            }
+            var data = await response.json();
+            if (data.data && data.data.length > 0 && data.data[0].url) {
+                var url = data.data[0].url;
+                // 立即将临时URL转为base64 data URI，避免URL过期
+                try {
+                    var imgResp = await fetch(url);
+                    var blob = await imgResp.blob();
+                    var dataUri = await new Promise(function(resolve, reject) {
+                        var reader = new FileReader();
+                        reader.onloadend = function() { resolve(reader.result); };
+                        reader.onerror = function() { reject(new Error('base64转换失败')); };
+                        reader.readAsDataURL(blob);
+                    });
+                    console.log('[Seedream] 图片已转为base64，长度:', dataUri.length);
+                    return dataUri;
+                } catch(e) {
+                    console.warn('[Seedream] base64转换失败，使用原始URL:', e);
+                    return url; // 降级：返回原始URL
+                }
+            }
+            throw new Error('API返回数据异常');
+        }
+        
+        // 显示 API Key 设置弹窗
+        function showApiKeyDialog() {
+            var existing = document.getElementById('api-key-dialog');
+            if (existing) existing.remove();
+            
+            var overlay = document.createElement('div');
+            overlay.id = 'api-key-dialog';
+            overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
+            overlay.innerHTML = '<div style="background:#FAF8F0;border-radius:16px;padding:24px;max-width:400px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.3);">' +
+                '<h3 style="margin:0 0 12px;color:#3a2a1a;font-size:16px;">\uD83D\uDD11 设置 AI 图片生成密钥</h3>' +
+                '<p style="font-size:12px;color:#7a6a56;line-height:1.6;margin-bottom:12px;">请输入火山引擎 Ark API Key 以启用 AI 图片生成功能。<br/>获取方式：登录 <a href="https://console.volcengine.com/ark/region:ark+cn-beijing/apikey" target="_blank" style="color:#c04830;">火山引擎控制台</a> 创建 API Key</p>' +
+                '<input id="api-key-input" type="password" placeholder="输入 ARK API Key (如 sk-xxx...)" value="' + (AI_CONFIG.apiKey || '') + '" style="width:100%;padding:10px 12px;border:1.5px solid #e8dcc4;border-radius:8px;font-size:14px;outline:none;margin-bottom:12px;box-sizing:border-box;" />' +
+                '<div style="display:flex;gap:10px;">' +
+                '<button id="api-key-cancel" style="flex:1;padding:10px;border:1.5px solid #e8dcc4;background:white;border-radius:8px;font-size:14px;cursor:pointer;">取消</button>' +
+                '<button id="api-key-save" style="flex:1;padding:10px;border:none;background:#c04830;color:white;border-radius:8px;font-size:14px;cursor:pointer;font-weight:bold;">保存</button>' +
+                '</div></div>';
+            document.body.appendChild(overlay);
+            
+            document.getElementById('api-key-cancel').onclick = function() { overlay.remove(); };
+            document.getElementById('api-key-save').onclick = function() {
+                var val = document.getElementById('api-key-input').value.trim();
+                if (val) {
+                    AI_CONFIG.apiKey = val;
+                    localStorage.setItem('ark_api_key', val);
+                    overlay.remove();
+                    // 重新触发生成
+                    var grid = document.getElementById('candidate-grid');
+                    if (grid && grid.children.length > 0) {
+                        generateCandidates();
+                    }
+                }
+            };
+            overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+            setTimeout(function() { 
+                var inp = document.getElementById('api-key-input');
+                if (inp) inp.focus();
+            }, 100);
+        }
+        
+        // 为候选卡片创建loading状态HTML
+        function createAILoadingHTML(styleName) {
+            return '<div class="ai-loading">' +
+                '<div class="spinner"></div>' +
+                '<div class="loading-label">AI绘制中...</div>' +
+                '</div>';
+        }
+        
+        // 为候选卡片创建图片HTML
+        function createAIImageHTML(url, styleName) {
+            return '<img src="' + url + '" alt="' + styleName + '" loading="lazy" onerror="this.parentNode.innerHTML=\'<div class=&quot;ai-error&quot;>图片加载失败</div>\'"  />';
+        }
+        
+        // AI生成候选方案（通用）
+        async function generateAICandidatesGeneric(grid, basePrompt, stylesConfig) {
+            state._generatedImageUrls = [];
+            
+            // 创建loading卡片
+            stylesConfig.forEach(function(style, i) {
+                var card = document.createElement('div');
+                card.className = 'candidate-card';
+                card.dataset.index = i;
+                var infoHTML = '';
+                if (style.infoHTML) {
+                    infoHTML = style.infoHTML;
+                } else {
+                    infoHTML = '<div class="candidate-info"><div class="candidate-name">' + (style.namePrefix || '方案') + (i+1) + ' · ' + style.name + '</div>' +
+                        '<div class="candidate-style">' + style.desc + '</div></div>';
+                }
+                card.innerHTML = '<div class="candidate-image" style="background:' + style.bg + '">' +
+                    createAILoadingHTML(style.name) +
+                    '</div>' + infoHTML;
+                grid.appendChild(card);
+            });
+            
+            // 并行调用4次API
+            var promises = stylesConfig.map(function(style, i) {
+                var fullPrompt = basePrompt + style.suffix;
+                return callSeedreamAPI(fullPrompt).then(function(url) {
+                    state._generatedImageUrls[i] = url;
+                    return { index: i, url: url, style: style, success: true };
+                }).catch(function(err) {
+                    console.error('候选' + (i+1) + '生成失败:', err);
+                    return { index: i, error: err.message, style: style, success: false };
+                });
+            });
+            
+            var results = await Promise.all(promises);
+            var successCount = 0;
+            
+            // 更新卡片UI
+            results.forEach(function(result) {
+                var card = grid.querySelector('.candidate-card[data-index="' + result.index + '"]');
+                if (!card) return;
+                var imgContainer = card.querySelector('.candidate-image');
+                
+                if (result.success) {
+                    imgContainer.innerHTML = '<img src="' + result.url + '" alt="' + result.style.name + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:4px;" />';
+                    successCount++;
+                    
+                    // 绑定点击选择事件
+                    card.addEventListener('click', (function(idx, st) {
+                        return function() {
+                            var all = grid.querySelectorAll('.candidate-card');
+                            for (var j = 0; j < all.length; j++) all[j].classList.remove('selected');
+                            this.classList.add('selected');
+                            state.selectedCandidate = idx;
+                            var btn = document.getElementById('btn-confirm-image');
+                            if (btn) btn.disabled = false;
+                            var hint = document.getElementById('preview-hint-8');
+                            if (hint) hint.textContent = '已选: 方案' + (idx+1) + ' · ' + st.name;
+                        };
+                    })(result.index, result.style));
+                } else {
+                    imgContainer.innerHTML = '<div class="ai-error">生成失败<br/><span style="font-size:10px;opacity:0.7;">' + (result.error || '').substring(0, 30) + '</span></div>';
+                }
+            });
+            
+            // 全部失败时显示重试
+            if (successCount === 0) {
+                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 20px;">' +
+                    '<div style="font-size:40px;margin-bottom:12px;">\uD83C\uDFA8</div>' +
+                    '<div style="font-size:14px;color:#7a6a56;margin-bottom:16px;">AI图片生成遇到问题</div>' +
+                    '<button onclick="generateCandidates()" style="padding:10px 24px;background:#c04830;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;margin-right:8px;">\uD83D\uDD04 重试</button>' +
+                    '<button onclick="generateSVGFallback()" style="padding:10px 24px;background:white;color:#3a2a1a;border:1.5px solid #e8dcc4;border-radius:8px;font-size:14px;cursor:pointer;">使用示例图</button>' +
+                    '</div>';
+            }
+            
+            return successCount;
+        }
+        
+        // SVG占位图降级方案
+        function generateSVGFallback() {
+            var grid = document.getElementById('candidate-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            if (state.isTramMode) {
+                generateTramCandidatesSVG(grid);
+            } else {
+                generateBeastCandidatesSVG(grid);
+            }
+        }
+        
+        
+        // ============ P8: 候选图片生成 ============
+        // 主入口：候选图片生成（优先AI，降级SVG）
+        async function generateCandidates() {
+            var grid = document.getElementById('candidate-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            
+            // 检查API Key
+            if (!AI_CONFIG.apiKey) {
+                // 无密钥时先显示loading+设置提示
+                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 20px;">' +
+                    '<div style="font-size:40px;margin-bottom:12px;">\uD83C\uDFA8</div>' +
+                    '<div style="font-size:15px;color:#3a2a1a;margin-bottom:8px;font-weight:bold;">AI图片生成已就绪</div>' +
+                    '<div style="font-size:13px;color:#7a6a56;margin-bottom:20px;">需要设置火山引擎 API Key 才能生成AI图片<br/>也可以跳过直接使用示例图</div>' +
+                    '<button onclick="showApiKeyDialog()" style="padding:12px 28px;background:#c04830;color:white;border:none;border-radius:10px;font-size:14px;cursor:pointer;margin-right:10px;font-weight:bold;">\uD83D\uDD11 设置密钥并开始</button>' +
+                    '<button onclick="generateSVGFallback()" style="padding:12px 28px;background:white;color:#3a2a1a;border:1.5px solid #e8dcc4;border-radius:10px;font-size:14px;cursor:pointer;">使用示例图</button>' +
+                    '</div>';
+                return;
+            }
+            
+            // 获取提示词
+            var basePrompt = state._lastAiPrompt || '一只可爱的中国神话小神兽，中国传统风格，3D渲染，干净背景，儿童插画风格，高质量';
+            
+            if (state.isTramMode) {
+                // 铛铛车AI生成
+                var tramStyles = [
+                    { name: '经典复古', desc: '原汁原味老北京', suffix: '，复古怀旧风格，老照片质感，暖黄色调，1920年代老北京氛围', bg: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' },
+                    { name: '现代简约', desc: '清新明快风格', suffix: '，现代简约插画风格，明亮清新的色彩，简洁线条，轻松愉快', bg: 'linear-gradient(135deg, #E3F2FD, #BBDEFB)' },
+                    { name: '金色华贵', desc: '皇家气派', suffix: '，皇家宫廷风格，金黄色调，华丽精致，故宫元素装饰', bg: 'linear-gradient(135deg, #FFF8E1, #FFE082)' },
+                    { name: '水墨丹青', desc: '传统国画风', suffix: '，中国传统水墨画风格，毛笔笔触，淡雅色调，国画质感', bg: 'linear-gradient(135deg, #f5f0e8, #e8dcc8)' }
+                ];
+                await generateAICandidatesGeneric(grid, basePrompt, tramStyles);
+            } else {
+                // 神兽AI生成
+                var beastStyles = [
+                    { name: '水墨写意', desc: '传统国画风', suffix: '，中国传统水墨画风格，毛笔笔触，宣纸质感，黑白灰为主调，留白意境', bg: 'linear-gradient(135deg, #f5f0e8, #e8dcc8)' },
+                    { name: '彩色水墨', desc: '活泼撞色风', suffix: '，现代彩色水墨插画风格，明亮撞色，活泼有趣，儿童绘本质感', bg: 'linear-gradient(135deg, #fff0f0, #f0f0ff)' },
+                    { name: '金碧辉煌', desc: '宫廷华丽风', suffix: '，中国传统宫廷风格，金色为主调，华丽精致，景泰蓝配色，工笔画质感', bg: 'linear-gradient(135deg, #fef9e7, #f5ecd0)' },
+                    { name: '青绿山水', desc: '清新淡雅风', suffix: '，青绿山水风格，石青石绿为主色，千里江山图质感，清新淡雅', bg: 'linear-gradient(135deg, #f0f7f0, #e0efe8)' }
+                ];
+                await generateAICandidatesGeneric(grid, basePrompt, beastStyles);
+            }
+        }
+        
+        
+        
+        // 生成铛铛车候选方案
+        function generateTramCandidatesSVG(grid) {
+            // 获取铛铛车配置
+            var tramColor = tramColors.find(function(c) { return c.id === state.tramColor; }) || tramColors[0];
+            var tramEra = tramEras.find(function(e) { return e.id === state.tramEra; }) || tramEras[0];
+            var decorNames = [];
+            if (state.tramDecors && state.tramDecors.length > 0) {
+                state.tramDecors.forEach(function(d) {
+                    var td = tramDecors.find(function(x) { return x.id === d; });
+                    if (td) decorNames.push(td.name);
+                });
+            }
+            
+            // 生成4个铛铛车候选方案
+            var tramStyles = [
+                { name: '经典复古', desc: '原汁原味老北京', bg: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' },
+                { name: '现代简约', desc: '清新明快风格', bg: 'linear-gradient(135deg, #E3F2FD, #BBDEFB)' },
+                { name: '金色华贵', desc: '皇家气派', bg: 'linear-gradient(135deg, #FFF8E1, #FFE082)' },
+                { name: '水墨丹青', desc: '传统国画风', bg: 'linear-gradient(135deg, #f5f0e8, #e8dcc8)' }
+            ];
+            
+            tramStyles.forEach(function(style, i) {
+                var card = document.createElement('div');
+                card.className = 'candidate-card';
+                card.dataset.index = i;
+                card.innerHTML = '<div class="candidate-image" style="background:' + style.bg + '">' +
+                    '<svg width="140" height="80" viewBox="0 0 140 80">' +
+                    // 车身
+                    '<rect x="20" y="25" width="100" height="35" rx="5" fill="' + tramColor.hex + '"/>' +
+                    // 车窗
+                    '<rect x="28" y="30" width="18" height="18" rx="2" fill="white" opacity="0.8"/>' +
+                    '<rect x="50" y="30" width="18" height="18" rx="2" fill="white" opacity="0.8"/>' +
+                    '<rect x="72" y="30" width="18" height="18" rx="2" fill="white" opacity="0.8"/>' +
+                    '<rect x="94" y="30" width="18" height="18" rx="2" fill="white" opacity="0.8"/>' +
+                    // 车顶
+                    '<rect x="15" y="18" width="110" height="10" rx="3" fill="#1B5E20"/>' +
+                    // 车轮
+                    '<circle cx="35" cy="65" r="8" fill="#333"/>' +
+                    '<circle cx="105" cy="65" r="8" fill="#333"/>' +
+                    '<circle cx="35" cy="65" r="4" fill="#666"/>' +
+                    '<circle cx="105" cy="65" r="4" fill="#666"/>' +
+                    // 集电杆
+                    '<line x1="70" y1="18" x2="70" y2="5" stroke="#555" stroke-width="2"/>' +
+                    '<circle cx="70" cy="4" r="3" fill="#FFC107"/>' +
+                    // 车铃（如果选择了）
+                    (state.tramDecors.indexOf('roof_bell') > -1 ? '<circle cx="120" cy="22" r="4" fill="#FFD700"/>' : '') +
+                    // 车灯（如果选择了）
+                    (state.tramDecors.indexOf('front_lamp') > -1 ? '<circle cx="25" cy="35" r="5" fill="#FFEB3B"/><circle cx="25" cy="35" r="3" fill="#FFF9C4"/>' : '') +
+                    '</svg>' +
+                    '</div>' +
+                    '<div class="candidate-name">' + style.name + '</div>' +
+                    '<div class="candidate-desc">' + tramEra.name + ' · ' + tramColor.name + '</div>' +
+                    '<div class="candidate-tags">' +
+                    (decorNames.length > 0 ? '<span class="tag">装饰: ' + decorNames.join('、') + '</span>' : '') +
+                    '</div>';
+                
+                card.addEventListener('click', function() {
+                    var all = grid.querySelectorAll('.candidate-card');
+                    for (var j = 0; j < all.length; j++) all[j].classList.remove('selected');
+                    this.classList.add('selected');
+                    state.selectedCandidate = i;
+                    state.tramCandidate = {
+                        index: i,
+                        style: style.name,
+                        color: tramColor,
+                        era: tramEra,
+                        decors: decorNames
+                    };
+                    var btn = $('#btn-confirm-image');
+                    if (btn) btn.disabled = false;
+                    var hint = $('#preview-hint-8');
+                    if (hint) hint.textContent = '已选: 方案' + (i+1) + ' · ' + style.name;
+                });
+                grid.appendChild(card);
+            });
+        }
+
+        // 神兽SVG候选方案（降级方案，原generateCandidates逻辑）
+        function generateBeastCandidatesSVG(grid) {
+            var color = state.selectedColors.length > 0 ? findById(colors, state.selectedColors[0]).hex : '#C45C5C';
+            var color2 = state.selectedColors.length > 1 ? findById(colors, state.selectedColors[1]).hex : color;
+            var color3 = state.selectedColors.length > 2 ? findById(colors, state.selectedColors[2]).hex : color;
+            var cr = findById(creatures, state.selectedCreature);
+            var beastColor = cr ? cr.color : color;
+            var ex = state.selectedExpression || 'cute';
+            
+            var styles = [
+                { name: '水墨写意', desc: '传统国画风', bg: 'linear-gradient(135deg, #f5f0e8, #e8dcc8)' },
+                { name: '彩色水墨', desc: '活泼撞色风', bg: 'linear-gradient(135deg, #fff0f0, #f0f0ff)' },
+                { name: '金碧辉煌', desc: '宫廷华丽风', bg: 'linear-gradient(135deg, #fef9e7, #f5ecd0)' },
+                { name: '青绿山水', desc: '清新淡雅风', bg: 'linear-gradient(135deg, #f0f7f0, #e0efe8)' }
+            ];
+            
+            var expressions = { cute: 'M42 52 Q50 58 58 52', fierce: 'M40 54 L50 50 L60 54', cool: 'M42 50 Q50 56 58 50', funny: 'M40 48 Q50 58 60 48' };
+            var eyeStyles = {
+                cute: '<circle cx="43" cy="38" r="3" fill="#333"/><circle cx="59" cy="38" r="3" fill="#333"/>',
+                fierce: '<path d="M38 36 L48 34" stroke="#333" stroke-width="2"/><path d="M52 34 L62 36" stroke="#333" stroke-width="2"/><circle cx="43" cy="38" r="2" fill="#333"/><circle cx="57" cy="38" r="2" fill="#333"/>',
+                cool: '<circle cx="43" cy="38" r="3" fill="#333"/><circle cx="59" cy="38" r="3" fill="#333"/><path d="M40 33 L48 35" stroke="#333" stroke-width="1.5"/><path d="M52 35 L60 33" stroke="#333" stroke-width="1.5"/>',
+                funny: '<circle cx="43" cy="38" r="3" fill="#333"/><ellipse cx="59" cy="38" rx="3" ry="4" fill="#333"/><path d="M55 55 Q60 62 65 55" stroke="#333" stroke-width="1.5" fill="#ff6b6b" opacity="0.6"/>'
+            };
+            
+            var colorSets = [
+                { body: beastColor, head: beastColor, horn: beastColor },
+                { body: color, head: color2, horn: color3 },
+                { body: '#C5A355', head: color, horn: '#C5A355' },
+                { body: '#4A7FB5', head: '#6B9BC7', horn: '#4A7FB5' }
+            ];
+            
+            styles.forEach(function(style, i) {
+                var cs = colorSets[i];
+                var card = document.createElement('div');
+                card.className = 'candidate-card';
+                card.dataset.index = i;
+                card.innerHTML = '<div class="candidate-image" style="background:' + style.bg + '">' +
+                    '<svg width="120" height="120" viewBox="0 0 100 100">' +
+                    '<ellipse cx="50" cy="78" rx="28" ry="7" fill="#E8E0D0"/>' +
+                    '<ellipse cx="50" cy="60" rx="24" ry="17" fill="' + cs.body + '"/>' +
+                    '<circle cx="50" cy="40" r="17" fill="' + cs.head + '"/>' +
+                    '<ellipse cx="32" cy="26" rx="7" ry="11" fill="' + cs.horn + '"/>' +
+                    '<ellipse cx="68" cy="26" rx="7" ry="11" fill="' + cs.horn + '"/>' +
+                    '<circle cx="42" cy="37" r="5" fill="white"/>' +
+                    '<circle cx="58" cy="37" r="5" fill="white"/>' +
+                    eyeStyles[ex] +
+                    '<ellipse cx="50" cy="47" rx="4" ry="3" fill="#333"/>' +
+                    '<path d="' + expressions[ex] + '" stroke="#333" stroke-width="2" fill="none"/>' +
+                    (state.selectedPatterns.length > 0 ? '<path d="M30 65 Q40 60 50 65 Q60 70 70 65" stroke="' + cs.body + '" stroke-width="2" fill="none" opacity="0.5"/>' : '') +
+                    '</svg></div>' +
+                    '<div class="candidate-info"><div class="candidate-name">方案' + (i+1) + ' · ' + style.name + '</div>' +
+                    '<div class="candidate-style">' + style.desc + '</div></div>';
+                
+                card.addEventListener('click', function() {
+                    var all = grid.querySelectorAll('.candidate-card');
+                    for (var j = 0; j < all.length; j++) all[j].classList.remove('selected');
+                    this.classList.add('selected');
+                    state.selectedCandidate = i;
+                    var btn = document.getElementById('btn-confirm-image');
+                    if (btn) btn.disabled = false;
+                    var p8svg = document.getElementById('preview-svg-8');
+                    if (p8svg) {
+                        var bp = document.getElementById('body-part-8'); if(bp) bp.setAttribute('fill', cs.body);
+                        var hp = document.getElementById('head-part-8'); if(hp) hp.setAttribute('fill', cs.head);
+                        var hl = document.getElementById('horn-left-8'); if(hl) hl.setAttribute('fill', cs.horn);
+                        var hr = document.getElementById('horn-right-8'); if(hr) hr.setAttribute('fill', cs.horn);
+                    }
+                    var hint = document.getElementById('preview-hint-8');
+                    if (hint) hint.textContent = '已选: 方案' + (i+1) + ' · ' + style.name;
+                });
+                grid.appendChild(card);
+            });
+        }
+        
+        
+        
+        
+        // 生成铛铛车提示词数据
+        function generateTramPromptData() {
+            var tc = tramColors.find(function(c) { return c.id === state.tramColor; }) || tramColors[0];
+            var te = tramEras.find(function(e) { return e.id === state.tramEra; }) || tramEras[0];
+            var decorNames = [];
+            if (state.tramDecors && state.tramDecors.length > 0) {
+                state.tramDecors.forEach(function(d) {
+                    var td = tramDecors.find(function(x) { return x.id === d; });
+                    if (td) decorNames.push(td.name);
+                });
+            }
+            
+            var summonText = '我设计了一辆' + te.name + '铛铛车，' + tc.name + '车身' + (decorNames.length ? '，配备了' + decorNames.join('和') : '') + '，行驶在正阳门前的老街道上，叮叮当当...';
+            var aiPrompt = '一辆可爱的' + te.name + '北京有轨铛铛车，' + tc.name + '车身（' + tc.hex + '），' + (decorNames.length ? '配备' + decorNames.join('、') + '，' : '') + '背景是正阳门城楼和前门大街，中国传统手绘风格，水墨淡彩质感，3D渲染，干净背景，儿童插画风格，高质量，温馨可爱';
+            
+            var tags = document.querySelector('#page-9 .prompt-tags');
+            if (tags) {
+                tags.innerHTML = '<div class="prompt-tag-dynamic"><span class="prompt-tag-label">类型</span><span>铛铛车</span></div>' +
+                    '<div class="prompt-tag-dynamic"><span class="prompt-tag-label">颜色</span><span>' + tc.name + ' ' + tc.hex + '</span></div>' +
+                    '<div class="prompt-tag-dynamic"><span class="prompt-tag-label">年代</span><span>' + te.name + '</span></div>' +
+                    (decorNames.length > 0 ? '<div class="prompt-tag-dynamic"><span class="prompt-tag-label">装饰</span><span>' + decorNames.join('、') + '</span></div>' : '');
+            }
+            
+            var pb = document.querySelector('#page-9 .prompt-text');
+            if (pb) {
+                pb.innerHTML = '<span style="color:#3a2a1a;font-size:13px;line-height:1.8;display:block;">' + aiPrompt + '</span>';
+                pb.style.display = 'block';
+                pb.style.visibility = 'visible';
+                pb.style.opacity = '1';
+            }
+            
+            state._lastAiPrompt = aiPrompt;
+            return { 
+                summonText: summonText, 
+                isTram: true, 
+                tc: tc, 
+                te: te, 
+                decorNames: decorNames,
+                cr: { name: '铛铛车' }
+            };
+        }
