@@ -435,3 +435,83 @@
                 cr: { name: '铛铛车' }
             };
         }
+
+        // ============ 神兽模式：生成提示词摘要（用于 page-9 展示 + 供 generateCandidates 使用）============
+        function generatePromptSummary() {
+            // 铛铛车模式直接走已有逻辑
+            if (state.isTramMode) {
+                return generateTramPromptData();
+            }
+
+            // 神兽模式
+            var cr = creatures.find(function(c) { return c.id === state.selectedCreature; });
+            if (!cr) { cr = creatures[0]; }
+
+            // 纹饰
+            var patternNames = [];
+            if (state.selectedPatterns && state.selectedPatterns.length > 0) {
+                state.selectedPatterns.forEach(function(p) {
+                    var pt = patterns.find(function(x) { return x.id === p; });
+                    if (pt) patternNames.push(pt.name + '（' + pt.meaning + '）');
+                });
+            }
+
+            // 表情
+            var ex = expressions.find(function(e) { return e.id === state.selectedExpression; });
+            if (!ex) { ex = expressions[0]; }
+
+            // 颜色
+            var colorNames = [];
+            if (state.selectedColors && state.selectedColors.length > 0) {
+                state.selectedColors.forEach(function(c) {
+                    var cc = colors.find(function(x) { return x.id === c; });
+                    if (cc) colorNames.push(cc.name + '（' + cc.hex + '）');
+                });
+            }
+
+            // 装饰元素
+            var elemNames = [];
+            if (state.selectedElements && state.selectedElements.length > 0) {
+                state.selectedElements.forEach(function(e) {
+                    var ee = elements.find(function(x) { return x.id === e; });
+                    if (ee) elemNames.push(ee.name);
+                });
+            }
+
+            var summonText = '我设计了一只' + cr.name + '，' + (patternNames.length ? '身上刻有' + patternNames.join('、') + '，' : '') + '表情' + ex.name + '，' + (colorNames.length ? '配色为' + colorNames.join('、') + '，' : '') + (elemNames.length ? '搭配' + elemNames.join('、') + '装饰。' : '');
+
+            var aiPrompt = '一只可爱的中国神话小神兽「' + cr.name + '」（' + cr.desc + '），' +
+                (patternNames.length ? '表面刻有' + patternNames.join('、') + '纹样，' : '') +
+                '表情' + ex.name + '（' + ex.desc + '），' +
+                (colorNames.length ? '主色调为' + colorNames.join('、') + '，' : '') +
+                (elemNames.length ? '底座/配饰为' + elemNames.join('、') + '，' : '') +
+                '中国传统手绘风格，水墨淡彩质感，3D渲染，干净背景，儿童插画风格，高质量，温馨可爱';
+
+            var tags = document.querySelector('#page-9 .prompt-tags');
+            if (tags) {
+                tags.innerHTML = '<div class="prompt-tag-dynamic"><span class="prompt-tag-label">类型</span><span>' + cr.name + '</span></div>' +
+                    (patternNames.length ? '<div class="prompt-tag-dynamic"><span class="prompt-tag-label">纹饰</span><span>' + patternNames.join('、') + '</span></div>' : '') +
+                    '<div class="prompt-tag-dynamic"><span class="prompt-tag-label">表情</span><span>' + ex.name + ' ' + ex.emoji + '</span></div>' +
+                    (colorNames.length ? '<div class="prompt-tag-dynamic"><span class="prompt-tag-label">颜色</span><span>' + colorNames.join('、') + '</span></div>' : '') +
+                    (elemNames.length ? '<div class="prompt-tag-dynamic"><span class="prompt-tag-label">装饰</span><span>' + elemNames.join('、') + '</span></div>' : '');
+            }
+
+            var pb = document.querySelector('#page-9 .prompt-text');
+            if (pb) {
+                pb.innerHTML = '<span style="color:#3a2a1a;font-size:13px;line-height:1.8;display:block;">' + aiPrompt + '</span>';
+                pb.style.display = 'block';
+                pb.style.visibility = 'visible';
+                pb.style.opacity = '1';
+            }
+
+            state._lastAiPrompt = aiPrompt;
+            return {
+                summonText: summonText,
+                isTram: false,
+                cr: cr,
+                patternNames: patternNames,
+                ex: ex,
+                colorNames: colorNames,
+                elemNames: elemNames
+            };
+        }
