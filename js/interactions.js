@@ -261,6 +261,14 @@
             if (btnBack4c) btnBack4c.addEventListener('click', function() {
                 showPage('4b');
             });
+            } catch(e) {
+                console.error('[INIT ERROR]', e);
+                var banner = document.createElement('div');
+                banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#ff4444;color:white;padding:12px;z-index:999999;font-size:14px;text-align:center;';
+                banner.textContent = '初始化错误: ' + e.message + ' - 请刷新页面或联系管理员';
+                banner.onclick = function(){ this.style.display='none'; };
+                document.body.appendChild(banner);
+            }
         }
         
         // 显示铛铛车确认提示词页面
