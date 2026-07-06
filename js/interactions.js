@@ -4,9 +4,13 @@
  */
 
         function init() {
+            console.log('[INIT] Starting initialization...');
+            try {
             showPage(0);
+            console.log('[INIT] showPage(0) OK, currentPage=' + state.currentPage);
             // 修改page-4的卡片点击事件，区分神兽和铛铛车
             var creatureCards = document.querySelectorAll('#page-4 .option-card');
+            console.log('[INIT] Found ' + creatureCards.length + ' creature cards');
             creatureCards.forEach(function(card) {
                 card.addEventListener('click', function() {
                     var allCards = document.querySelectorAll('#page-4 .option-card');
