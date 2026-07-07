@@ -34,7 +34,7 @@
         var MESHY_CONFIG = {
             // Cloudflare Worker 代理地址（部署后填入）
             // 部署方式：参见仓库中 meshy-proxy.js 文件
-            proxyUrl: localStorage.getItem('meshy_proxy_url') || 'https://red-snowflake-d56d.miya-lixue.workers.dev',
+            proxyUrl: localStorage.getItem('meshy_proxy_url') || 'https://api.mindbubble.cloud',
             // Meshy API Key（用户通过设置面板输入，存储在 localStorage）
             apiKey: localStorage.getItem('meshy_api_key') || '',
             // 3D模型参数
