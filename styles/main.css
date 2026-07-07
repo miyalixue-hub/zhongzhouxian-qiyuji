@@ -26,7 +26,7 @@
         }
         
         body {
-            background: url('assets/bg.jpg') center center / cover no-repeat fixed;
+            background: url('../assets/bg.jpg') center center / cover no-repeat fixed;
             min-height: 100vh;
             font-family: "STKaiti", "KaiTi", "楷体", "PingFang SC", "Microsoft YaHei", serif;
             opacity: 0;
