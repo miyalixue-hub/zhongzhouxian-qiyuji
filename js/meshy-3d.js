@@ -193,13 +193,39 @@
             })
             .catch(function(err) {
                 console.error('[Meshy] 提交任务失败:', err);
-                var detail = '错误: ' + (err.message || String(err)) + '\n';
+                var errStr = err.message || String(err);
+                
+                // 检测是否为认证/密钥错误（401、Unauthorized、Invalid API Key等）
+                var isAuthError = /401|Unauthorized|Invalid API|invalid_api|authentication|auth.*fail|Missing X-Meshy-Key/i.test(errStr);
+                
+                if (isAuthError) {
+                    // 密钥错误：直接弹出重新输入密钥对话框
+                    console.warn('[Meshy] 检测到密钥错误，弹出重新输入对话框');
+                    var statusPanel = document.getElementById('meshy-live-status');
+                    var statusText = document.getElementById('meshy-status-text');
+                    var statusDetail = document.getElementById('meshy-status-detail');
+                    if (statusPanel) { statusPanel.style.background = '#FFF3E0'; statusPanel.style.borderColor = '#FF9800'; statusPanel.style.display = 'block'; }
+                    if (statusText) statusText.innerHTML = '🔑 API Key 无效或已过期';
+                    if (statusDetail) statusDetail.innerHTML = '请重新输入正确的 Meshy API Key';
+                    
+                    // 清除旧密钥并弹出输入框
+                    MESHY_CONFIG.apiKey = '';
+                    localStorage.removeItem('meshy_api_key');
+                    showMeshyKeyDialog(function() {
+                        // 用户输入新密钥后自动重试
+                        start3DGeneration();
+                    });
+                    return;
+                }
+                
+                // 非密钥错误：保持原有行为
+                var detail = '错误: ' + errStr + '\n';
                 detail += '代理: ' + MESHY_CONFIG.proxyUrl + '\n';
                 detail += 'Key: ' + (MESHY_CONFIG.apiKey ? MESHY_CONFIG.apiKey.substring(0,8) + '...' : '无') + '\n';
                 detail += '图片: ' + (imageUrl ? imageUrl.substring(0,50) + '...' : '无');
-                try { showMeshyDebug('提交阶段错误', err.message || String(err), ''); } catch(e2) {}
+                try { showMeshyDebug('提交阶段错误', errStr, ''); } catch(e2) {}
                 alert('🔍 3D生成失败详情:\n\n' + detail);
-                showToastMessage('⚠️ 3D生成失败：' + err.message);
+                showToastMessage('⚠️ 3D生成失败：' + errStr);
                 // 显示重试按钮
                 var retryArea = document.getElementById('meshy-retry-area');
                 if (retryArea) retryArea.style.display = 'block';
@@ -208,7 +234,7 @@
                 var statusDetail = document.getElementById('meshy-status-detail');
                 if (statusPanel) { statusPanel.style.background = '#FFEBEE'; statusPanel.style.borderColor = '#C62828'; statusPanel.style.display = 'block'; }
                 if (statusText) statusText.innerHTML = '❌ 提交失败';
-                if (statusDetail) statusDetail.innerHTML = err.message || String(err);
+                if (statusDetail) statusDetail.innerHTML = errStr;
                 showFallbackSVG();
             });
         }

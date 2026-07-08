@@ -76,11 +76,8 @@
                     AI_CONFIG.apiKey = val;
                     localStorage.setItem('ark_api_key', val);
                     overlay.remove();
-                    // 重新触发生成
-                    var grid = document.getElementById('candidate-grid');
-                    if (grid && grid.children.length > 0) {
-                        generateCandidates();
-                    }
+                    // 保存后自动重新触发生成
+                    setTimeout(function() { generateCandidates(); }, 300);
                 }
             };
             overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
@@ -164,18 +161,39 @@
                         };
                     })(result.index, result.style));
                 } else {
-                    imgContainer.innerHTML = '<div class="ai-error">生成失败<br/><span style="font-size:10px;opacity:0.7;">' + (result.error || '').substring(0, 30) + '</span></div>';
+                    var isKeyErr = /401|403|Unauthorized|Invalid API|invalid.*key/i.test(result.error || '');
+                    imgContainer.innerHTML = '<div class="ai-error">' + (isKeyErr ? '\uD83D\uDD11 密钥无效' : '生成失败') + '<br/><span style="font-size:10px;opacity:0.7;">' + (result.error || '').substring(0, 30) + '</span>' + (isKeyErr ? '<br/><span style="font-size:10px;color:#FF9800;cursor:pointer;text-decoration:underline;" onclick="AI_CONFIG.apiKey=\'\';localStorage.removeItem(\'ark_api_key\');showApiKeyDialog()">重新输入密钥</span>' : '') + '</div>';
                 }
             });
             
             // 全部失败时显示重试
             if (successCount === 0) {
-                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 20px;">' +
-                    '<div style="font-size:40px;margin-bottom:12px;">\uD83C\uDFA8</div>' +
-                    '<div style="font-size:14px;color:#7a6a56;margin-bottom:16px;">AI图片生成遇到问题</div>' +
-                    '<button onclick="generateCandidates()" style="padding:10px 24px;background:#c04830;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;margin-right:8px;">\uD83D\uDD04 重试</button>' +
-                    '<button onclick="generateSVGFallback()" style="padding:10px 24px;background:white;color:#3a2a1a;border:1.5px solid #e8dcc4;border-radius:8px;font-size:14px;cursor:pointer;">使用示例图</button>' +
-                    '</div>';
+                // 检测是否为密钥/认证错误
+                var hasAuthError = results.some(function(r) {
+                    return r.error && /401|403|Unauthorized|Invalid API|invalid.*key|authentication|auth.*fail|未配置API/i.test(r.error);
+                });
+                
+                if (hasAuthError) {
+                    // 密钥错误：清除旧密钥，弹出重新输入
+                    console.warn('[Seedream] 检测到2D生成密钥错误，弹出重新输入对话框');
+                    AI_CONFIG.apiKey = '';
+                    localStorage.removeItem('ark_api_key');
+                    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 20px;">' +
+                        '<div style="font-size:40px;margin-bottom:12px;">\uD83D\uDD11</div>' +
+                        '<div style="font-size:15px;color:#3a2a1a;margin-bottom:8px;font-weight:bold;">API Key 无效或已过期</div>' +
+                        '<div style="font-size:13px;color:#7a6a56;margin-bottom:16px;">请重新输入正确的火山引擎 API Key</div>' +
+                        '<button onclick="showApiKeyDialog()" style="padding:12px 28px;background:#c04830;color:white;border:none;border-radius:10px;font-size:14px;cursor:pointer;margin-right:10px;font-weight:bold;">\uD83D\uDD11 重新输入密钥</button>' +
+                        '<button onclick="generateSVGFallback()" style="padding:12px 28px;background:white;color:#3a2a1a;border:1.5px solid #e8dcc4;border-radius:10px;font-size:14px;cursor:pointer;">使用示例图</button>' +
+                        '</div>';
+                } else {
+                    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 20px;">' +
+                        '<div style="font-size:40px;margin-bottom:12px;">\uD83C\uDFA8</div>' +
+                        '<div style="font-size:14px;color:#7a6a56;margin-bottom:16px;">AI图片生成遇到问题</div>' +
+                        '<button onclick="generateCandidates()" style="padding:10px 24px;background:#c04830;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;margin-right:8px;">\uD83D\uDD04 重试</button>' +
+                        '<button onclick="generateSVGFallback()" style="padding:10px 24px;background:white;color:#3a2a1a;border:1.5px solid #e8dcc4;border-radius:8px;font-size:14px;cursor:pointer;">使用示例图</button>' +
+                        '<br/><a href="javascript:void(0)" onclick="AI_CONFIG.apiKey=\'\';localStorage.removeItem(\'ark_api_key\');showApiKeyDialog()" style="display:inline-block;margin-top:12px;font-size:12px;color:#FF9800;text-decoration:underline;font-weight:bold;">\uD83D\uDD11 密钥不对？点击重新输入</a>' +
+                        '</div>';
+                }
             }
             
             return successCount;
