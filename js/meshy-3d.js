@@ -434,7 +434,7 @@
                 
                 var loadFired = false;
                 
-                modelEl.addEventListener('load', function onLoad() {
+                var onLoad = function() {
                     if (loadFired) return;
                     loadFired = true;
                     modelEl.removeEventListener('load', onLoad);
@@ -464,9 +464,9 @@
                     
                     // 启动打印体检报告动画（延迟1秒让界面稳定）
                     setTimeout(function() { runPrintabilityCheck(); }, 1000);
-                });
+                };
                 
-                modelEl.addEventListener('error', function onError(e) {
+                var onError = function(e) {
                     if (loadFired) return;
                     loadFired = true;
                     modelEl.removeEventListener('load', onLoad);
@@ -476,7 +476,10 @@
                     console.error('[Meshy] 模型加载失败:', e);
                     showToastMessage('⚠️ 3D预览加载失败，已显示预览图。可下载打印文件');
                     showThumbnailFallback();
-                });
+                };
+                
+                modelEl.addEventListener('load', onLoad);
+                modelEl.addEventListener('error', onError);
                 
                 // 15秒提示
                 var hintTimeout = setTimeout(function() {
