@@ -1448,15 +1448,54 @@ if (typeof goToStation === 'function') {
                     </div>
                     
                     <div class="print-options" id="print-options" style="display:none;">
-                        <div style="text-align:center;margin-bottom:16px;">
-                            <div style="font-size:18px;font-weight:600;color:var(--text-dark);">✅ 3D模型已就绪！</div>
-                            <div style="font-size:13px;color:var(--text-light);margin-top:4px;">适配拓竹A2L打印机 · 预计打印时间约45分钟</div>
+                        <!-- 第二步：打印体检报告 -->
+                        <div id="printability-report" style="display:none;text-align:left;margin-bottom:20px;">
+                            <div style="text-align:center;margin-bottom:16px;">
+                                <div style="font-size:20px;font-weight:700;color:var(--text-dark);">🏥 模型体检报告</div>
+                                <div style="font-size:13px;color:var(--text-light);margin-top:4px;" id="report-model-name"></div>
+                            </div>
+                            <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;">
+                                <span style="font-size:12px;color:#7a6a56;">身高</span>
+                                <span id="report-height" style="font-size:14px;font-weight:600;color:#c04830;">--</span>
+                                <span style="font-size:12px;color:#7a6a56;margin-left:12px;">宽度</span>
+                                <span id="report-width" style="font-size:14px;font-weight:600;color:#c04830;">--</span>
+                            </div>
+                            <div id="report-items" style="display:flex;flex-direction:column;gap:10px;">
+                            </div>
+                            <div id="report-score" style="display:none;text-align:center;margin-top:16px;padding:12px;background:linear-gradient(135deg,#FFF8E1,#FFECB3);border-radius:12px;">
+                                <div id="report-stars" style="font-size:24px;margin-bottom:4px;"></div>
+                                <div id="report-verdict" style="font-size:14px;font-weight:700;color:#c04830;"></div>
+                            </div>
+                            <div style="text-align:center;margin-top:16px;">
+                                <button id="btn-show-download" style="padding:12px 32px;background:#c04830;color:white;border:none;border-radius:10px;font-size:15px;cursor:pointer;font-weight:700;">📥 下载模型</button>
+                            </div>
                         </div>
-                        <button class="btn-3d-print" id="btn-3d-print">🖨️ 联系打印服务</button>
-                        <button class="btn-save-3d" id="btn-download-stl">💾 下载3D模型 + 工单</button>
-                        <button class="btn-save-3d" id="btn-save-profile-3d">📋 保存神兽档案</button>
-                        <a href="javascript:showMeshyKeyDialog()" style="display:block;text-align:center;margin-top:8px;font-size:11px;color:#7a6a56;text-decoration:underline;">⚙️ 设置3D生成密钥</a>
-                        <button class="btn-restart" id="btn-restart-3d">🔄 重新创造一只</button>
+                        
+                        <!-- 第三步：下载面板 -->
+                        <div id="download-panel" style="display:none;text-align:center;">
+                            <div style="text-align:center;margin-bottom:16px;">
+                                <div style="font-size:20px;font-weight:700;color:var(--text-dark);">📦 打包你的神兽</div>
+                                <div style="font-size:13px;color:var(--text-light);margin-top:4px;">选择格式下载，发给老师去打印</div>
+                            </div>
+                            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;">
+                                <div id="dl-card-stl" style="flex:1;min-width:120px;max-width:150px;padding:16px 10px;background:white;border:2px solid #e8dcc4;border-radius:14px;cursor:pointer;transition:all 0.2s;" onclick="downloadModelFile('stl')">
+                                    <div style="font-size:30px;margin-bottom:6px;">📄</div>
+                                    <div style="font-size:15px;font-weight:700;color:var(--text-dark);">STL</div>
+                                    <div style="font-size:11px;color:#7a6a56;margin-top:4px;line-height:1.4;">通用格式<br/>所有打印机都能用</div>
+                                </div>
+                                <div id="dl-card-3mf" style="flex:1;min-width:120px;max-width:150px;padding:16px 10px;background:white;border:2px solid #c04830;border-radius:14px;cursor:pointer;position:relative;transition:all 0.2s;" onclick="downloadModelFile('3mf')">
+                                    <div style="position:absolute;top:-8px;right:-8px;background:#c04830;color:white;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;">推荐</div>
+                                    <div style="font-size:30px;margin-bottom:6px;">📦</div>
+                                    <div style="font-size:15px;font-weight:700;color:#c04830;">3MF</div>
+                                    <div style="font-size:11px;color:#7a6a56;margin-top:4px;line-height:1.4;">带颜色信息<br/>打印效果更好</div>
+                                </div>
+                            </div>
+                            <div style="font-size:11px;color:#a0884a;margin-bottom:14px;">💡 不知道选哪个？选 3MF 就对了！</div>
+                            <button class="btn-save-3d" id="btn-download-stl">💾 下载3D模型 + 工单</button>
+                            <button class="btn-save-3d" id="btn-save-profile-3d">📋 保存神兽档案</button>
+                            <a href="javascript:showMeshyKeyDialog()" style="display:block;text-align:center;margin-top:8px;font-size:11px;color:#7a6a56;text-decoration:underline;">⚙️ 设置3D生成密钥</a>
+                            <button class="btn-restart" id="btn-restart-3d">🔄 重新创造一只</button>
+                        </div>
                     </div>
                     <a href="javascript:showMeshyKeyDialog()" id="meshy-key-link" style="display:block;text-align:center;margin-top:12px;font-size:12px;color:#7a6a56;text-decoration:underline;">⚙️ 设置3D生成密钥</a>
                 </div>

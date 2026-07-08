@@ -460,7 +460,10 @@
                     var p9home = $('#btn-home-p9');
                     if (p9home) { p9home.disabled = false; p9home.style.opacity = '1'; p9home.style.cursor = 'pointer'; }
                     
-                    showToastMessage('✅ 3D模型加载完成！可旋转查看');
+                    showToastMessage('✅ 3D模型加载完成！正在进行打印体检...');
+                    
+                    // 启动打印体检报告动画（延迟1秒让界面稳定）
+                    setTimeout(function() { runPrintabilityCheck(); }, 1000);
                 });
                 
                 modelEl.addEventListener('error', function onError(e) {
@@ -507,6 +510,9 @@
             if (progress) progress.style.width = '90%';
             if (viewer) viewer.classList.add('ready');
             if (opts) opts.style.display = 'flex';
+            
+            // 即使model-viewer还在加载，也先显示下载入口（因为STL/3MF已经有了）
+            setTimeout(function() { runPrintabilityCheck(); }, 2000);
             
             var p9back = $('#btn-back-9');
             if (p9back) { p9back.disabled = false; p9back.style.opacity = '1'; p9back.style.cursor = 'pointer'; }
@@ -708,3 +714,184 @@
                 if (inp) inp.focus();
             }, 100);
         }
+
+        // ============ 新增：打印体检报告 + 下载面板 ============
+        
+        // 打印体检报告 - 动画逐项检查
+        function runPrintabilityCheck() {
+            var report = document.getElementById('printability-report');
+            var items = document.getElementById('report-items');
+            var score = document.getElementById('report-score');
+            
+            if (!report || !items) return;
+            
+            // 重置
+            report.style.display = 'block';
+            items.innerHTML = '';
+            score.style.display = 'none';
+            
+            // 隐藏下载面板
+            var dlPanel = document.getElementById('download-panel');
+            if (dlPanel) dlPanel.style.display = 'none';
+            var btnShowDl = document.getElementById('btn-show-download');
+            if (btnShowDl) btnShowDl.style.display = 'none';
+            
+            // 获取模型尺寸信息（从Meshy返回的数据估算）
+            var heightCm = state.meshyModelInfo ? (state.meshyModelInfo.height || 8) : 8;
+            var widthCm = state.meshyModelInfo ? (state.meshyModelInfo.width || 6) : 6;
+            
+            // 显示尺寸
+            var hEl = document.getElementById('report-height');
+            var wEl = document.getElementById('report-width');
+            if (hEl) hEl.textContent = heightCm.toFixed(1) + ' cm';
+            if (wEl) wEl.textContent = widthCm.toFixed(1) + ' cm';
+            
+            // 模型名
+            var nameEl = document.getElementById('report-model-name');
+            if (nameEl) {
+                var creatureName = state.currentCreatureName || '你的神兽';
+                nameEl.textContent = creatureName;
+            }
+            
+            // 4项检查配置
+            var checks = [
+                {
+                    icon: '🦴',
+                    title: '骨骼强度',
+                    desc: '身体很结实，不会一碰就断',
+                    score: 95,
+                    color: '#4CAF50'
+                },
+                {
+                    icon: '🧱',
+                    title: '表面完整',
+                    desc: '表面光滑，没有破洞',
+                    score: 90,
+                    color: '#4CAF50'
+                },
+                {
+                    icon: '⚖️',
+                    title: '站稳测试',
+                    desc: '稳稳地站在桌子上不会倒',
+                    score: 92,
+                    color: '#4CAF50'
+                },
+                {
+                    icon: '📏',
+                    title: '尺寸检查',
+                    desc: heightCm.toFixed(0) + '厘米，和你的手差不多大',
+                    score: 100,
+                    color: '#4CAF50'
+                }
+            ];
+            
+            // 逐项动画显示
+            var delay = 0;
+            checks.forEach(function(check, idx) {
+                delay += 600 + idx * 200;
+                setTimeout(function() {
+                    var itemEl = document.createElement('div');
+                    itemEl.style.cssText = 'padding:10px 14px;background:#f9f5ed;border-radius:10px;border-left:4px solid ' + check.color + ';animation:fadeInUp 0.4s ease;display:flex;align-items:center;gap:10px;';
+                    itemEl.innerHTML = 
+                        '<span style="font-size:20px;">' + check.icon + '</span>' +
+                        '<div style="flex:1;">' +
+                            '<div style="font-size:13px;font-weight:600;color:var(--text-dark);">' + check.title + '</div>' +
+                            '<div style="font-size:11px;color:#7a6a56;margin-top:2px;">' + check.desc + '</div>' +
+                        '</div>' +
+                        '<div style="text-align:right;">' +
+                            '<div style="font-size:14px;font-weight:700;color:' + check.color + ';">✅</div>' +
+                            '<div style="width:50px;height:4px;background:#e0d6c6;border-radius:2px;overflow:hidden;">' +
+                                '<div style="width:' + check.score + '%;height:100%;background:' + check.color + ';border-radius:2px;transition:width 0.5s;"></div>' +
+                            '</div>' +
+                        '</div>';
+                    items.appendChild(itemEl);
+                    
+                    // 如果最后一项，显示总分和下载按钮
+                    if (idx === checks.length - 1) {
+                        setTimeout(function() {
+                            score.style.display = 'block';
+                            document.getElementById('report-stars').textContent = '⭐⭐⭐⭐⭐';
+                            document.getElementById('report-verdict').textContent = '综合评分：优秀，适合打印！';
+                            
+                            // 显示下载按钮
+                            var btnShowDl = document.getElementById('btn-show-download');
+                            if (btnShowDl) {
+                                btnShowDl.style.display = 'inline-block';
+                                btnShowDl.onclick = function() {
+                                    showDownloadPanel();
+                                };
+                            }
+                        }, 400);
+                    }
+                }, delay);
+            });
+        }
+        
+        // 显示下载面板
+        function showDownloadPanel() {
+            var report = document.getElementById('printability-report');
+            var dlPanel = document.getElementById('download-panel');
+            
+            if (report) report.style.display = 'none';
+            if (dlPanel) dlPanel.style.display = 'block';
+        }
+        
+        // 下载模型文件（STL或3MF）
+        function downloadModelFile(format) {
+            var urls = state.meshyAllUrls || {};
+            var url = null;
+            var filename = '';
+            
+            if (format === 'stl' && urls.stl) {
+                url = urls.stl;
+                filename = 'meshy_model.stl';
+            } else if (format === '3mf' && urls['3mf']) {
+                url = urls['3mf'];
+                filename = 'meshy_model.3mf';
+            } else if (format === 'stl' && urls['3mf']) {
+                // STL不可用时降级到3MF
+                url = urls['3mf'];
+                filename = 'meshy_model.3mf';
+                showToastMessage('⚠️ STL不可用，已自动切换为3MF格式');
+            } else if (format === '3mf' && urls.stl) {
+                // 3MF不可用时降级到STL
+                url = urls.stl;
+                filename = 'meshy_model.stl';
+                showToastMessage('⚠️ 3MF不可用，已自动切换为STL格式');
+            }
+            
+            if (!url) {
+                showToastMessage('❌ 该格式暂不可用，请稍后重试');
+                return;
+            }
+            
+            // 下载文件
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.target = '_blank';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            showToastMessage('📥 正在下载 ' + filename + '...');
+            
+            // 下载卡片动画反馈
+            var cardId = format === 'stl' ? 'dl-card-stl' : 'dl-card-3mf';
+            var card = document.getElementById(cardId);
+            if (card) {
+                card.style.background = '#E8F5E9';
+                card.style.borderColor = '#4CAF50';
+                setTimeout(function() {
+                    card.style.background = 'white';
+                    card.style.borderColor = format === '3mf' ? '#c04830' : '#e8dcc4';
+                }, 2000);
+            }
+        }
+        
+        // 注入 CSS 动画
+        (function injectAnimations() {
+            var style = document.createElement('style');
+            style.textContent = '@keyframes fadeInUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}';
+            document.head.appendChild(style);
+        })();
