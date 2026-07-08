@@ -191,7 +191,7 @@
                         '<div style="font-size:14px;color:#7a6a56;margin-bottom:16px;">AI图片生成遇到问题</div>' +
                         '<button onclick="generateCandidates()" style="padding:10px 24px;background:#c04830;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;margin-right:8px;">\uD83D\uDD04 重试</button>' +
                         '<button onclick="generateSVGFallback()" style="padding:10px 24px;background:white;color:#3a2a1a;border:1.5px solid #e8dcc4;border-radius:8px;font-size:14px;cursor:pointer;">使用示例图</button>' +
-                        '<br/><a href="javascript:void(0)" onclick="AI_CONFIG.apiKey=\'\';localStorage.removeItem(\'ark_api_key\');showApiKeyDialog()" style="display:inline-block;margin-top:12px;font-size:12px;color:#FF9800;text-decoration:underline;font-weight:bold;">\uD83D\uDD11 密钥不对？点击重新输入</a>' +
+                        '<br/><a href="javascript:void(0)" onclick="AI_CONFIG.apiKey=\'\';localStorage.removeItem(\'ark_api_key\');showApiKeyDialog()" style="display:inline-block;margin-top:12px;font-size:13px;color:#FF9800;text-decoration:underline;font-weight:bold;">\uD83D\uDD11 密钥不对？点击重新输入</a>' +
                         '</div>';
                 }
             }
