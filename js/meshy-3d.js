@@ -18,8 +18,8 @@
                 '<b>阶段:</b> ' + stage + '<br/>' +
                 '<b>错误:</b> ' + (message || '无') + '<br/>' +
                 (detail ? '<b>详情:</b> ' + detail : '') + '<br/>' +
-                '<b>API Key:</b> ' + (MESHY_CONFIG.apiKey ? MESHY_CONFIG.apiKey.substring(0, 8) + '...' : '未设置') + '<br/>' +
                 '<b>代理地址:</b> ' + MESHY_CONFIG.proxyUrl + '<br/>' +
+                '<b>密钥管理:</b> 服务端<br/>' +
                 '<span style="cursor:pointer;color:#c04830;font-weight:bold;" onclick="this.parentNode.remove()">点击关闭</span>';
         }
         
@@ -89,15 +89,8 @@
             var p9hm = $('#btn-home-p9');
             if (p9hm) { p9hm.disabled = true; p9hm.style.opacity = '0.4'; p9hm.style.cursor = 'not-allowed'; }
             
-            // 检查 Meshy API Key
-            if (!MESHY_CONFIG.apiKey) {
-                console.warn('[Meshy] 未配置 API Key，使用降级SVG模型');
-                showMeshyKeyDialog(function() {
-                    // 用户输入后重试
-                    start3DGeneration();
-                });
-                return;
-            }
+            // API Key 由 Worker 服务端管理，前端无需检查
+            // 如果服务端未配置，会在请求时返回 500 错误
             
             // 获取选中的AI生成图片URL
             var imageUrl = null;
@@ -148,8 +141,7 @@
                 return fetch(MESHY_CONFIG.proxyUrl + '/api/image-to-3d', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-Meshy-Key': MESHY_CONFIG.apiKey
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(requestBody)
                 }).then(function(resp) {
@@ -195,33 +187,36 @@
                 console.error('[Meshy] 提交任务失败:', err);
                 var errStr = err.message || String(err);
                 
-                // 检测是否为认证/密钥错误（401、Unauthorized、Invalid API Key等）
-                var isAuthError = /401|Unauthorized|Invalid API|invalid_api|authentication|auth.*fail|Missing X-Meshy-Key/i.test(errStr);
-                
-                if (isAuthError) {
-                    // 密钥错误：直接弹出重新输入密钥对话框
-                    console.warn('[Meshy] 检测到密钥错误，弹出重新输入对话框');
+                // 检测服务端配置错误（500 + 未配置）
+                var isServerConfigError = /服务端未配置|500.*未配置/.test(errStr);
+                if (isServerConfigError) {
                     var statusPanel = document.getElementById('meshy-live-status');
                     var statusText = document.getElementById('meshy-status-text');
                     var statusDetail = document.getElementById('meshy-status-detail');
                     if (statusPanel) { statusPanel.style.background = '#FFF3E0'; statusPanel.style.borderColor = '#FF9800'; statusPanel.style.display = 'block'; }
-                    if (statusText) statusText.innerHTML = '🔑 API Key 无效或已过期';
-                    if (statusDetail) statusDetail.innerHTML = '请重新输入正确的 Meshy API Key';
-                    
-                    // 清除旧密钥并弹出输入框
-                    MESHY_CONFIG.apiKey = '';
-                    localStorage.removeItem('meshy_api_key');
-                    showMeshyKeyDialog(function() {
-                        // 用户输入新密钥后自动重试
-                        start3DGeneration();
-                    });
+                    if (statusText) statusText.innerHTML = '⚙️ 服务尚未配置';
+                    if (statusDetail) statusDetail.innerHTML = '请联系管理员配置 API Key';
+                    showFallbackSVG();
                     return;
                 }
                 
-                // 非密钥错误：保持原有行为
+                // 检测限流
+                var isRateLimited = /429|请求太频繁/.test(errStr);
+                if (isRateLimited) {
+                    var statusPanel = document.getElementById('meshy-live-status');
+                    var statusText = document.getElementById('meshy-status-text');
+                    var statusDetail = document.getElementById('meshy-status-detail');
+                    if (statusPanel) { statusPanel.style.background = '#FFF3E0'; statusPanel.style.borderColor = '#FF9800'; statusPanel.style.display = 'block'; }
+                    if (statusText) statusText.innerHTML = '⏳ 请求太频繁';
+                    if (statusDetail) statusDetail.innerHTML = '请稍后再试';
+                    var retryArea = document.getElementById('meshy-retry-area');
+                    if (retryArea) retryArea.style.display = 'block';
+                    return;
+                }
+                
+                // 其他错误：显示调试信息
                 var detail = '错误: ' + errStr + '\n';
                 detail += '代理: ' + MESHY_CONFIG.proxyUrl + '\n';
-                detail += 'Key: ' + (MESHY_CONFIG.apiKey ? MESHY_CONFIG.apiKey.substring(0,8) + '...' : '无') + '\n';
                 detail += '图片: ' + (imageUrl ? imageUrl.substring(0,50) + '...' : '无');
                 try { showMeshyDebug('提交阶段错误', errStr, ''); } catch(e2) {}
                 alert('🔍 3D生成失败详情:\n\n' + detail);
@@ -278,10 +273,7 @@
             
             setTimeout(function() {
                 fetch(MESHY_CONFIG.proxyUrl + '/api/image-to-3d/' + taskId, {
-                    method: 'GET',
-                    headers: {
-                        'X-Meshy-Key': MESHY_CONFIG.apiKey
-                    }
+                    method: 'GET'
                 })
                 .then(function(resp) { return resp.json(); })
                 .then(function(data) {
@@ -601,121 +593,11 @@
             if (p9home) { p9home.disabled = false; p9home.style.opacity = '1'; p9home.style.cursor = 'pointer'; }
         }
         
-        // 显示 Meshy API Key 输入对话框
+        // API Key 由服务端管理，此函数改为显示提示信息
         function showMeshyKeyDialog(onSuccess) {
-            var existing = document.getElementById('meshy-key-dialog');
-            if (existing) existing.remove();
-            
-            var overlay = document.createElement('div');
-            overlay.id = 'meshy-key-dialog';
-            overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
-            overlay.innerHTML = '<div style="background:#FAF8F0;border-radius:16px;padding:24px;max-width:420px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.3);">' +
-                '<h3 style="margin:0 0 12px;color:#3a2a1a;font-size:16px;">🎮 设置 3D 模型生成密钥</h3>' +
-                '<p style="font-size:12px;color:#7a6a56;line-height:1.6;margin-bottom:8px;">需要 Meshy API Key 才能将神兽变成3D模型。<br/>获取方式：登录 <a href="https://www.meshy.ai/settings/api" target="_blank" style="color:#c04830;">meshy.ai/settings/api</a></p>' +
-                '<div style="background:#FFF8E1;border-radius:8px;padding:10px;margin-bottom:12px;font-size:11px;color:#7a6a56;line-height:1.5;">' +
-                '💡 Meshy Pro 会员每天有免费积分额度<br/>' +
-                '🔒 密钥仅保存在你的浏览器中，不会上传服务器</div>' +
-                '<label style="font-size:12px;color:#3a2a1a;font-weight:600;display:block;margin-bottom:4px;">Meshy API Key</label>' +
-                '<input id="meshy-key-input" type="password" placeholder="输入 Meshy Key (如 msy_xxx...)" value="' + (MESHY_CONFIG.apiKey || '') + '" style="width:100%;padding:10px 12px;border:1.5px solid #e8dcc4;border-radius:8px;font-size:14px;outline:none;margin-bottom:12px;box-sizing:border-box;" />' +
-                '<label style="font-size:12px;color:#3a2a1a;font-weight:600;display:block;margin-bottom:4px;">代理服务器地址 <span style="font-weight:400;color:#7a6a56;">(Cloudflare Worker URL)</span></label>' +
-                '<input id="meshy-proxy-input" type="text" placeholder="https://your-worker.workers.dev" value="' + (MESHY_CONFIG.proxyUrl || '') + '" style="width:100%;padding:10px 12px;border:1.5px solid #e8dcc4;border-radius:8px;font-size:13px;outline:none;margin-bottom:16px;box-sizing:border-box;" />' +
-                '<div id="meshy-test-result" style="display:none;margin-bottom:12px;padding:10px;border-radius:8px;font-size:12px;line-height:1.5;"></div>' +
-                '<div style="display:flex;gap:10px;">' +
-                '<button id="meshy-key-cancel" style="flex:1;padding:10px;border:1.5px solid #e8dcc4;background:white;border-radius:8px;font-size:14px;cursor:pointer;">取消</button>' +
-                '<button id="meshy-key-test" style="flex:1;padding:10px;border:1.5px solid #c04830;background:white;color:#c04830;border-radius:8px;font-size:14px;cursor:pointer;font-weight:bold;">🔍 测试连接</button>' +
-                '<button id="meshy-key-save" style="flex:1;padding:10px;border:none;background:#c04830;color:white;border-radius:8px;font-size:14px;cursor:pointer;font-weight:bold;">保存并开始</button>' +
-                '</div></div>';
-            document.body.appendChild(overlay);
-            
-            document.getElementById('meshy-key-cancel').onclick = function() { 
-                overlay.remove(); 
-                showFallbackSVG();
-            };
-            document.getElementById('meshy-key-test').onclick = function() {
-                var key = document.getElementById('meshy-key-input').value.trim();
-                var proxy = document.getElementById('meshy-proxy-input').value.trim();
-                var resultDiv = document.getElementById('meshy-test-result');
-                if (!key) {
-                    resultDiv.style.display = 'block';
-                    resultDiv.style.background = '#FFEBEE';
-                    resultDiv.style.color = '#C62828';
-                    resultDiv.textContent = '❌ 请先输入 API Key';
-                    return;
-                }
-                if (!proxy) {
-                    resultDiv.style.display = 'block';
-                    resultDiv.style.background = '#FFEBEE';
-                    resultDiv.style.color = '#C62828';
-                    resultDiv.textContent = '❌ 请先输入代理服务器地址';
-                    return;
-                }
-                resultDiv.style.display = 'block';
-                resultDiv.style.background = '#FFF8E1';
-                resultDiv.style.color = '#856404';
-                resultDiv.textContent = '⏳ 正在测试连接...';
-                
-                fetch(proxy + '/api/balance', {
-                    method: 'GET',
-                    headers: { 'X-Meshy-Key': key }
-                })
-                .then(function(resp) { return resp.text().then(function(text) { return { status: resp.status, text: text }; }); })
-                .then(function(result) {
-                    try {
-                        var data = JSON.parse(result.text);
-                        if (result.status === 200) {
-                            var credits = data.balance !== undefined ? data.balance : '未知';
-                            resultDiv.style.background = '#E8F5E9';
-                            resultDiv.style.color = '#2E7D32';
-                            resultDiv.innerHTML = '✅ <b>连接成功！</b><br/>可用积分: ' + credits + '<br/>状态: 正常';
-                        } else if (result.status === 401) {
-                            resultDiv.style.background = '#FFEBEE';
-                            resultDiv.style.color = '#C62828';
-                            resultDiv.innerHTML = '❌ <b>认证失败</b><br/>API Key 无效或已过期<br/>请检查后重试';
-                        } else if (result.status === 402) {
-                            resultDiv.style.background = '#FFEBEE';
-                            resultDiv.style.color = '#C62828';
-                            resultDiv.innerHTML = '❌ <b>积分不足</b><br/>Meshy 积分已用完<br/>请充值后再试';
-                        } else {
-                            resultDiv.style.background = '#FFEBEE';
-                            resultDiv.style.color = '#C62828';
-                            resultDiv.innerHTML = '❌ <b>请求失败</b><br/>HTTP ' + result.status + '<br/>' + (data.message || data.error || result.text).substring(0, 100);
-                        }
-                    } catch(e) {
-                        resultDiv.style.background = '#FFEBEE';
-                        resultDiv.style.color = '#C62828';
-                        resultDiv.innerHTML = '❌ <b>解析失败</b><br/>HTTP ' + result.status + '<br/>响应: ' + result.text.substring(0, 150);
-                    }
-                })
-                .catch(function(err) {
-                    resultDiv.style.background = '#FFEBEE';
-                    resultDiv.style.color = '#C62828';
-                    resultDiv.innerHTML = '❌ <b>网络错误</b><br/>无法连接到代理服务器<br/>请检查代理地址是否正确<br/><span style="font-size:10px;opacity:0.7;">' + err.message + '</span>';
-                });
-            };
-            document.getElementById('meshy-key-save').onclick = function() {
-                var key = document.getElementById('meshy-key-input').value.trim();
-                var proxy = document.getElementById('meshy-proxy-input').value.trim();
-                if (key) {
-                    MESHY_CONFIG.apiKey = key;
-                    localStorage.setItem('meshy_api_key', key);
-                }
-                if (proxy) {
-                    MESHY_CONFIG.proxyUrl = proxy;
-                    localStorage.setItem('meshy_proxy_url', proxy);
-                }
-                overlay.remove();
-                if (typeof onSuccess === 'function') onSuccess();
-            };
-            overlay.onclick = function(e) { 
-                if (e.target === overlay) {
-                    overlay.remove();
-                    showFallbackSVG();
-                }
-            };
-            setTimeout(function() { 
-                var inp = document.getElementById('meshy-key-input');
-                if (inp) inp.focus();
-            }, 100);
+            alert('⚙️ API Key 由服务端统一管理\n\n无需在前端输入密钥。\n如果3D生成失败显示"服务未配置"，请联系管理员。');
+            // 降级到 SVG 模型
+            showFallbackSVG();
         }
 
         // ============ 新增：打印体检报告 + 下载面板 ============
