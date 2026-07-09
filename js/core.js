@@ -340,7 +340,7 @@ showPage(2);
             if (parts.length > 0) {
                 hint.innerHTML = parts.join(' <span style="color:rgba(196,92,92,0.3)">|</span> ');
             } else {
-                hint.textContent = '请选择一只神兽...';
+                hint.textContent = '👆 点击上方卡片开始创作';
             }
         }
         
