@@ -111,12 +111,12 @@ showPage(2);
             var color = state.selectedColors.length > 0 ? findById(colors, state.selectedColors[0]).hex : '#C45C5C';
             if (state.selectedCreature) { var cr = findById(creatures, state.selectedCreature); if (cr) color = cr.color; }
             if (pl) {
-                var label = '📱 模型预览';
-                if (state.currentPage === 4 && state.selectedCreature) label = '📱 ' + findById(creatures, state.selectedCreature).name + '模型预览';
-                else if (state.currentPage === 5 && state.selectedPatterns.length > 0) label = '📱 ' + state.selectedPatterns.map(function(x) { return findById(patterns, x).name; }).join('、') + '装饰';
-                else if (state.currentPage === 6 && state.selectedExpression) { var ex = findById(expressions, state.selectedExpression); label = '📱 ' + ex.name + '表情预览'; }
-                else if (state.currentPage === 7 && state.selectedColors.length > 0) { var cnames = state.selectedColors.map(function(x) { return findById(colors, x) ? findById(colors, x).name : ''; }).filter(Boolean); label = '📱 模型预览 - ' + cnames.join('·'); }
-                else if (state.currentPage === 8 && state.selectedElements.length > 0) { var el = findById(elements, state.selectedElements[0]); label = '📱 模型预览 - ' + el.name; }
+                var label = '📋 你的选择';
+                if (state.currentPage === 4 && state.selectedCreature) label = '📋 ' + findById(creatures, state.selectedCreature).name + ' - 你的选择';
+                else if (state.currentPage === 5 && state.selectedPatterns.length > 0) label = '📋 ' + state.selectedPatterns.map(function(x) { return findById(patterns, x).name; }).join('、') + '装饰';
+                else if (state.currentPage === 6 && state.selectedExpression) { var ex = findById(expressions, state.selectedExpression); label = '📋 ' + ex.name + '表情'; }
+                else if (state.currentPage === 7 && state.selectedColors.length > 0) { var cnames = state.selectedColors.map(function(x) { return findById(colors, x) ? findById(colors, x).name : ''; }).filter(Boolean); label = '📋 你的选择 - ' + cnames.join('·'); }
+                else if (state.currentPage === 8 && state.selectedElements.length > 0) { var el = findById(elements, state.selectedElements[0]); label = '📋 你的选择 - ' + el.name; }
                 pl.textContent = label;
             }
             cs.querySelectorAll('ellipse, circle').forEach(function(el) {
