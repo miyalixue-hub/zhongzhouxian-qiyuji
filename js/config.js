@@ -28,7 +28,7 @@
             // API Key 由 Worker 服务端管理（存储在 Worker Secrets）
             proxyUrl: 'https://api.mindbubble.cloud',
             // 3D模型参数
-            aiModel: 'latest',         // 使用最新模型（Meshy 6）
+            aiModel: 'meshy-5',        // 锁定稳定版（2025-08发布），课堂需可复现
             topology: 'triangle',      // 三角面片（适合3D打印）
             targetPolycount: 30000,    // 目标面数
             shouldTexture: true,       // 生成纹理
