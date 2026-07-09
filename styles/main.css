@@ -1346,21 +1346,94 @@
         }
         
         .color-swatch-wrap {
-            width: 140px;
-            height: 88px;
+            width: 172px;
+            height: 104px;
             margin: 0 auto 10px;
+            position: relative;
             transition: transform 0.3s;
+            background:
+                linear-gradient(var(--ink), var(--ink)) 132px 51px / 17px 3px no-repeat;
         }
         .color-swatch-wrap svg {
-            width: 140px;
-            height: 88px;
-            display: block;
-            margin: 0 auto;
+            display: none;
+        }
+        .color-swatch-wrap::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 122px;
+            height: 76px;
+            border: 3px solid var(--ink);
+            border-radius: 10px 10px 76px 76px / 10px 10px 58px 58px;
+            background:
+                radial-gradient(circle at 50% 84%, transparent 0 6px, var(--ink) 6px 8px, transparent 8px 13px),
+                radial-gradient(circle at 42% 42%, transparent 0 9px, rgba(58,42,26,0.7) 10px 12px, transparent 13px),
+                radial-gradient(circle at 64% 36%, transparent 0 9px, rgba(58,42,26,0.7) 10px 12px, transparent 13px),
+                repeating-radial-gradient(circle at 70% 50%, transparent 0 7px, rgba(58,42,26,0.48) 8px 10px, transparent 11px 15px),
+                linear-gradient(135deg, transparent 28%, rgba(58,42,26,0.7) 29% 31%, transparent 32%),
+                linear-gradient(165deg, transparent 38%, rgba(58,42,26,0.62) 39% 41%, transparent 42%),
+                var(--swatch-color, #C45C5C);
+            box-shadow:
+                inset 0 0 0 5px rgba(250,248,240,0.55),
+                inset 0 -8px 0 rgba(58,42,26,0.08),
+                0 2px 0 rgba(58,42,26,0.08);
+            clip-path: polygon(1% 15%, 10% 9%, 23% 6%, 36% 4%, 48% 8%, 62% 7%, 78% 10%, 94% 17%, 98% 32%, 92% 55%, 80% 74%, 64% 88%, 48% 94%, 30% 88%, 15% 75%, 5% 56%, 0 34%);
             transition: transform 0.3s;
         }
+        .color-swatch-wrap::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 19px;
+            width: 32px;
+            height: 66px;
+            border: 3px solid var(--ink);
+            border-radius: 4px 9px 8px 6px;
+            background:
+                repeating-linear-gradient(135deg, rgba(58,42,26,0.42) 0 2px, transparent 2px 9px),
+                linear-gradient(90deg, rgba(250,248,240,0.34), transparent 52%),
+                var(--swatch-color, #C45C5C);
+            clip-path: polygon(0 0, 82% 0, 100% 18%, 90% 42%, 92% 72%, 100% 100%, 18% 94%, 12% 72%, 23% 58%, 11% 47%, 18% 28%, 0 18%);
+            box-shadow: inset 7px 0 0 rgba(250,248,240,0.42);
+        }
+        .color-card[data-id="zhusha"] { --swatch-color: #C45C5C; }
+        .color-card[data-id="shiqing"] { --swatch-color: #4A7FB5; }
+        .color-card[data-id="daiwa"] { --swatch-color: #6B7B8C; }
+        .color-card[data-id="liuli"] { --swatch-color: #D4A843; }
+        .color-card[data-id="yuebai"] { --swatch-color: #F0EDE5; }
+        .color-card[data-id="mohei"] { --swatch-color: #2D2D2D; }
+        .color-card[data-id="jin"] { --swatch-color: #C5A355; }
+        .color-card[data-id="yin"] { --swatch-color: #B0B0B0; }
         .color-card:hover .color-swatch-wrap,
         .color-card.selected .color-swatch-wrap {
             transform: scale(1.05);
+        }
+        @media (max-width: 480px) {
+            .color-grid {
+                gap: 12px;
+            }
+            .color-card {
+                padding: 14px 10px 12px;
+            }
+            .color-swatch-wrap {
+                width: 148px;
+                height: 92px;
+                background:
+                    linear-gradient(var(--ink), var(--ink)) 116px 46px / 14px 3px no-repeat;
+            }
+            .color-swatch-wrap::before {
+                width: 104px;
+                height: 64px;
+                border-width: 2.5px;
+                border-radius: 9px 9px 64px 64px / 9px 9px 48px 48px;
+            }
+            .color-swatch-wrap::after {
+                top: 18px;
+                width: 27px;
+                height: 56px;
+                border-width: 2.5px;
+            }
         }
         /* 保留旧的.color-swatch以防其他地方引用 */
         .color-swatch {
@@ -3312,4 +3385,3 @@
         .recipe-tag.active .tag-label {
             color: #C5A355;
         }
-
