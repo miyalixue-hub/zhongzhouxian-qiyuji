@@ -1355,30 +1355,49 @@
         }
         
         .color-swatch-wrap {
-            width: min(100%, 214px);
-            height: 132px;
+            width: min(100%, 188px);
+            height: 118px;
             margin: 0 auto 12px;
             position: relative;
             transition: transform 0.3s;
-            background-position: center 47%;
-            background-repeat: no-repeat;
-            background-size: 238px auto;
+            background: none;
             filter:
                 drop-shadow(0 8px 7px rgba(58,42,26,0.2))
                 drop-shadow(0 2px 1px rgba(255,255,255,0.8));
-            clip-path: polygon(3% 8%, 97% 8%, 97% 35%, 93% 55%, 84% 74%, 70% 90%, 55% 99%, 50% 100%, 45% 99%, 30% 90%, 16% 74%, 7% 55%, 3% 35%);
+            overflow: visible;
         }
         .color-swatch-wrap svg {
             display: none;
         }
-        .color-card[data-id="zhusha"] .color-swatch-wrap { background-image: url('../assets/texture-zhusha.png'); }
-        .color-card[data-id="shiqing"] .color-swatch-wrap { background-image: url('../assets/texture-shiqing.png'); }
-        .color-card[data-id="daiwa"] .color-swatch-wrap { background-image: url('../assets/texture-daiwa.png'); }
-        .color-card[data-id="liuli"] .color-swatch-wrap { background-image: url('../assets/texture-liuli.png'); }
-        .color-card[data-id="yuebai"] .color-swatch-wrap { background-image: url('../assets/texture-yuebai.png'); }
-        .color-card[data-id="mohei"] .color-swatch-wrap { background-image: url('../assets/texture-mohei.png'); }
-        .color-card[data-id="jin"] .color-swatch-wrap { background-image: url('../assets/texture-jin.png'); }
-        .color-card[data-id="yin"] .color-swatch-wrap { background-image: url('../assets/texture-yin.png'); }
+        .color-swatch-wrap::before,
+        .color-swatch-wrap::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: contain;
+        }
+        .color-swatch-wrap::before {
+            background:
+                radial-gradient(circle at 48% 28%, rgba(255,255,255,0.22), transparent 26%),
+                linear-gradient(180deg, rgba(255,255,255,0.12), rgba(0,0,0,0.1)),
+                var(--tile-color);
+            -webkit-mask: url('../assets/tile-mask.png') center / contain no-repeat;
+            mask: url('../assets/tile-mask.png') center / contain no-repeat;
+        }
+        .color-swatch-wrap::after {
+            background-image: url('../assets/tile-lineart.png');
+            opacity: 0.88;
+        }
+        .color-card[data-id="zhusha"] .color-swatch-wrap { --tile-color: #C45C5C; }
+        .color-card[data-id="shiqing"] .color-swatch-wrap { --tile-color: #4A7FB5; }
+        .color-card[data-id="daiwa"] .color-swatch-wrap { --tile-color: #6B7B8C; }
+        .color-card[data-id="liuli"] .color-swatch-wrap { --tile-color: #D4A843; }
+        .color-card[data-id="yuebai"] .color-swatch-wrap { --tile-color: #F0EDE5; }
+        .color-card[data-id="mohei"] .color-swatch-wrap { --tile-color: #2D2D2D; }
+        .color-card[data-id="jin"] .color-swatch-wrap { --tile-color: #C5A355; }
+        .color-card[data-id="yin"] .color-swatch-wrap { --tile-color: #B0B0B0; }
         .color-card[data-id="jin"],
         .color-card[data-id="yin"] {
             display: none;
@@ -1397,9 +1416,8 @@
                 border-radius: 18px;
             }
             .color-swatch-wrap {
-                width: min(100%, 166px);
-                height: 104px;
-                background-size: 184px auto;
+                width: min(100%, 158px);
+                height: 100px;
             }
         }
         /* 保留旧的.color-swatch以防其他地方引用 */
