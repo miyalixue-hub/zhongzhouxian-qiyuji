@@ -4,16 +4,14 @@
 
         // ============ AI 图片生成 API 层 ============
         
-        // 调用火山引擎 Seedream 4.5 API 生成单张图片
+        // 调用火山引擎 Seedream 4.5 API 生成单张图片（通过 Worker 代理）
         async function callSeedreamAPI(prompt) {
-            if (!AI_CONFIG.apiKey) {
-                throw new Error('未配置API Key');
-            }
-            var response = await fetch(AI_CONFIG.baseUrl + '/images/generations', {
+            // 通过 Worker 代理调用，API Key 由服务端管理
+            var proxyUrl = MESHY_CONFIG.proxyUrl || 'https://api.mindbubble.cloud';
+            var response = await fetch(proxyUrl + '/api/2d/generate', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + AI_CONFIG.apiKey
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     model: AI_CONFIG.model,
@@ -25,7 +23,19 @@
             });
             if (!response.ok) {
                 var errText = '';
-                try { var errData = await response.json(); errText = (errData.error && errData.error.message) ? errData.error.message : JSON.stringify(errData); } catch(e) { errText = response.statusText; }
+                try { 
+                    var errData = await response.json(); 
+                    errText = (errData.error && errData.error.message) ? errData.error.message : (errData.error || JSON.stringify(errData)); 
+                } catch(e) { errText = response.statusText; }
+                
+                // 检测服务端配置错误
+                if (response.status === 500 && /未配置/.test(errText)) {
+                    throw new Error('服务端未配置API Key，请联系管理员');
+                }
+                // 检测限流
+                if (response.status === 429) {
+                    throw new Error('请求太频繁，请稍后再试');
+                }
                 throw new Error('API错误(' + response.status + '): ' + errText);
             }
             var data = await response.json();
@@ -51,40 +61,9 @@
             throw new Error('API返回数据异常');
         }
         
-        // 显示 API Key 设置弹窗
+        // API Key 由服务端管理，此函数改为显示提示信息
         function showApiKeyDialog() {
-            var existing = document.getElementById('api-key-dialog');
-            if (existing) existing.remove();
-            
-            var overlay = document.createElement('div');
-            overlay.id = 'api-key-dialog';
-            overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
-            overlay.innerHTML = '<div style="background:#FAF8F0;border-radius:16px;padding:24px;max-width:400px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.3);">' +
-                '<h3 style="margin:0 0 12px;color:#3a2a1a;font-size:16px;">\uD83D\uDD11 设置 AI 图片生成密钥</h3>' +
-                '<p style="font-size:12px;color:#7a6a56;line-height:1.6;margin-bottom:12px;">请输入火山引擎 Ark API Key 以启用 AI 图片生成功能。<br/>获取方式：登录 <a href="https://console.volcengine.com/ark/region:ark+cn-beijing/apikey" target="_blank" style="color:#c04830;">火山引擎控制台</a> 创建 API Key</p>' +
-                '<input id="api-key-input" type="password" placeholder="输入 ARK API Key (如 sk-xxx...)" value="' + (AI_CONFIG.apiKey || '') + '" style="width:100%;padding:10px 12px;border:1.5px solid #e8dcc4;border-radius:8px;font-size:14px;outline:none;margin-bottom:12px;box-sizing:border-box;" />' +
-                '<div style="display:flex;gap:10px;">' +
-                '<button id="api-key-cancel" style="flex:1;padding:10px;border:1.5px solid #e8dcc4;background:white;border-radius:8px;font-size:14px;cursor:pointer;">取消</button>' +
-                '<button id="api-key-save" style="flex:1;padding:10px;border:none;background:#c04830;color:white;border-radius:8px;font-size:14px;cursor:pointer;font-weight:bold;">保存</button>' +
-                '</div></div>';
-            document.body.appendChild(overlay);
-            
-            document.getElementById('api-key-cancel').onclick = function() { overlay.remove(); };
-            document.getElementById('api-key-save').onclick = function() {
-                var val = document.getElementById('api-key-input').value.trim();
-                if (val) {
-                    AI_CONFIG.apiKey = val;
-                    localStorage.setItem('ark_api_key', val);
-                    overlay.remove();
-                    // 保存后自动重新触发生成
-                    setTimeout(function() { generateCandidates(); }, 300);
-                }
-            };
-            overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
-            setTimeout(function() { 
-                var inp = document.getElementById('api-key-input');
-                if (inp) inp.focus();
-            }, 100);
+            alert('⚙️ API Key 由服务端统一管理\n\n无需在前端输入密钥。\n如果生成失败显示"服务未配置"，请联系管理员。');
         }
         
         // 为候选卡片创建loading状态HTML
@@ -161,29 +140,38 @@
                         };
                     })(result.index, result.style));
                 } else {
-                    var isKeyErr = /401|403|Unauthorized|Invalid API|invalid.*key/i.test(result.error || '');
-                    imgContainer.innerHTML = '<div class="ai-error">' + (isKeyErr ? '\uD83D\uDD11 密钥无效' : '生成失败') + '<br/><span style="font-size:10px;opacity:0.7;">' + (result.error || '').substring(0, 30) + '</span>' + (isKeyErr ? '<br/><span style="font-size:10px;color:#FF9800;cursor:pointer;text-decoration:underline;" onclick="AI_CONFIG.apiKey=\'\';localStorage.removeItem(\'ark_api_key\');showApiKeyDialog()">重新输入密钥</span>' : '') + '</div>';
+                    var isServerError = /服务端未配置|请联系管理员/.test(result.error || '');
+                    var isRateLimited = /请求太频繁|429/.test(result.error || '');
+                    var errLabel = isServerError ? '⚙️ 服务未配置' : (isRateLimited ? '⏳ 请求频繁' : '生成失败');
+                    imgContainer.innerHTML = '<div class="ai-error">' + errLabel + '<br/><span style="font-size:10px;opacity:0.7;">' + (result.error || '').substring(0, 30) + '</span></div>';
                 }
             });
             
             // 全部失败时显示重试
             if (successCount === 0) {
-                // 检测是否为密钥/认证错误
-                var hasAuthError = results.some(function(r) {
-                    return r.error && /401|403|Unauthorized|Invalid API|invalid.*key|authentication|auth.*fail|未配置API/i.test(r.error);
+                // 检测是否为服务端配置错误
+                var hasServerError = results.some(function(r) {
+                    return r.error && /服务端未配置|请联系管理员/.test(r.error);
+                });
+                // 检测限流
+                var hasRateLimit = results.some(function(r) {
+                    return r.error && /请求太频繁|429/.test(r.error);
                 });
                 
-                if (hasAuthError) {
-                    // 密钥错误：清除旧密钥，弹出重新输入
-                    console.warn('[Seedream] 检测到2D生成密钥错误，弹出重新输入对话框');
-                    AI_CONFIG.apiKey = '';
-                    localStorage.removeItem('ark_api_key');
+                if (hasServerError) {
                     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 20px;">' +
-                        '<div style="font-size:40px;margin-bottom:12px;">\uD83D\uDD11</div>' +
-                        '<div style="font-size:15px;color:#3a2a1a;margin-bottom:8px;font-weight:bold;">API Key 无效或已过期</div>' +
-                        '<div style="font-size:13px;color:#7a6a56;margin-bottom:16px;">请重新输入正确的火山引擎 API Key</div>' +
-                        '<button onclick="showApiKeyDialog()" style="padding:12px 28px;background:#c04830;color:white;border:none;border-radius:10px;font-size:14px;cursor:pointer;margin-right:10px;font-weight:bold;">\uD83D\uDD11 重新输入密钥</button>' +
+                        '<div style="font-size:40px;margin-bottom:12px;">⚙️</div>' +
+                        '<div style="font-size:15px;color:#3a2a1a;margin-bottom:8px;font-weight:bold;">服务尚未配置</div>' +
+                        '<div style="font-size:13px;color:#7a6a56;margin-bottom:16px;">请联系管理员配置 API Key</div>' +
                         '<button onclick="generateSVGFallback()" style="padding:12px 28px;background:white;color:#3a2a1a;border:1.5px solid #e8dcc4;border-radius:10px;font-size:14px;cursor:pointer;">使用示例图</button>' +
+                        '</div>';
+                } else if (hasRateLimit) {
+                    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 20px;">' +
+                        '<div style="font-size:40px;margin-bottom:12px;">⏳</div>' +
+                        '<div style="font-size:15px;color:#3a2a1a;margin-bottom:8px;font-weight:bold;">请求太频繁</div>' +
+                        '<div style="font-size:13px;color:#7a6a56;margin-bottom:16px;">请稍后再试</div>' +
+                        '<button onclick="generateCandidates()" style="padding:10px 24px;background:#c04830;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;margin-right:8px;">\uD83D\uDD04 重试</button>' +
+                        '<button onclick="generateSVGFallback()" style="padding:10px 24px;background:white;color:#3a2a1a;border:1.5px solid #e8dcc4;border-radius:8px;font-size:14px;cursor:pointer;">使用示例图</button>' +
                         '</div>';
                 } else {
                     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 20px;">' +
@@ -191,7 +179,6 @@
                         '<div style="font-size:14px;color:#7a6a56;margin-bottom:16px;">AI图片生成遇到问题</div>' +
                         '<button onclick="generateCandidates()" style="padding:10px 24px;background:#c04830;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;margin-right:8px;">\uD83D\uDD04 重试</button>' +
                         '<button onclick="generateSVGFallback()" style="padding:10px 24px;background:white;color:#3a2a1a;border:1.5px solid #e8dcc4;border-radius:8px;font-size:14px;cursor:pointer;">使用示例图</button>' +
-                        '<br/><a href="javascript:void(0)" onclick="AI_CONFIG.apiKey=\'\';localStorage.removeItem(\'ark_api_key\');showApiKeyDialog()" style="display:inline-block;margin-top:12px;font-size:13px;color:#FF9800;text-decoration:underline;font-weight:bold;">\uD83D\uDD11 密钥不对？点击重新输入</a>' +
                         '</div>';
                 }
             }
@@ -213,24 +200,14 @@
         
         
         // ============ P8: 候选图片生成 ============
-        // 主入口：候选图片生成（优先AI，降级SVG）
+        // 主入口：候选图片生成（通过 Worker 代理调用，API Key 由服务端管理）
         async function generateCandidates() {
             var grid = document.getElementById('candidate-grid');
             if (!grid) return;
             grid.innerHTML = '';
             
-            // 检查API Key
-            if (!AI_CONFIG.apiKey) {
-                // 无密钥时先显示loading+设置提示
-                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 20px;">' +
-                    '<div style="font-size:40px;margin-bottom:12px;">\uD83C\uDFA8</div>' +
-                    '<div style="font-size:15px;color:#3a2a1a;margin-bottom:8px;font-weight:bold;">AI图片生成已就绪</div>' +
-                    '<div style="font-size:13px;color:#7a6a56;margin-bottom:20px;">需要设置火山引擎 API Key 才能生成AI图片<br/>也可以跳过直接使用示例图</div>' +
-                    '<button onclick="showApiKeyDialog()" style="padding:12px 28px;background:#c04830;color:white;border:none;border-radius:10px;font-size:14px;cursor:pointer;margin-right:10px;font-weight:bold;">\uD83D\uDD11 设置密钥并开始</button>' +
-                    '<button onclick="generateSVGFallback()" style="padding:12px 28px;background:white;color:#3a2a1a;border:1.5px solid #e8dcc4;border-radius:10px;font-size:14px;cursor:pointer;">使用示例图</button>' +
-                    '</div>';
-                return;
-            }
+            // API Key 由 Worker 服务端管理，直接尝试生成
+            // 如果服务端未配置，会在请求时返回错误，由错误处理逻辑处理
             
             // 获取提示词
             var basePrompt = state._lastAiPrompt || '一只可爱的中国神话小神兽，中国传统风格，3D渲染，干净背景，儿童插画风格，高质量';

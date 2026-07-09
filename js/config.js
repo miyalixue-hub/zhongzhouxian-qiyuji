@@ -5,10 +5,9 @@
 
 // ============ AI 图片生成配置 ============
         var AI_CONFIG = {
-            // 火山引擎 Ark API 配置
-            // 获取 API Key: https://console.volcengine.com/ark/region:ark+cn-beijing/apikey
-            apiKey: '',  // 通过设置面板或 localStorage 配置（安全：不硬编码）
-            baseUrl: 'https://ark.cn-beijing.volces.com/api/v3',
+            // 火山引擎 Seedream 配置
+            // API Key 由 Worker 服务端管理，前端不再存储密钥
+            baseUrl: 'https://ark.cn-beijing.volces.com/api/v3',  // 保留作为备份，实际通过 Worker 代理调用
             model: 'doubao-seedream-4-5-251128',  // Seedream 4.5
             size: '1920x1920',  // Seedream 4.5 要求至少 3686400 像素 (1920x1920)
             
@@ -22,21 +21,12 @@
                 basePath: 'assets/generated/'
             }
         };
-        
-        // 从 localStorage 加载 API Key
-        (function() {
-            var savedKey = localStorage.getItem('ark_api_key');
-            if (savedKey) AI_CONFIG.apiKey = savedKey;
-        })();
 
 // ============ Meshy 3D 生成配置 ============
-        // ============ Meshy 3D 生成配置 ============
         var MESHY_CONFIG = {
-            // Cloudflare Worker 代理地址（部署后填入）
-            // 部署方式：参见仓库中 meshy-proxy.js 文件
-            proxyUrl: localStorage.getItem('meshy_proxy_url') || 'https://api.mindbubble.cloud',
-            // Meshy API Key（用户通过设置面板输入，存储在 localStorage）
-            apiKey: localStorage.getItem('meshy_api_key') || '',
+            // Cloudflare Worker 代理地址
+            // API Key 由 Worker 服务端管理（存储在 Worker Secrets）
+            proxyUrl: 'https://api.mindbubble.cloud',
             // 3D模型参数
             aiModel: 'latest',         // 使用最新模型（Meshy 6）
             topology: 'triangle',      // 三角面片（适合3D打印）
