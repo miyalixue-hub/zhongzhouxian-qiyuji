@@ -1330,11 +1330,11 @@
         }
         
         .color-card {
-            min-height: 246px;
+            min-height: 258px;
             background:
                 radial-gradient(circle at 50% 0%, rgba(255,255,255,0.96), rgba(255,255,255,0.92) 42%, rgba(255,252,244,0.9) 100%);
             border-radius: 22px;
-            padding: 20px 18px 18px;
+            padding: 22px 18px 18px;
             border: 2px solid rgba(232, 220, 196, 0.82);
             text-align: center;
             cursor: pointer;
@@ -1355,16 +1355,18 @@
         }
         
         .color-swatch-wrap {
-            width: min(100%, 196px);
-            height: 122px;
-            margin: 0 auto 14px;
+            width: min(100%, 214px);
+            height: 132px;
+            margin: 0 auto 12px;
             position: relative;
             transition: transform 0.3s;
-            background-position: center 54%;
+            background-position: center 47%;
             background-repeat: no-repeat;
-            background-size: 210px auto;
-            filter: drop-shadow(0 8px 8px rgba(58,42,26,0.18));
-            clip-path: polygon(4% 18%, 96% 18%, 94% 43%, 88% 63%, 75% 82%, 58% 93%, 50% 96%, 42% 93%, 25% 82%, 12% 63%, 6% 43%);
+            background-size: 238px auto;
+            filter:
+                drop-shadow(0 8px 7px rgba(58,42,26,0.2))
+                drop-shadow(0 2px 1px rgba(255,255,255,0.8));
+            clip-path: polygon(3% 8%, 97% 8%, 97% 35%, 93% 55%, 84% 74%, 70% 90%, 55% 99%, 50% 100%, 45% 99%, 30% 90%, 16% 74%, 7% 55%, 3% 35%);
         }
         .color-swatch-wrap svg {
             display: none;
@@ -1377,6 +1379,10 @@
         .color-card[data-id="mohei"] .color-swatch-wrap { background-image: url('../assets/texture-mohei.png'); }
         .color-card[data-id="jin"] .color-swatch-wrap { background-image: url('../assets/texture-jin.png'); }
         .color-card[data-id="yin"] .color-swatch-wrap { background-image: url('../assets/texture-yin.png'); }
+        .color-card[data-id="jin"],
+        .color-card[data-id="yin"] {
+            display: none;
+        }
         .color-card:hover .color-swatch-wrap,
         .color-card.selected .color-swatch-wrap {
             transform: translateY(-2px) scale(1.04);
@@ -1386,14 +1392,14 @@
                 gap: 12px;
             }
             .color-card {
-                min-height: 220px;
+                min-height: 226px;
                 padding: 16px 10px 14px;
                 border-radius: 18px;
             }
             .color-swatch-wrap {
-                width: min(100%, 154px);
-                height: 98px;
-                background-size: 168px auto;
+                width: min(100%, 166px);
+                height: 104px;
+                background-size: 184px auto;
             }
         }
         /* 保留旧的.color-swatch以防其他地方引用 */
