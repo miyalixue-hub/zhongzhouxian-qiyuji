@@ -87,14 +87,22 @@
             { id: 'custom_plate', name: '车牌号码', desc: '自定义数字' }
         ];
         var patterns = [
-            { id: 'limb', name: '肢部纹饰', meaning: '层叠水鳞·护体镇水' },
-            { id: 'mouth_horn', name: '嘴角纹饰', meaning: '火焰吐息·威慑水患' },
-            { id: 'mane', name: '鬃毛', meaning: '风动水纹·灵气流转' },
-            { id: 'ear', name: '耳部纹饰', meaning: '旋涡听水·守望桥声' },
-            { id: 'eye', name: '眼部纹饰', meaning: '圆目凝神·明察水脉' },
-            { id: 'head_horn', name: '头部倚角', meaning: '角冠护首·镇守桥门' },
-            { id: 'back_cloud', name: '脊背云纹', meaning: '云气绕身·瑞意绵延' },
-            { id: 'neck_mane', name: '颈部鬃髯', meaning: '长髯迎风·神兽昂扬' }
+            { id: 'limb', name: '肢部纹饰', meaning: '层叠水鳞·护体镇水',
+              image: 'https://miyalixue-hub.github.io/zhongzhouxian-qiyuji/assets/pattern-limb.png' },
+            { id: 'mouth_horn', name: '嘴角纹饰', meaning: '火焰吐息·威慑水患',
+              image: 'https://miyalixue-hub.github.io/zhongzhouxian-qiyuji/assets/pattern-mouth_horn.png' },
+            { id: 'mane', name: '鬃毛', meaning: '风动水纹·灵气流转',
+              image: 'https://miyalixue-hub.github.io/zhongzhouxian-qiyuji/assets/pattern-mane.png' },
+            { id: 'ear', name: '耳部纹饰', meaning: '旋涡听水·守望桥声',
+              image: 'https://miyalixue-hub.github.io/zhongzhouxian-qiyuji/assets/pattern-ear.png' },
+            { id: 'eye', name: '眼部纹饰', meaning: '圆目凝神·明察水脉',
+              image: 'https://miyalixue-hub.github.io/zhongzhouxian-qiyuji/assets/pattern-eye.png' },
+            { id: 'head_horn', name: '头部倚角', meaning: '角冠护首·镇守桥门',
+              image: 'https://miyalixue-hub.github.io/zhongzhouxian-qiyuji/assets/pattern-head_horn.png' },
+            { id: 'back_cloud', name: '脊背云纹', meaning: '云气绕身·瑞意绵延',
+              image: 'https://miyalixue-hub.github.io/zhongzhouxian-qiyuji/assets/pattern-back_cloud.png' },
+            { id: 'neck_mane', name: '颈部鬃髯', meaning: '长髯迎风·神兽昂扬',
+              image: 'https://miyalixue-hub.github.io/zhongzhouxian-qiyuji/assets/pattern-neck_mane.png' }
         ];
         var expressions = [{ id: 'cute', name: '呆萌', desc: '圆滚滚·笑眯眯', emoji: '😊' }, { id: 'fierce', name: '威武', desc: '怒目圆睁·气势十足', emoji: '😤' }, { id: 'cool', name: '帅气', desc: '昂首挺胸·神采飞扬', emoji: '😎' }, { id: 'funny', name: '搞笑', desc: '吐舌头·搞怪表情', emoji: '🤪' }];
         var colors = [{ id: 'zhusha', name: '朱砂红', hex: '#C45C5C', meaning: '辟邪纳福·热烈醒目' }, { id: 'shiqing', name: '石青蓝', hex: '#4A7FB5', meaning: '矿物青色·沉静古雅' }, { id: 'daiwa', name: '黛瓦灰', hex: '#6B7B8C', meaning: '城楼屋瓦·厚重含蓄' }, { id: 'liuli', name: '琉璃黄', hex: '#D4A843', meaning: '宫城琉璃·明亮珍贵' }, { id: 'yuebai', name: '月白', hex: '#F0EDE5', meaning: '月色如瓷·清雅素净' }, { id: 'mohei', name: '墨黑', hex: '#2D2D2D', meaning: '浓墨重彩·沉稳庄重' }, { id: 'jin', name: '鎏金', hex: '#C5A355', meaning: '金碧辉煌·尊贵荣耀' }, { id: 'yin', name: '铸银', hex: '#B0B0B0', meaning: '银光素雅·内敛含蓄' }];

@@ -5,21 +5,27 @@
         // ============ AI 图片生成 API 层 ============
         
         // 调用火山引擎 Seedream 4.5 API 生成单张图片（通过 Worker 代理）
-        async function callSeedreamAPI(prompt) {
+        async function callSeedreamAPI(prompt, options) {
             // 通过 Worker 代理调用，API Key 由服务端管理
+            options = options || {};
             var proxyUrl = MESHY_CONFIG.proxyUrl || 'https://api.mindbubble.cloud';
+            var requestBody = {
+                model: AI_CONFIG.model,
+                prompt: prompt,
+                size: AI_CONFIG.size,
+                response_format: 'url',
+                watermark: false
+            };
+            // 如果有参考图，加入 image 字段（Seedream 4.5 支持图片URL数组，最多14张）
+            if (options.refImages && options.refImages.length > 0) {
+                requestBody.image = options.refImages;
+            }
             var response = await fetch(proxyUrl + '/api/2d/generate', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    model: AI_CONFIG.model,
-                    prompt: prompt,
-                    size: AI_CONFIG.size,
-                    response_format: 'url',
-                    watermark: false
-                })
+                body: JSON.stringify(requestBody)
             });
             if (!response.ok) {
                 var errText = '';
@@ -80,7 +86,7 @@
         }
         
         // AI生成候选方案（通用）
-        async function generateAICandidatesGeneric(grid, basePrompt, stylesConfig) {
+        async function generateAICandidatesGeneric(grid, basePrompt, stylesConfig, refImages) {
             state._generatedImageUrls = [];
             
             // 创建loading卡片
@@ -104,7 +110,7 @@
             // 并行调用4次API
             var promises = stylesConfig.map(function(style, i) {
                 var fullPrompt = basePrompt + style.suffix;
-                return callSeedreamAPI(fullPrompt).then(function(url) {
+                return callSeedreamAPI(fullPrompt, { refImages: refImages }).then(function(url) {
                     state._generatedImageUrls[i] = url;
                     return { index: i, url: url, style: style, success: true };
                 }).catch(function(err) {
@@ -213,7 +219,7 @@
             var basePrompt = state._lastAiPrompt || '一只可爱的中国神话小神兽，中国传统风格，3D渲染，干净背景，儿童插画风格，高质量';
             
             if (state.isTramMode) {
-                // 铛铛车AI生成
+                // 铛铛车AI生成（不传纹饰参考图）
                 var tramStyles = [
                     { name: '经典复古', desc: '原汁原味老北京', suffix: '，复古怀旧风格，老照片质感，暖黄色调，1920年代老北京氛围', bg: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' },
                     { name: '现代简约', desc: '清新明快风格', suffix: '，现代简约插画风格，明亮清新的色彩，简洁线条，轻松愉快', bg: 'linear-gradient(135deg, #E3F2FD, #BBDEFB)' },
@@ -222,14 +228,23 @@
                 ];
                 await generateAICandidatesGeneric(grid, basePrompt, tramStyles);
             } else {
-                // 神兽AI生成
+                // 神兽AI生成：收集选中纹饰的参考图 URL
+                var patternRefImages = [];
+                if (state.selectedPatterns && state.selectedPatterns.length > 0) {
+                    state.selectedPatterns.forEach(function(p) {
+                        var pt = patterns.find(function(x) { return x.id === p; });
+                        if (pt && pt.image) patternRefImages.push(pt.image);
+                    });
+                }
+                console.log('[generateCandidates] 纹饰参考图:', patternRefImages);
+                
                 var beastStyles = [
                     { name: '水墨写意', desc: '传统国画风', suffix: '，中国传统水墨画风格，毛笔笔触，宣纸质感，黑白灰为主调，留白意境', bg: 'linear-gradient(135deg, #f5f0e8, #e8dcc8)' },
                     { name: '彩色水墨', desc: '活泼撞色风', suffix: '，现代彩色水墨插画风格，明亮撞色，活泼有趣，儿童绘本质感', bg: 'linear-gradient(135deg, #fff0f0, #f0f0ff)' },
                     { name: '金碧辉煌', desc: '宫廷华丽风', suffix: '，中国传统宫廷风格，金色为主调，华丽精致，景泰蓝配色，工笔画质感', bg: 'linear-gradient(135deg, #fef9e7, #f5ecd0)' },
                     { name: '青绿山水', desc: '清新淡雅风', suffix: '，青绿山水风格，石青石绿为主色，千里江山图质感，清新淡雅', bg: 'linear-gradient(135deg, #f0f7f0, #e0efe8)' }
                 ];
-                await generateAICandidatesGeneric(grid, basePrompt, beastStyles);
+                await generateAICandidatesGeneric(grid, basePrompt, beastStyles, patternRefImages);
             }
         }
         
