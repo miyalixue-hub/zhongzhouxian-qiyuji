@@ -3391,3 +3391,133 @@
         .recipe-tag.active .tag-label {
             color: #C5A355;
         }
+
+/* ============ 新版预览卡片设计 ============ */
+.preview-card {
+    display: flex;
+    gap: 16px;
+    background: linear-gradient(135deg, #FFF9F0 0%, #FFF5E6 100%);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+    border: 2px solid #E8D4B8;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.preview-card-left {
+    flex: 0 0 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.preview-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #8B4513;
+    text-align: center;
+}
+
+.preview-creature-large {
+    width: 120px;
+    height: 120px;
+    background: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    border: 2px solid #D4A574;
+}
+
+.preview-creature-large .creature-svg {
+    width: 100px;
+    height: 100px;
+}
+
+.preview-skill {
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    padding: 6px 10px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 8px;
+    font-style: italic;
+}
+
+.preview-card-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.preview-selection-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.preview-selection-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 10px;
+    border: 1px solid #E8D4B8;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.preview-selection-item:hover {
+    transform: translateX(4px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.preview-selection-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.preview-selection-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.preview-selection-label {
+    font-size: 11px;
+    color: #999;
+}
+
+.preview-selection-value {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+}
+
+/* 移动端适配 */
+@media (max-width: 600px) {
+    .preview-card {
+        flex-direction: column;
+        padding: 12px;
+    }
+    
+    .preview-card-left {
+        flex: none;
+        width: 100%;
+    }
+    
+    .preview-creature-large {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .preview-creature-large .creature-svg {
+        width: 85px;
+        height: 85px;
+    }
+}

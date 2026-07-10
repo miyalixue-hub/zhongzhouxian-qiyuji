@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>中轴奇游记 - 20260710测试版</title>
-    <link rel="stylesheet" href="styles/main.css?v=20260710d">
+    <link rel="stylesheet" href="styles/main.css?v=20260710e">
     <!-- Google model-viewer: 3D模型展示组件（使用 jsdelivr CDN 国内可访问） -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js?v=20260706b"></script>
 </head>
@@ -1298,28 +1298,42 @@ if (typeof goToStation === 'function') {
             </div>
             
             <div class="preview-area">
-                <div class="preview-label"> 你的选择</div>
-                <div class="preview-creature">
-                    <svg class="creature-svg" viewBox="0 0 80 80">
-                        <ellipse cx="40" cy="68" rx="28" ry="7" fill="#E8E0D0"/>
-                        <path d="M18,65 Q28,58 38,65 Q48,72 58,65 Q68,58 65,65" stroke="#C45C5C" stroke-width="2" fill="none" opacity="0.5"/>
-                        <ellipse cx="40" cy="50" rx="22" ry="16" fill="#C45C5C"/>
-                        <circle cx="40" cy="35" r="15" fill="#C45C5C"/>
-                        <ellipse cx="26" cy="24" rx="6" ry="10" fill="#C45C5C"/>
-                        <ellipse cx="54" cy="24" rx="6" ry="10" fill="#C45C5C"/>
-                        <circle cx="35" cy="33" r="4" fill="white"/>
-                        <circle cx="45" cy="33" r="4" fill="white"/>
-                        <circle cx="35" cy="33" r="2" fill="#333"/>
-                        <circle cx="45" cy="33" r="2" fill="#333"/>
-                        <circle cx="30" cy="38" r="3" fill="#A84848" opacity="0.4"/>
-                        <circle cx="50" cy="38" r="3" fill="#A84848" opacity="0.4"/>
-                        <ellipse cx="40" cy="40" rx="3" ry="2" fill="#333"/>
-                        <path d="M35 43 Q40 47 45 43" stroke="#333" stroke-width="1.5" fill="none"/>
-                    </svg>
+                <div class="preview-card">
+                    <!-- 左侧：大尺寸角色预览 -->
+                    <div class="preview-card-left">
+                        <div class="preview-card-title">你的专属神兽</div>
+                        <div class="preview-creature-large">
+                            <svg class="creature-svg" viewBox="0 0 80 80">
+                                <ellipse cx="40" cy="68" rx="28" ry="7" fill="#E8E0D0"/>
+                                <path d="M18,65 Q28,58 38,65 Q48,72 58,65 Q68,58 65,65" stroke="#C45C5C" stroke-width="2" fill="none" opacity="0.5"/>
+                                <ellipse cx="40" cy="50" rx="22" ry="16" fill="#C45C5C"/>
+                                <circle cx="40" cy="35" r="15" fill="#C45C5C"/>
+                                <ellipse cx="26" cy="24" rx="6" ry="10" fill="#C45C5C"/>
+                                <ellipse cx="54" cy="24" rx="6" ry="10" fill="#C45C5C"/>
+                                <circle cx="35" cy="33" r="4" fill="white"/>
+                                <circle cx="45" cy="33" r="4" fill="white"/>
+                                <circle cx="35" cy="33" r="2" fill="#333"/>
+                                <circle cx="45" cy="33" r="2" fill="#333"/>
+                                <circle cx="30" cy="38" r="3" fill="#A84848" opacity="0.4"/>
+                                <circle cx="50" cy="38" r="3" fill="#A84848" opacity="0.4"/>
+                                <ellipse cx="40" cy="40" rx="3" ry="2" fill="#333"/>
+                                <path d="M35 43 Q40 47 45 43" stroke="#333" stroke-width="1.5" fill="none"/>
+                            </svg>
+                        </div>
+                        <div class="preview-skill" id="preview-skill">守护桥梁的小神兽</div>
+                    </div>
+                    
+                    <!-- 右侧：选择清单 -->
+                    <div class="preview-card-right">
+                        <div class="preview-selection-list" id="preview-selection-list">
+                            <!-- 动态填充 -->
+                        </div>
+                    </div>
                 </div>
+                
                 <div class="bottom-buttons">
                     <button class="btn-back" id="btn-back-7">← 返回修改</button>
-                    <button class="btn-generate">⛏️ 开始AI挖掘生成</button>
+                    <button class="btn-generate">⛏️ 生成我的专属神兽</button>
                 </div>
                 <div style="text-align:center;margin-top:10px;">
                     <button onclick="showPage(10)" style="background:none;border:1px dashed #999;color:#999;padding:6px 16px;border-radius:6px;font-size:12px;cursor:pointer;opacity:0.7;">⏭️ 跳过（测试用，不生成图片）</button>

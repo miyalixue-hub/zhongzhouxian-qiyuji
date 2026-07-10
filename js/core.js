@@ -106,23 +106,130 @@ showPage(2);
         function updatePreview() {
             var pa = $('.page-section.active .preview-area');
             if (!pa) return;
-            var pl = pa.querySelector('.preview-label'), cs = pa.querySelector('.creature-svg');
+            var cs = pa.querySelector('.creature-svg');
             if (!cs) return;
+            
             var color = state.selectedColors.length > 0 ? findById(colors, state.selectedColors[0]).hex : '#C45C5C';
             if (state.selectedCreature) { var cr = findById(creatures, state.selectedCreature); if (cr) color = cr.color; }
-            if (pl) {
-                var label = '📋 你的选择';
-                if (state.currentPage === 4 && state.selectedCreature) label = '📋 ' + findById(creatures, state.selectedCreature).name + ' - 你的选择';
-                else if (state.currentPage === 5 && state.selectedPatterns.length > 0) label = '📋 ' + state.selectedPatterns.map(function(x) { return findById(patterns, x).name; }).join('、') + '装饰';
-                else if (state.currentPage === 6 && state.selectedExpression) { var ex = findById(expressions, state.selectedExpression); label = '📋 ' + ex.name + '表情'; }
-                else if (state.currentPage === 7 && state.selectedColors.length > 0) { var cnames = state.selectedColors.map(function(x) { return findById(colors, x) ? findById(colors, x).name : ''; }).filter(Boolean); label = '📋 你的选择 - ' + cnames.join('·'); }
-                else if (state.currentPage === 8 && state.selectedElements.length > 0) { var el = findById(elements, state.selectedElements[0]); label = '📋 你的选择 - ' + el.name; }
-                pl.textContent = label;
-            }
+            
+            // 更新SVG颜色
             cs.querySelectorAll('ellipse, circle').forEach(function(el) {
                 var f = el.getAttribute('fill');
                 if (f && f !== 'white' && f !== '#333' && f !== 'none' && f !== '#E8E0D0' && !f.includes('rgba')) el.setAttribute('fill', color);
             });
+            
+            // 更新选择清单
+            var list = pa.querySelector('.preview-selection-list');
+            if (list) {
+                var items = [];
+                
+                // 神兽
+                if (state.selectedCreature) {
+                    var creature = findById(creatures, state.selectedCreature);
+                    if (creature) {
+                        items.push({
+                            icon: '🐉',
+                            label: '神兽',
+                            value: creature.name
+                        });
+                    }
+                }
+                
+                // 纹样
+                if (state.selectedPatterns && state.selectedPatterns.length > 0) {
+                    var patternNames = state.selectedPatterns.map(function(p) {
+                        var x = findById(patterns, p);
+                        return x ? x.name : '';
+                    }).filter(Boolean);
+                    if (patternNames.length > 0) {
+                        items.push({
+                            icon: '🎨',
+                            label: '纹样',
+                            value: patternNames.join('、')
+                        });
+                    }
+                }
+                
+                // 表情
+                if (state.selectedExpression) {
+                    var expression = findById(expressions, state.selectedExpression);
+                    if (expression) {
+                        items.push({
+                            icon: expression.emoji || '😊',
+                            label: '表情',
+                            value: expression.name
+                        });
+                    }
+                }
+                
+                // 颜色
+                if (state.selectedColors && state.selectedColors.length > 0) {
+                    var colorNames = state.selectedColors.map(function(c) {
+                        var x = findById(colors, c);
+                        return x ? x.name : '';
+                    }).filter(Boolean);
+                    if (colorNames.length > 0) {
+                        items.push({
+                            icon: '🎨',
+                            label: '颜色',
+                            value: colorNames.join('·')
+                        });
+                    }
+                }
+                
+                // 元素
+                if (state.selectedElements && state.selectedElements.length > 0) {
+                    var elementNames = state.selectedElements.map(function(e) {
+                        var x = findById(elements, e);
+                        return x ? x.name : '';
+                    }).filter(Boolean);
+                    if (elementNames.length > 0) {
+                        items.push({
+                            icon: '✨',
+                            label: '元素',
+                            value: elementNames.join('、')
+                        });
+                    }
+                }
+                
+                // 渲染列表
+                if (items.length > 0) {
+                    list.innerHTML = items.map(function(item) {
+                        return '<div class="preview-selection-item">' +
+                            '<div class="preview-selection-icon">' + item.icon + '</div>' +
+                            '<div class="preview-selection-content">' +
+                            '<div class="preview-selection-label">' + item.label + '</div>' +
+                            '<div class="preview-selection-value">' + item.value + '</div>' +
+                            '</div></div>';
+                    }).join('');
+                } else {
+                    list.innerHTML = '<div style="color:#999;font-size:13px;text-align:center;padding:20px;">暂无选择</div>';
+                }
+            }
+            
+            // 更新技能描述
+            var skillEl = pa.querySelector('.preview-skill');
+            if (skillEl) {
+                var skillText = '守护桥梁的小神兽';
+                if (state.selectedCreature) {
+                    var creature = findById(creatures, state.selectedCreature);
+                    if (creature && creature.skill) {
+                        skillText = creature.skill;
+                    } else if (creature && creature.name) {
+                        skillText = creature.name + '的小神兽';
+                    }
+                }
+                if (state.selectedElements && state.selectedElements.length > 0) {
+                    var elementNames = state.selectedElements.map(function(e) {
+                        var x = findById(elements, e);
+                        return x ? x.name : '';
+                    }).filter(Boolean);
+                    if (elementNames.length > 0) {
+                        skillText = '掌握' + elementNames.join('、') + '之力的小神兽';
+                    }
+                }
+                skillEl.textContent = skillText;
+            }
         }
         
         function findById(arr, id) { for (var i = 0; i < arr.length; i++) if (arr[i].id === id) return arr[i]; return null; }
