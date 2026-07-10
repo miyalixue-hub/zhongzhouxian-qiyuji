@@ -69,9 +69,12 @@
             var coverBtn = $('#btn-enter-cover');
             // btn-enter-cover 已使用内联 onclick="showPage(4)"，无需额外绑定
             
-            // P2 回到首页按钮
+            // P2 回到首页按钮 - 回到地图首页
             var homeBtn = $('#btn-home-p2');
-            if (homeBtn) homeBtn.addEventListener('click', function() { showPage(0); });
+            if (homeBtn) homeBtn.addEventListener('click', function() {
+                if (typeof showView === 'function') showView('home');
+                else showPage(0);
+            });
             
             // 前进按钮 (pages 4-7: 选择神兽→贴纹饰→传统色，已移除姿态表情页)
             for (var pg2 = 4; pg2 <= 7; pg2++) {
