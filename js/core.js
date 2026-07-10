@@ -540,28 +540,43 @@ showPage(2);
             var fillColor = 'rgba(255,255,255,0.7)';
             var svgContent = '';
             switch(patternId) {
-                case 'cloud':
-                    svgContent = '<path d="M28,82 Q38,68 50,82 Q62,96 74,82 Q84,68 92,82" stroke="' + strokeColor + '" stroke-width="2.5" fill="none"/>' +
-                               '<path d="M32,32 Q42,20 52,32 Q58,24 64,32" stroke="' + strokeColor + '" stroke-width="2.5" fill="none"/>' +
-                               '<circle cx="42" cy="76" r="2" fill="' + fillColor + '"/>' +
-                               '<circle cx="68" cy="76" r="2" fill="' + fillColor + '"/>';
+                case 'limb':
+                    svgContent = '<path d="M34,72 Q46,66 58,72 Q70,78 84,72" stroke="' + strokeColor + '" stroke-width="2.2" fill="none"/>' +
+                               '<path d="M36,82 Q48,76 60,82 Q72,88 86,82" stroke="' + strokeColor + '" stroke-width="2.2" fill="none"/>' +
+                               '<path d="M40,60 L40,90 M50,58 L50,91 M60,58 L60,92 M70,58 L70,90" stroke="' + strokeColor + '" stroke-width="1.2" opacity="0.8"/>';
                     break;
-                case 'hui':
-                    svgContent = '<path d="M28,78 L28,88 L38,88 L38,78 L48,78 L48,88 L58,88 L58,78 L68,78 L68,88 L78,88 L78,78 L88,78" stroke="' + strokeColor + '" stroke-width="2.5" fill="none"/>' +
-                               '<path d="M32,38 L32,48 L42,48 L42,38 L52,38 L52,48 L62,48 L62,38 L72,38 L72,48" stroke="' + strokeColor + '" stroke-width="2.5" fill="none"/>';
+                case 'mouth_horn':
+                    svgContent = '<path d="M28,54 Q48,28 74,34 Q60,48 94,42 Q72,56 98,68 Q64,64 42,84 Q44,64 28,54" stroke="' + strokeColor + '" stroke-width="2" fill="none"/>' +
+                               '<path d="M38,58 L88,48 M40,62 L78,62 M44,66 L90,74" stroke="' + strokeColor + '" stroke-width="1.4" opacity="0.85"/>';
                     break;
-                case 'scale':
-                    svgContent = '<circle cx="38" cy="72" r="6" fill="none" stroke="' + strokeColor + '" stroke-width="2"/>' +
-                               '<circle cx="58" cy="72" r="6" fill="none" stroke="' + strokeColor + '" stroke-width="2"/>' +
-                               '<circle cx="48" cy="60" r="6" fill="none" stroke="' + strokeColor + '" stroke-width="2"/>' +
-                               '<circle cx="78" cy="72" r="6" fill="none" stroke="' + strokeColor + '" stroke-width="2"/>' +
-                               '<circle cx="68" cy="60" r="6" fill="none" stroke="' + strokeColor + '" stroke-width="2"/>';
+                case 'mane':
+                    svgContent = '<path d="M26,58 Q46,48 66,58 Q82,66 100,54" stroke="' + strokeColor + '" stroke-width="2.2" fill="none"/>' +
+                               '<path d="M28,64 Q48,54 68,64 Q84,72 102,60" stroke="' + strokeColor + '" stroke-width="1.8" fill="none"/>' +
+                               '<path d="M30,70 Q50,62 70,70 Q84,78 98,68" stroke="' + strokeColor + '" stroke-width="1.4" fill="none"/>';
                     break;
-                case 'ruyi':
-                    svgContent = '<path d="M42,28 Q52,16 60,28 Q68,16 78,28" stroke="' + strokeColor + '" stroke-width="2.5" fill="none"/>' +
-                               '<path d="M48,22 Q60,10 72,22" stroke="' + strokeColor + '" stroke-width="1.5" fill="none"/>' +
-                               '<circle cx="60" cy="88" r="5" fill="' + strokeColor + '"/>' +
-                               '<circle cx="60" cy="88" r="2.5" fill="' + fillColor + '"/>';
+                case 'ear':
+                    svgContent = '<path d="M22,72 Q42,44 70,54 Q94,62 98,44 Q112,66 88,86 Q58,100 22,88" stroke="' + strokeColor + '" stroke-width="2" fill="none"/>' +
+                               '<path d="M34,78 Q46,66 58,74 Q48,86 34,78" stroke="' + strokeColor + '" stroke-width="1.5" fill="none"/>' +
+                               '<circle cx="42" cy="76" r="9" stroke="' + strokeColor + '" stroke-width="1.6" fill="none"/>';
+                    break;
+                case 'eye':
+                    svgContent = '<path d="M36,54 Q56,34 78,48 Q72,70 48,72 Q34,66 36,54" stroke="' + strokeColor + '" stroke-width="2" fill="none"/>' +
+                               '<circle cx="62" cy="72" r="10" stroke="' + strokeColor + '" stroke-width="1.8" fill="none"/>' +
+                               '<circle cx="62" cy="72" r="4" fill="' + fillColor + '"/>' +
+                               '<path d="M44,44 Q62,34 88,48" stroke="' + strokeColor + '" stroke-width="1.5" fill="none"/>';
+                    break;
+                case 'head_horn':
+                    svgContent = '<path d="M58,28 Q78,36 70,58 Q64,76 82,92" stroke="' + strokeColor + '" stroke-width="2" fill="none"/>' +
+                               '<path d="M48,58 Q60,70 76,66" stroke="' + strokeColor + '" stroke-width="1.6" fill="none"/>' +
+                               '<path d="M46,78 Q58,88 78,86" stroke="' + strokeColor + '" stroke-width="1.6" fill="none"/>';
+                    break;
+                case 'back_cloud':
+                    svgContent = '<path d="M18,82 Q34,58 54,70 Q66,52 84,64 Q100,54 110,70" stroke="' + strokeColor + '" stroke-width="2.2" fill="none"/>' +
+                               '<path d="M28,84 Q44,74 56,84 Q68,94 82,82 Q96,72 104,84" stroke="' + strokeColor + '" stroke-width="1.8" fill="none"/>';
+                    break;
+                case 'neck_mane':
+                    svgContent = '<path d="M24,50 Q52,34 86,42 Q70,50 108,56 Q74,62 104,76 Q62,74 34,90" stroke="' + strokeColor + '" stroke-width="2" fill="none"/>' +
+                               '<path d="M34,52 Q62,48 94,56 M30,62 Q60,60 98,68 M28,72 Q58,74 90,84" stroke="' + strokeColor + '" stroke-width="1.3" fill="none" opacity="0.85"/>';
                     break;
             }
             return svgContent;

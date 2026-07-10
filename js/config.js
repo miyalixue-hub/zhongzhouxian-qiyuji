@@ -86,7 +86,16 @@
             { id: 'side_painting', name: '侧面彩绘', desc: '中轴线图案/祥云/北京剪影' },
             { id: 'custom_plate', name: '车牌号码', desc: '自定义数字' }
         ];
-        var patterns = [{ id: 'cloud', name: '云纹', meaning: '祥云瑞气·吉祥如意' }, { id: 'hui', name: '回纹', meaning: '连绵不断·富贵不断' }, { id: 'scale', name: '鳞纹', meaning: '龙鳞护体·坚不可摧' }, { id: 'ruyi', name: '如意纹', meaning: '事事如意·称心如意' }];
+        var patterns = [
+            { id: 'limb', name: '肢部纹饰', meaning: '层叠水鳞·护体镇水' },
+            { id: 'mouth_horn', name: '嘴角纹饰', meaning: '火焰吐息·威慑水患' },
+            { id: 'mane', name: '鬃毛', meaning: '风动水纹·灵气流转' },
+            { id: 'ear', name: '耳部纹饰', meaning: '旋涡听水·守望桥声' },
+            { id: 'eye', name: '眼部纹饰', meaning: '圆目凝神·明察水脉' },
+            { id: 'head_horn', name: '头部倚角', meaning: '角冠护首·镇守桥门' },
+            { id: 'back_cloud', name: '脊背云纹', meaning: '云气绕身·瑞意绵延' },
+            { id: 'neck_mane', name: '颈部鬃髯', meaning: '长髯迎风·神兽昂扬' }
+        ];
         var expressions = [{ id: 'cute', name: '呆萌', desc: '圆滚滚·笑眯眯', emoji: '😊' }, { id: 'fierce', name: '威武', desc: '怒目圆睁·气势十足', emoji: '😤' }, { id: 'cool', name: '帅气', desc: '昂首挺胸·神采飞扬', emoji: '😎' }, { id: 'funny', name: '搞笑', desc: '吐舌头·搞怪表情', emoji: '🤪' }];
         var colors = [{ id: 'zhusha', name: '朱砂红', hex: '#C45C5C', meaning: '辟邪纳福·热烈醒目' }, { id: 'shiqing', name: '石青蓝', hex: '#4A7FB5', meaning: '矿物青色·沉静古雅' }, { id: 'daiwa', name: '黛瓦灰', hex: '#6B7B8C', meaning: '城楼屋瓦·厚重含蓄' }, { id: 'liuli', name: '琉璃黄', hex: '#D4A843', meaning: '宫城琉璃·明亮珍贵' }, { id: 'yuebai', name: '月白', hex: '#F0EDE5', meaning: '月色如瓷·清雅素净' }, { id: 'mohei', name: '墨黑', hex: '#2D2D2D', meaning: '浓墨重彩·沉稳庄重' }, { id: 'jin', name: '鎏金', hex: '#C5A355', meaning: '金碧辉煌·尊贵荣耀' }, { id: 'yin', name: '铸银', hex: '#B0B0B0', meaning: '银光素雅·内敛含蓄' }];
         var elements = [{ id: 'cloud_base', name: '云纹底座' }, { id: 'map_base', name: '中轴线地图底座' }, { id: 'km_marker', name: '零公里标志' }, { id: 'plaque', name: '正阳门牌匾' }, { id: 'archaeology_tag', name: '考古铭牌' }, { id: 'custom_tag', name: '个性化铭牌' }];
