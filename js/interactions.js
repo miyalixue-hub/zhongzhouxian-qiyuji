@@ -106,6 +106,12 @@
                 });
             }
             
+            // page-9的返回按钮（预览卡片区）
+            var btnBack7 = document.getElementById('btn-back-7');
+            if (btnBack7) btnBack7.addEventListener('click', function() {
+                showPage(8);
+            });
+            
             // page-10的返回按钮 - 总是返回page-9
             var p10back = document.getElementById('btn-back-8');
             if (p10back) p10back.addEventListener('click', function() {
