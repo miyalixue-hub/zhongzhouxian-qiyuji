@@ -42,7 +42,7 @@
             currentPage: 1, 
             selectedCreature: null, 
             selectedPatterns: [], 
-            selectedExpression: null, 
+            selectedExpression: 'cute',
             selectedColors: [], 
             selectedElements: [], 
             selectedCandidate: null,

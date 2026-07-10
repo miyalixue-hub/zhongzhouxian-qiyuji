@@ -73,7 +73,7 @@
             var homeBtn = $('#btn-home-p2');
             if (homeBtn) homeBtn.addEventListener('click', function() { showPage(0); });
             
-            // 前进按钮 (pages 4-7: 选择神兽→贴纹饰→姿态表情→传统色)
+            // 前进按钮 (pages 4-7: 选择神兽→贴纹饰→传统色，已移除姿态表情页)
             for (var pg2 = 4; pg2 <= 7; pg2++) {
                 var el = $('#page-' + pg2);
                 if (!el) continue;
@@ -90,7 +90,7 @@
                             }
                         } else {
                             var currentP = parseInt(pageId.replace('page-', ''));
-                            showPage(currentP + 1);
+                            showPage(currentP === 5 ? 7 : currentP + 1);
                         }
                     }
                 });
@@ -103,7 +103,7 @@
                 var bb = el.querySelector('.btn-back');
                 if (bb) bb.addEventListener('click', function() {
                     var currentP = parseInt(this.closest('.page-section').id.replace('page-', ''));
-                    showPage(currentP - 1);
+                    showPage(currentP === 7 ? 5 : currentP - 1);
                 });
             }
             

@@ -65,6 +65,7 @@ showPage(2);
         var $$ = function(s) { return document.querySelectorAll(s); };
         
         function showPage(n) {
+            if (n === 6) n = 7;
             $$('.page-section').forEach(function(p) { p.classList.remove('active'); });
             var pageId = 'page-' + n;
             var t = $('#' + pageId);
@@ -616,7 +617,7 @@ showPage(2);
         function resetAndGoHome() {
             state.selectedCreature = null;
             state.selectedPatterns = [];
-            state.selectedExpression = null;
+            state.selectedExpression = 'cute';
             state.selectedColors = [];
             state.selectedElements = [];
             state.selectedCandidate = null;

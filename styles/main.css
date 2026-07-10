@@ -2768,6 +2768,11 @@
         #view-zhengyangmen .page-section > .progress-bar {
             display: none !important;
         }
+
+        #page-6,
+        .recipe-tag[data-step="face"] {
+            display: none !important;
+        }
         
         /* 预览区 */
         .preview-area {
