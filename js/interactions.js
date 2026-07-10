@@ -11,7 +11,7 @@
             if (defaultCreature && defaultCreature.dataset.id && defaultCreature.dataset.id !== 'dangdangche') {
                 state.selectedCreature = defaultCreature.dataset.id;
             }
-            var defaultPattern = document.querySelector('#page-3 .pattern-card.selected');
+            var defaultPattern = document.querySelector('#page-5 .pattern-card.selected');
             if (defaultPattern && defaultPattern.dataset.id) {
                 state.selectedPatterns = [defaultPattern.dataset.id];
             }
@@ -19,7 +19,7 @@
             if (defaultExpression && defaultExpression.dataset.id) {
                 state.selectedExpression = defaultExpression.dataset.id;
             }
-            var defaultColor = document.querySelector('#page-5 .color-card.selected');
+            var defaultColor = document.querySelector('#page-7 .color-card.selected');
             if (defaultColor && defaultColor.dataset.id) {
                 state.selectedColors = [defaultColor.dataset.id];
             }
