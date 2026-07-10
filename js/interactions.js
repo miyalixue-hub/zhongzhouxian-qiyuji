@@ -6,6 +6,29 @@
         function init() {
             console.log('[INIT] Starting initialization...');
             try {
+            // 同步 HTML 默认选中状态到 state（解决"没点就不识别"的问题）
+            var defaultCreature = document.querySelector('#page-4 .option-card.selected');
+            if (defaultCreature && defaultCreature.dataset.id && defaultCreature.dataset.id !== 'dangdangche') {
+                state.selectedCreature = defaultCreature.dataset.id;
+            }
+            var defaultPattern = document.querySelector('#page-3 .pattern-card.selected');
+            if (defaultPattern && defaultPattern.dataset.id) {
+                state.selectedPatterns = [defaultPattern.dataset.id];
+            }
+            var defaultExpression = document.querySelector('#page-6 .expression-card.selected');
+            if (defaultExpression && defaultExpression.dataset.id) {
+                state.selectedExpression = defaultExpression.dataset.id;
+            }
+            var defaultColor = document.querySelector('#page-5 .color-card.selected');
+            if (defaultColor && defaultColor.dataset.id) {
+                state.selectedColors = [defaultColor.dataset.id];
+            }
+            var defaultElement = document.querySelector('#page-8 .element-card.selected');
+            if (defaultElement && defaultElement.dataset.id) {
+                state.selectedElements = [defaultElement.dataset.id];
+            }
+            console.log('[INIT] Default state synced:', { creature: state.selectedCreature, patterns: state.selectedPatterns, expression: state.selectedExpression, colors: state.selectedColors, elements: state.selectedElements });
+            
             showPage(0);
             console.log('[INIT] showPage(0) OK, currentPage=' + state.currentPage);
             // 修改page-4的卡片点击事件，区分神兽和铛铛车
