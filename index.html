@@ -1302,7 +1302,8 @@ if (typeof goToStation === 'function') {
                     <!-- 左侧：大尺寸角色预览 -->
                     <div class="preview-card-left">
                         <div class="preview-card-title">你的专属神兽</div>
-                        <div class="preview-creature-large">
+                        <div class="preview-creature-large" id="preview-creature-image-container">
+                            <img id="preview-creature-image" src="" alt="神兽预览" style="display:none;max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;">
                             <svg class="creature-svg" viewBox="0 0 80 80">
                                 <ellipse cx="40" cy="68" rx="28" ry="7" fill="#E8E0D0"/>
                                 <path d="M18,65 Q28,58 38,65 Q48,72 58,65 Q68,58 65,65" stroke="#C45C5C" stroke-width="2" fill="none" opacity="0.5"/>
@@ -1587,7 +1588,7 @@ window.addEventListener('unhandledrejection', function(e) {
 console.log('[LOADER] Error handler installed.');
 </script>
 <script src="js/config.js?v=20260707b"></script>
-    <script src="js/core.js?v=20260710d"></script>
+    <script src="js/core.js?v=20260710f"></script>
     <script src="js/ai-generate.js?v=20260707b"></script>
     <script src="js/meshy-3d.js?v=20260707b"></script>
     <script src="js/interactions.js?v=20260707b"></script>

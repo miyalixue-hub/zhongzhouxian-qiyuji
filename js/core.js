@@ -112,11 +112,26 @@ showPage(2);
             var color = state.selectedColors.length > 0 ? findById(colors, state.selectedColors[0]).hex : '#C45C5C';
             if (state.selectedCreature) { var cr = findById(creatures, state.selectedCreature); if (cr) color = cr.color; }
             
-            // 更新SVG颜色
-            cs.querySelectorAll('ellipse, circle').forEach(function(el) {
-                var f = el.getAttribute('fill');
-                if (f && f !== 'white' && f !== '#333' && f !== 'none' && f !== '#E8E0D0' && !f.includes('rgba')) el.setAttribute('fill', color);
-            });
+            // 更新神兽图片
+            var creatureImg = pa.querySelector('#preview-creature-image');
+            var creatureSvg = pa.querySelector('.creature-svg');
+            if (creatureImg && creatureSvg && state.selectedCreature) {
+                var creature = findById(creatures, state.selectedCreature);
+                if (creature && creature.image) {
+                    // 有图片则显示图片，隐藏 SVG
+                    creatureImg.src = creature.image;
+                    creatureImg.style.display = 'block';
+                    creatureSvg.style.display = 'none';
+                } else {
+                    // 没图片则显示 SVG，更新颜色
+                    creatureImg.style.display = 'none';
+                    creatureSvg.style.display = 'block';
+                    creatureSvg.querySelectorAll('ellipse, circle').forEach(function(el) {
+                        var f = el.getAttribute('fill');
+                        if (f && f !== 'white' && f !== '#333' && f !== 'none' && f !== '#E8E0D0' && !f.includes('rgba')) el.setAttribute('fill', color);
+                    });
+                }
+            }
             
             // 更新选择清单
             var list = pa.querySelector('.preview-selection-list');

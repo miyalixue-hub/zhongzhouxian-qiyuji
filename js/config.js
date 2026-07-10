@@ -60,7 +60,13 @@
             meshyThumbnail: null,
             meshyTaskId: null
         };
-        var creatures = [{ id: 'gongfu', name: '蚣蝮', desc: '镇水兽·龙生九子·趴伏桥头守望', color: '#4A7FB5' }, { id: 'xishui', name: '吸水兽', desc: '桥孔兽·好吞吐·蹲踞桥孔吐水', color: '#5B8C6B' }, { id: 'chaofeng', name: '嘲风', desc: '殿角兽·好望远', color: '#D4A843' }, { id: 'bixi', name: '赑屃', desc: '碑下兽·好负重', color: '#6B7B8C' }];
+        var creatures = [
+            { id: 'gongfu', name: '蚣蝮', desc: '镇水兽·龙生九子·趴伏桥头守望', color: '#4A7FB5', image: 'https://zhongzhouxian-1413555799.cos.ap-guangzhou.myqcloud.com/assets/zhenshui_shou.png' },
+            { id: 'xishui', name: '吸水兽', desc: '桥孔兽·好吞吐·蹲踞桥孔吐水', color: '#5B8C6B', image: 'https://zhongzhouxian-1413555799.cos.ap-guangzhou.myqcloud.com/assets/xishui_shou.png' },
+            { id: 'chaofeng', name: '嘲风', desc: '殿角兽·好望远', color: '#D4A843', image: '' },
+            { id: 'bixi', name: '赑屃', desc: '碑下兽·好负重', color: '#6B7B8C', image: '' },
+            { id: 'dangdangche', name: '铛铛车', desc: '正阳门特色·有轨电车', color: '#2E7D32', image: 'https://miyalixue-hub.github.io/zhongzhouxian-qiyuji/assets/dangdangche.png?v=20260705' }
+        ];
         
         // 铛铛车选项数据
         var tramColors = [
