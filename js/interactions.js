@@ -107,11 +107,20 @@
                 });
             }
             
-            // page-9的返回按钮（预览卡片区）
+            // page-9的返回按钮（预览卡片区）- 根据模式动态返回
             var btnBack7 = document.getElementById('btn-back-7');
             if (btnBack7) btnBack7.addEventListener('click', function() {
-                showPage(8);
+                goBackFromPreview();
             });
+            
+            // 全局返回函数：铛铛车模式返回装饰选择页，神兽模式返回元素选择页
+            window.goBackFromPreview = function() {
+                if (state.isTramMode) {
+                    showPage('4c');
+                } else {
+                    showPage(8);
+                }
+            };
             
             // page-10的返回按钮 - 总是返回page-9
             var p10back = document.getElementById('btn-back-8');
