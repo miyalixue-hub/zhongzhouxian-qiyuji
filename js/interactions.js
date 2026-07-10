@@ -502,7 +502,7 @@
             ctx.font = 'bold 36px KaiTi, STKaiti, serif';
             ctx.fillStyle = '#3a2a1a';
             ctx.textAlign = 'center';
-            ctx.fillText('中轴奇游记·神兽档案', 375, 70);
+            ctx.fillText('中轴奇遇记·神兽档案', 375, 70);
 
             // Separator
             ctx.strokeStyle = '#c04830';
@@ -745,7 +745,7 @@
             var aiPrompt = state._lastAiPrompt || '';
             var hasRealModel = !!state.meshyModelUrl;
 
-            var content = '=== 中轴奇游记·神兽3D打印工单 ===\n\n';
+            var content = '=== 中轴奇遇记·神兽3D打印工单 ===\n\n';
             content += '神兽名称：' + (creatureName || '未命名') + '\n';
             content += '纹饰风格：' + (patternNames.join('、') || '无') + '\n';
             content += '表情姿态：' + (expressionName || '未选择') + '\n';
@@ -765,7 +765,7 @@
             content += '建议材料：PLA\n';
             content += '预估时间：约45分钟\n\n';
             content += '生成时间：' + new Date().toLocaleString('zh-CN') + '\n';
-            content += '来源：中轴奇游记·正阳门神兽工坊\n';
+            content += '来源：中轴奇遇记·正阳门神兽工坊\n';
 
             var blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
             var url = URL.createObjectURL(blob);
@@ -807,8 +807,8 @@
         function shareToParents() {
             if (navigator.share) {
                 navigator.share({
-                    title: '我的中轴奇游记·神兽档案',
-                    text: '我在中轴奇游记创建了一只专属神兽！快来看看！',
+                    title: '我的中轴奇遇记·神兽档案',
+                    text: '我在中轴奇遇记创建了一只专属神兽！快来看看！',
                     url: window.location.href
                 }).catch(function(err) {
                     if (err.name !== 'AbortError') {
@@ -1145,7 +1145,7 @@
                 ctx.strokeStyle = '#c04830'; ctx.lineWidth = 3; ctx.strokeRect(20, 20, 710, 960);
                 ctx.strokeStyle = '#b8943e'; ctx.lineWidth = 1; ctx.strokeRect(25, 25, 700, 950);
                 ctx.font = 'bold 36px KaiTi, STKaiti, serif'; ctx.fillStyle = '#3a2a1a'; ctx.textAlign = 'center';
-                ctx.fillText('中轴奇游记·神兽档案', 375, 70);
+                ctx.fillText('中轴奇遇记·神兽档案', 375, 70);
                 ctx.strokeStyle = '#c04830'; ctx.lineWidth = 2;
                 ctx.beginPath(); ctx.moveTo(100, 90); ctx.lineTo(650, 90); ctx.stroke();
                 var svgWrap = document.getElementById('creature-card-svg-wrap');
@@ -1204,7 +1204,7 @@
 
             function shareToParents() {
                 if (navigator.share) {
-                    navigator.share({ title: '我的中轴奇游记·神兽档案', text: '我在中轴奇游记创建了一只专属神兽！快来看看！', url: window.location.href })
+                    navigator.share({ title: '我的中轴奇遇记·神兽档案', text: '我在中轴奇遇记创建了一只专属神兽！快来看看！', url: window.location.href })
                     .catch(function(err) { if (err.name !== 'AbortError') showShareFallback(); });
                 } else { showShareFallback(); }
             }
