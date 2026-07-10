@@ -72,6 +72,12 @@
             // P2 回到首页按钮 - 回到地图首页
             var homeBtn = $('#btn-home-p2');
             if (homeBtn) homeBtn.addEventListener('click', function() {
+                // 隐藏所有页面section
+                document.querySelectorAll('.page-section').forEach(function(p) { p.classList.remove('active'); });
+                // 隐藏正阳门视图
+                var zv = document.getElementById('view-zhengyangmen');
+                if (zv) zv.style.display = 'none';
+                // 显示地图首页
                 if (typeof showView === 'function') showView('home');
                 else showPage(0);
             });
