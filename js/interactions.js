@@ -28,6 +28,7 @@
                     }
                     updateNextButton();
                     updateRecipeBar();
+                    updatePreview();
                 });
             });
             handleSingle('.expression-card', 'selectedExpression');
@@ -55,7 +56,7 @@
                 state.selectedCreature = 'gongfu';
                 var fc = $('#page-4 .option-card');
                 if (fc) fc.classList.add('selected');
-                showPage(4); updateNextButton(); updateRecipeBar();
+                showPage(4); updateNextButton(); updateRecipeBar(); updatePreview();
             });
 
             // P1副按钮 - 显示即将开放提示

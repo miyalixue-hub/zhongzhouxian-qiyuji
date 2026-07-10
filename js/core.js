@@ -115,16 +115,35 @@ showPage(2);
             // 更新神兽图片
             var creatureImg = pa.querySelector('#preview-creature-image');
             var creatureSvg = pa.querySelector('.creature-svg');
-            if (creatureImg && creatureSvg && state.selectedCreature) {
-                var creature = findById(creatures, state.selectedCreature);
-                if (creature && creature.image) {
-                    // 有图片则显示图片，隐藏 SVG
-                    creatureImg.src = creature.image;
-                    creatureImg.style.display = 'block';
-                    creatureSvg.style.display = 'none';
+            if (creatureImg && creatureSvg) {
+                if (state.isTramMode) {
+                    // 铛铛车模式：显示铛铛车图片
+                    var tramCreature = findById(creatures, 'dangdangche');
+                    if (tramCreature && tramCreature.image) {
+                        creatureImg.src = tramCreature.image;
+                        creatureImg.style.display = 'block';
+                        creatureSvg.style.display = 'none';
+                    } else {
+                        creatureImg.style.display = 'none';
+                        creatureSvg.style.display = 'block';
+                    }
+                } else if (state.selectedCreature) {
+                    var creature = findById(creatures, state.selectedCreature);
+                    if (creature && creature.image) {
+                        creatureImg.src = creature.image;
+                        creatureImg.style.display = 'block';
+                        creatureSvg.style.display = 'none';
+                    } else {
+                        creatureImg.style.display = 'none';
+                        creatureSvg.style.display = 'block';
+                        creatureSvg.querySelectorAll('ellipse, circle').forEach(function(el) {
+                            var f = el.getAttribute('fill');
+                            if (f && f !== 'white' && f !== '#333' && f !== 'none' && f !== '#E8E0D0' && !f.includes('rgba')) el.setAttribute('fill', color);
+                        });
+                    }
                 } else {
-                    // 没图片则显示 SVG，更新颜色
                     creatureImg.style.display = 'none';
+                    creatureImg.src = '';
                     creatureSvg.style.display = 'block';
                     creatureSvg.querySelectorAll('ellipse, circle').forEach(function(el) {
                         var f = el.getAttribute('fill');
@@ -138,12 +157,18 @@ showPage(2);
             if (list) {
                 var items = [];
                 
-                // 神兽
-                if (state.selectedCreature) {
+                // 神兽/铛铛车
+                if (state.isTramMode) {
+                    items.push({
+                        icon: '🚃',
+                        label: '车型',
+                        value: '铛铛车'
+                    });
+                } else if (state.selectedCreature) {
                     var creature = findById(creatures, state.selectedCreature);
                     if (creature) {
                         items.push({
-                            icon: '🐉',
+                            icon: '',
                             label: '神兽',
                             value: creature.name
                         });
@@ -262,7 +287,7 @@ showPage(2);
             var show = state.currentPage >= 4 && state.currentPage <= 8;
             if (show) { bar.classList.remove('hidden'); } else { bar.classList.add('hidden'); }
             var tags = {
-                creature: { label: state.selectedCreature ? (findById(creatures, state.selectedCreature) ? findById(creatures, state.selectedCreature).name : null) : null },
+                creature: { label: state.isTramMode ? "铛铛车" : (state.selectedCreature ? (findById(creatures, state.selectedCreature) ? findById(creatures, state.selectedCreature).name : null) : null) },
                 pattern: { label: state.selectedPatterns && state.selectedPatterns.length > 0 ? state.selectedPatterns.map(function(p) { var x = findById(patterns, p); return x ? x.name : ''; }).filter(Boolean).join('·') : null },
                 face: { label: state.selectedExpression ? (findById(expressions, state.selectedExpression) ? findById(expressions, state.selectedExpression).emoji + ' ' + findById(expressions, state.selectedExpression).name : null) : null },
                 color: { label: state.selectedColors && state.selectedColors.length > 0 ? state.selectedColors.map(function(c) { var x = findById(colors, c); return x ? x.name : ''; }).filter(Boolean).join('·') : null },
