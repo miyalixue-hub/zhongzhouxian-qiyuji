@@ -321,6 +321,8 @@
             state.currentPage = 9;
             document.querySelectorAll('.page-section').forEach(function(p) { p.classList.remove('active'); });
             page9.classList.add('active');
+            // 确保预览区刷新：显示铛铛车图片而非默认怪兽SVG
+            if (typeof updatePreview === 'function') updatePreview();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         
@@ -1015,6 +1017,8 @@
                 state.currentPage = 9;
                 document.querySelectorAll('.page-section').forEach(function(p) { p.classList.remove('active'); });
                 page9.classList.add('active');
+                // 确保预览区刷新：显示铛铛车图片而非默认怪兽SVG
+                if (typeof updatePreview === 'function') updatePreview();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
 
