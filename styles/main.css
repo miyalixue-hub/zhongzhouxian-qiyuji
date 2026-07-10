@@ -1332,7 +1332,7 @@
         .color-card {
             min-height: 258px;
             background:
-                radial-gradient(circle at 50% 0%, rgba(255,255,255,0.96), rgba(255,255,255,0.92) 42%, rgba(255,252,244,0.9) 100%);
+                linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,254,250,0.95));
             border-radius: 22px;
             padding: 22px 18px 18px;
             border: 2px solid rgba(232, 220, 196, 0.82);
@@ -1348,6 +1348,8 @@
         
         .color-card:hover, .color-card.selected {
             border-color: var(--zhusha);
+            background:
+                linear-gradient(180deg, rgba(255,250,240,0.98), rgba(255,244,224,0.94));
             box-shadow:
                 0 10px 24px rgba(58,42,26,0.1),
                 0 0 0 1px rgba(196,92,92,0.18),
@@ -1355,49 +1357,27 @@
         }
         
         .color-swatch-wrap {
-            width: min(100%, 188px);
+            width: min(100%, 224px);
             height: 118px;
             margin: 0 auto 12px;
             position: relative;
             transition: transform 0.3s;
-            background: none;
-            filter:
-                drop-shadow(0 8px 7px rgba(58,42,26,0.2))
-                drop-shadow(0 2px 1px rgba(255,255,255,0.8));
-            overflow: visible;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: contain;
+            filter: none;
         }
         .color-swatch-wrap svg {
             display: none;
         }
-        .color-swatch-wrap::before,
-        .color-swatch-wrap::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: contain;
-        }
-        .color-swatch-wrap::before {
-            background:
-                radial-gradient(circle at 48% 28%, rgba(255,255,255,0.22), transparent 26%),
-                linear-gradient(180deg, rgba(255,255,255,0.12), rgba(0,0,0,0.1)),
-                var(--tile-color);
-            -webkit-mask: url('../assets/tile-mask.png') center / contain no-repeat;
-            mask: url('../assets/tile-mask.png') center / contain no-repeat;
-        }
-        .color-swatch-wrap::after {
-            background-image: url('../assets/tile-lineart.png');
-            opacity: 0.88;
-        }
-        .color-card[data-id="zhusha"] .color-swatch-wrap { --tile-color: #C45C5C; }
-        .color-card[data-id="shiqing"] .color-swatch-wrap { --tile-color: #4A7FB5; }
-        .color-card[data-id="daiwa"] .color-swatch-wrap { --tile-color: #6B7B8C; }
-        .color-card[data-id="liuli"] .color-swatch-wrap { --tile-color: #D4A843; }
-        .color-card[data-id="yuebai"] .color-swatch-wrap { --tile-color: #F0EDE5; }
-        .color-card[data-id="mohei"] .color-swatch-wrap { --tile-color: #2D2D2D; }
-        .color-card[data-id="jin"] .color-swatch-wrap { --tile-color: #C5A355; }
-        .color-card[data-id="yin"] .color-swatch-wrap { --tile-color: #B0B0B0; }
+        .color-card[data-id="zhusha"] .color-swatch-wrap { background-image: url('../assets/trad-color-zhusha.png'); }
+        .color-card[data-id="shiqing"] .color-swatch-wrap { background-image: url('../assets/trad-color-shiqing.png'); }
+        .color-card[data-id="daiwa"] .color-swatch-wrap { background-image: url('../assets/trad-color-daiwa.png'); }
+        .color-card[data-id="liuli"] .color-swatch-wrap { background-image: url('../assets/trad-color-liuli.png'); }
+        .color-card[data-id="yuebai"] .color-swatch-wrap { background-image: url('../assets/trad-color-yuebai.png'); }
+        .color-card[data-id="mohei"] .color-swatch-wrap { background-image: url('../assets/trad-color-mohei.png'); }
+        .color-card[data-id="jin"] .color-swatch-wrap { background-image: url('../assets/texture-jin.png'); }
+        .color-card[data-id="yin"] .color-swatch-wrap { background-image: url('../assets/texture-yin.png'); }
         .color-card[data-id="jin"],
         .color-card[data-id="yin"] {
             display: none;
@@ -1416,8 +1396,8 @@
                 border-radius: 18px;
             }
             .color-swatch-wrap {
-                width: min(100%, 158px);
-                height: 100px;
+                width: min(100%, 176px);
+                height: 92px;
             }
         }
         /* 保留旧的.color-swatch以防其他地方引用 */
