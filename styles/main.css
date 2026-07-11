@@ -2773,6 +2773,146 @@
         .recipe-tag[data-step="face"] {
             display: none !important;
         }
+
+        /* 3D生成等待小游戏：神兽巡桥 */
+        .patrol-game {
+            margin-top: 14px;
+            padding: 14px;
+            border: 2px solid rgba(232, 220, 196, 0.9);
+            border-radius: 18px;
+            background:
+                radial-gradient(circle at 50% 0%, rgba(255,255,255,0.98), rgba(255,253,247,0.94) 58%, rgba(255,248,236,0.9));
+            box-shadow:
+                0 8px 18px rgba(58,42,26,0.08),
+                inset 0 1px 0 rgba(255,255,255,0.92);
+            font-family: "STKaiti", "KaiTi", "楷体", serif;
+        }
+
+        .patrol-game-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .patrol-game-kicker {
+            font-size: 11px;
+            color: var(--text-light);
+            letter-spacing: 2px;
+            margin-bottom: 2px;
+        }
+
+        .patrol-game-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-dark);
+            letter-spacing: 2px;
+        }
+
+        .patrol-game-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            text-align: right;
+            font-size: 11px;
+            color: var(--text-light);
+            white-space: nowrap;
+        }
+
+        .patrol-game-stats b {
+            color: var(--zhusha);
+            font-size: 14px;
+        }
+
+        .patrol-canvas-wrap {
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(232, 220, 196, 0.9);
+            border-radius: 14px;
+            background: #f2e5c7;
+            box-shadow: inset 0 0 26px rgba(91, 75, 51, 0.12);
+            touch-action: none;
+        }
+
+        #patrol-canvas {
+            display: block;
+            width: 100%;
+            aspect-ratio: 8 / 9;
+        }
+
+        .patrol-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            background: rgba(255, 250, 239, 0.78);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            text-align: center;
+        }
+
+        .patrol-overlay.hidden {
+            display: none;
+        }
+
+        .patrol-overlay-card {
+            width: 100%;
+            padding: 18px 14px;
+            background: rgba(255,255,255,0.84);
+            border-radius: 16px;
+            box-shadow: 0 10px 28px rgba(54, 38, 20, 0.12);
+        }
+
+        .patrol-overlay-title {
+            margin-bottom: 6px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-dark);
+            letter-spacing: 1px;
+        }
+
+        .patrol-overlay-copy {
+            margin-bottom: 12px;
+            color: var(--text-light);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        #patrol-start-btn,
+        .patrol-game-actions button {
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 700;
+            border-radius: 14px;
+            padding: 10px 16px;
+        }
+
+        #patrol-start-btn,
+        #patrol-restart-btn {
+            color: white;
+            background: linear-gradient(135deg, var(--zhusha), #9f3f2f);
+            box-shadow: 0 6px 14px rgba(196,92,92,0.22);
+        }
+
+        .patrol-game-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .patrol-game-actions button {
+            flex: 1;
+        }
+
+        #patrol-pause-btn {
+            color: var(--text-dark);
+            background: rgba(255,255,255,0.72);
+            border: 1px solid rgba(91,75,51,0.16);
+        }
         
         /* 预览区 */
         .preview-area {

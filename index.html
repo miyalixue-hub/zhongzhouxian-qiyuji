@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>中轴奇游记</title>
-    <link rel="stylesheet" href="styles/main.css?v=20260710i">
+    <link rel="stylesheet" href="styles/main.css?v=20260711a">
     <!-- Google model-viewer: 3D模型展示组件（使用 jsdelivr CDN 国内可访问） -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js?v=20260706b"></script>
 </head>
@@ -1448,6 +1448,35 @@ if (typeof goToStation === 'function') {
                         <div id="meshy-status-text">⏳ 等待 Meshy 响应...</div>
                         <div id="meshy-status-detail" style="font-size:11px;color:#a0884a;margin-top:4px;"></div>
                     </div>
+
+                    <!-- 模型生成等待小游戏 -->
+                    <div class="patrol-game" id="patrol-game" style="display:none;">
+                        <div class="patrol-game-header">
+                            <div>
+                                <div class="patrol-game-kicker">模型炼成等待小游戏</div>
+                                <div class="patrol-game-title">神兽巡桥</div>
+                            </div>
+                            <div class="patrol-game-stats">
+                                <span>镇水值 <b id="patrol-score">0</b></span>
+                                <span>剩余 <b id="patrol-time">30</b></span>
+                                <span>安稳度 <b id="patrol-hearts">3</b></span>
+                            </div>
+                        </div>
+                        <div class="patrol-canvas-wrap" id="patrol-canvas-wrap">
+                            <canvas id="patrol-canvas" width="320" height="360" aria-label="神兽巡桥小游戏"></canvas>
+                            <div class="patrol-overlay" id="patrol-overlay">
+                                <div class="patrol-overlay-card">
+                                    <div class="patrol-overlay-title" id="patrol-overlay-title">模型正在炼成中</div>
+                                    <div class="patrol-overlay-copy" id="patrol-overlay-copy">拖动神兽接住水滴、祥云和金光，避开浊浪。</div>
+                                    <button type="button" id="patrol-start-btn">开始巡桥</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="patrol-game-actions">
+                            <button type="button" id="patrol-pause-btn">暂停</button>
+                            <button type="button" id="patrol-restart-btn">再巡一次</button>
+                        </div>
+                    </div>
                     
                     <!-- 失败重试按钮 -->
                     <div id="meshy-retry-area" style="display:none;text-align:center;margin-top:12px;">
@@ -1588,6 +1617,7 @@ console.log('[LOADER] Error handler installed.');
     <script src="js/ai-generate.js?v=20260710b"></script>
     <script src="js/meshy-3d.js?v=20260710a"></script>
     <script src="js/interactions.js?v=20260710h"></script>
+    <script src="js/patrol-game.js?v=20260711a"></script>
 
     <!-- 天赋签抽签屏 -->
     <div id="oracle-screen" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.9); z-index:10000; justify-content:center; align-items:center; flex-direction:column;">
