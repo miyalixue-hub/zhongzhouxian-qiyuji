@@ -442,7 +442,7 @@
         
         .station-card .card-icon {
             font-size: 26px;
-            width: 42px;
+            width: 54px;
             height: 42px;
             display: flex;
             align-items: center;
@@ -452,6 +452,14 @@
             border-radius: 10px 4px 12px 3px;
             flex-shrink: 0;
             border: 1.5px dashed var(--ink-faint);
+        }
+
+        .station-card .card-icon img {
+            display: block;
+            width: 52px;
+            max-height: 38px;
+            object-fit: contain;
+            filter: drop-shadow(0 1px 1px rgba(76, 55, 34, 0.18));
         }
         
         .station.unlocked .station-card .card-icon {
@@ -747,8 +755,13 @@
             
             .station-card .card-icon {
                 font-size: 22px;
-                width: 36px;
+                width: 44px;
                 height: 36px;
+            }
+
+            .station-card .card-icon img {
+                width: 42px;
+                max-height: 32px;
             }
         }
         
