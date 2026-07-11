@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>中轴奇游记</title>
-    <link rel="stylesheet" href="styles/main.css?v=20260712a">
+    <link rel="stylesheet" href="styles/main.css?v=20260712b">
     <!-- Google model-viewer: 3D模型展示组件（使用 jsdelivr CDN 国内可访问） -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js?v=20260706b"></script>
 </head>
@@ -470,7 +470,7 @@ if (typeof goToStation === 'function') {
                 </div>
                 <div class="progress-step">
                     <div class="progress-circle active">2</div>
-                    <div class="progress-label active">贴纹饰</div>
+                    <div class="progress-label active">辨纹饰</div>
                 </div>
                 <div class="progress-step">
                     <div class="progress-circle pending">3</div>
@@ -490,10 +490,19 @@ if (typeof goToStation === 'function') {
                 </div>
             </div>
             
-            <div class="page-content">
+            <div class="page-content pattern-choice-page">
                 <div class="page-header">
-                    <h2 class="page-title">贴纹饰</h2>
-                    <p class="page-subtitle">请仔细观察文物纹饰</p>
+                    <div class="page-kicker">正阳桥研学 · 第二步</div>
+                    <h2 class="page-title">摹取神兽纹样</h2>
+                    <p class="page-subtitle">从镇水兽局部纹饰中提取线条，让文物细节成为你的创作语言</p>
+                </div>
+
+                <div class="pattern-context-panel">
+                    <div class="context-seal">纹</div>
+                    <div>
+                        <h3>纹饰不是装饰，是古人写给水与桥的符号</h3>
+                        <p>观察鳞、角、鬃、云、旋涡这些线条，它们既表现神兽的身体结构，也寄托镇水、护桥、纳福与通达的愿望。</p>
+                    </div>
                 </div>
                 
                 <div class="pattern-grid">
@@ -501,52 +510,100 @@ if (typeof goToStation === 'function') {
                         <div class="pattern-demo pattern-limb"></div>
                         <div class="pattern-name">肢部纹饰</div>
                         <div class="pattern-meaning">层叠水鳞 · 护体镇水</div>
+                        <div class="pattern-lore">
+                            <span>文物观察</span>
+                            <p>肢部线条像层层甲片，也像水波顺势排开，强调神兽与水相伴的身体特征。</p>
+                            <span>创作提示</span>
+                            <p>适合贴在四肢、腹侧或尾部，让神兽显得厚实、有守护力量。</p>
+                        </div>
                     </div>
 
                     <div class="pattern-card" data-id="mouth_horn">
                         <div class="pattern-demo pattern-mouth-horn"></div>
                         <div class="pattern-name">嘴角纹饰</div>
                         <div class="pattern-meaning">火焰吐息 · 威慑水患</div>
+                        <div class="pattern-lore">
+                            <span>文物观察</span>
+                            <p>嘴角外展的尖线接近火焰、兽吻和水浪的混合形，增强神兽张口镇水的气势。</p>
+                            <span>创作提示</span>
+                            <p>适合放在嘴边、角根或脸侧，做出“会呼风唤水”的威严感。</p>
+                        </div>
                     </div>
 
                     <div class="pattern-card" data-id="mane">
                         <div class="pattern-demo pattern-mane"></div>
                         <div class="pattern-name">鬃毛</div>
                         <div class="pattern-meaning">风动水纹 · 灵气流转</div>
+                        <div class="pattern-lore">
+                            <span>文物观察</span>
+                            <p>成束的细长曲线像被风吹起的鬃毛，也像水流被兽身带动后的波痕。</p>
+                            <span>创作提示</span>
+                            <p>适合强化头顶、背脊和颈部，让神兽更灵动、更有速度感。</p>
+                        </div>
                     </div>
 
                     <div class="pattern-card" data-id="ear">
                         <div class="pattern-demo pattern-ear"></div>
                         <div class="pattern-name">耳部纹饰</div>
                         <div class="pattern-meaning">旋涡听水 · 守望桥声</div>
+                        <div class="pattern-lore">
+                            <span>文物观察</span>
+                            <p>耳部旋涡与散点组合，像水声汇入耳中，暗示神兽能听见桥下水势变化。</p>
+                            <span>创作提示</span>
+                            <p>适合贴在耳朵、脸颊或肩部，增加“警觉守护”的故事感。</p>
+                        </div>
                     </div>
 
                     <div class="pattern-card" data-id="eye">
                         <div class="pattern-demo pattern-eye"></div>
                         <div class="pattern-name">眼部纹饰</div>
                         <div class="pattern-meaning">圆目凝神 · 明察水脉</div>
+                        <div class="pattern-lore">
+                            <span>文物观察</span>
+                            <p>眼周线条层层包裹，形成聚焦的圆形视线，表现神兽凝视河道的神态。</p>
+                            <span>创作提示</span>
+                            <p>适合用于眼角、眉骨和额头，让角色更聪明、更有神采。</p>
+                        </div>
                     </div>
                     
                     <div class="pattern-card" data-id="head_horn">
                         <div class="pattern-demo pattern-head-horn"></div>
                         <div class="pattern-name">头部倚角</div>
                         <div class="pattern-meaning">角冠护首 · 镇守桥门</div>
+                        <div class="pattern-lore">
+                            <span>文物观察</span>
+                            <p>角部轮廓粗细变化明显，像冠饰也像石雕残损后的边缘，保留文物的手作痕迹。</p>
+                            <span>创作提示</span>
+                            <p>适合做头冠、角饰或额前护符，突出镇守桥门的身份。</p>
+                        </div>
                     </div>
                     
                     <div class="pattern-card" data-id="back_cloud">
                         <div class="pattern-demo pattern-back-cloud"></div>
                         <div class="pattern-name">脊背云纹</div>
                         <div class="pattern-meaning">云气绕身 · 瑞意绵延</div>
+                        <div class="pattern-lore">
+                            <span>文物观察</span>
+                            <p>云纹以舒展曲线连接前后，常与瑞兽形象相伴，象征祥瑞之气沿脊背流动。</p>
+                            <span>创作提示</span>
+                            <p>适合贴在背部、尾部或车身侧面，让作品更有中式流线感。</p>
+                        </div>
                     </div>
                     
                     <div class="pattern-card" data-id="neck_mane">
                         <div class="pattern-demo pattern-neck-mane"></div>
                         <div class="pattern-name">颈部鬃髯</div>
                         <div class="pattern-meaning">长髯迎风 · 神兽昂扬</div>
+                        <div class="pattern-lore">
+                            <span>文物观察</span>
+                            <p>颈部鬃髯由密集长线构成，既像水草摇曳，也像神兽奔走时扬起的风。</p>
+                            <span>创作提示</span>
+                            <p>适合放在颈侧、胸前和下颌，让神兽更威武，也更有生命感。</p>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="tip-text">💡 点击选择贴在神兽身上的纹饰</div>
+                <div class="tip-text pattern-tip">可选择 1-3 种纹饰。先看它来自哪里，再决定贴到神兽身体的哪个部位。</div>
             </div>
             
             <div class="bottom-buttons">
