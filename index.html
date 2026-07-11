@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>中轴奇游记</title>
-    <link rel="stylesheet" href="styles/main.css?v=20260711b">
+    <link rel="stylesheet" href="styles/main.css?v=20260712a">
     <!-- Google model-viewer: 3D模型展示组件（使用 jsdelivr CDN 国内可访问） -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js?v=20260706b"></script>
 </head>
@@ -329,7 +329,7 @@ if (typeof goToStation === 'function') {
             <div class="progress-bar">
                 <div class="progress-step">
                     <div class="progress-circle active">1</div>
-                    <div class="progress-label active">选择模型</div>
+                    <div class="progress-label active">择灵物</div>
                 </div>
                 <div class="progress-step">
                     <div class="progress-circle pending">2</div>
@@ -353,13 +353,22 @@ if (typeof goToStation === 'function') {
                 </div>
             </div>
             
-            <div class="page-content">
+            <div class="page-content object-choice-page">
                 <div class="page-header">
-                    <h2 class="page-title">选择创作对象</h2>
-                    <p class="page-subtitle">选择你想要创作的神兽或铛铛车</p>
+                    <div class="page-kicker">正阳桥研学 · 第一步</div>
+                    <h2 class="page-title">择定中轴灵物</h2>
+                    <p class="page-subtitle">从镇水传说、桥孔瑞兽与前门电车中，选定你的文化创作原型</p>
                 </div>
                 
-                <div class="options-grid cols-3">
+                <div class="object-context-panel">
+                    <div class="context-seal">中轴</div>
+                    <div>
+                        <h3>先读懂它，再创造它</h3>
+                        <p>每一个模型都对应一段北京中轴线的城市记忆：桥、水、城门与街巷交通。选择之后，后续的纹饰、颜色和附加元素都会围绕这个原型继续展开。</p>
+                    </div>
+                </div>
+
+                <div class="options-grid cols-3 object-choice-grid">
                     <div class="option-card selected" data-id="gongfu">
                         <div class="option-icon" style="padding:4px;">
                             <img src="https://zhongzhouxian-1413555799.cos.ap-guangzhou.myqcloud.com/assets/zhenshui_shou.png"
@@ -367,7 +376,13 @@ if (typeof goToStation === 'function') {
                                  alt="镇水兽·蚣蝮">
                         </div>
                         <div class="option-title">镇水兽</div>
-                        <div class="option-desc">镇水兽 · 龙生九子<br>好水而立桥头</div>
+                        <div class="object-subtitle">桥头守望者 · 蚣蝮形象</div>
+                        <div class="option-desc">相传蚣蝮为龙生九子之一，好水、能镇波，常见于桥梁、河岸和水工建筑。</div>
+                        <div class="object-lore">
+                            <div><span>文化出处</span><p>正阳桥遗址出土的镇水兽与北京水系治理、桥梁守护观念相关。</p></div>
+                            <div><span>造型寓意</span><p>趴伏桥头、昂首守望，象征压伏水患、护佑行旅。</p></div>
+                            <div><span>创作线索</span><p>适合加入鳞片、卷云、桥石纹，做成沉稳可靠的守护神兽。</p></div>
+                        </div>
                     </div>
 
                     <div class="option-card" data-id="xishui">
@@ -375,7 +390,13 @@ if (typeof goToStation === 'function') {
                             <img src="https://zhongzhouxian-1413555799.cos.ap-guangzhou.myqcloud.com/assets/xishui_shou.png" alt="吸水兽" style="width:100%;max-height:140px;object-fit:contain;border-radius:8px;">
                         </div>
                         <div class="option-title">吸水兽</div>
-                        <div class="option-desc">桥孔兽 · 好吞吐<br>蹲踞桥孔镇水脉</div>
+                        <div class="object-subtitle">桥孔吐水者 · 水脉调和</div>
+                        <div class="option-desc">吸水兽蹲踞于桥孔附近，像是在吞吐河水，提醒人们顺应水势、敬畏水脉。</div>
+                        <div class="object-lore">
+                            <div><span>文化出处</span><p>桥孔、水口与兽形装饰常被用来表达古人对水流秩序的想象。</p></div>
+                            <div><span>造型寓意</span><p>低身蹲守、口鼻含水，寓意吸纳急流、疏导桥下水势。</p></div>
+                            <div><span>创作线索</span><p>适合加入浪花、涡纹、须髯和水滴元素，表现灵活的水中精怪感。</p></div>
+                        </div>
                     </div>
 
                     <div class="option-card" data-id="dangdangche">
@@ -383,11 +404,17 @@ if (typeof goToStation === 'function') {
                             <img src="https://miyalixue-hub.github.io/zhongzhouxian-qiyuji/assets/dangdangche.png?v=20260705" alt="铛铛车" style="width:100%;max-height:140px;object-fit:contain;border-radius:8px;">
                         </div>
                         <div class="option-title">铛铛车</div>
-                        <div class="option-desc">正阳门特色<br>有轨电车·叮当响</div>
+                        <div class="object-subtitle">前门街巷记忆 · 近代交通</div>
+                        <div class="option-desc">铛铛车因行驶时铃声清脆而得名，连接城门、街市与老北京的城市生活。</div>
+                        <div class="object-lore">
+                            <div><span>文化出处</span><p>前门一带曾是商贸与交通汇聚之地，电车铃声成为城市记忆的一部分。</p></div>
+                            <div><span>造型寓意</span><p>车身方正、色彩明快，象征从古都城门驶向现代街巷的时间线。</p></div>
+                            <div><span>创作线索</span><p>适合加入车铃、轨道、木窗和正阳门背景，做成复古游览车。</p></div>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="tip-text">💡 点击卡片选择你喜欢的神兽或铛铛车</div>
+                <div class="tip-text object-tip">点击卡片，先定下你的中轴灵物，再继续为它贴纹饰、上颜色、添配饰。</div>
             </div>
             
             <div class="bottom-buttons">
