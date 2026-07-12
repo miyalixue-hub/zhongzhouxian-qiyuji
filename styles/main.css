@@ -4001,3 +4001,20 @@
         height: 85px;
     }
 }
+
+/* 纹饰选中时显示位置标签 */
+.pattern-card.selected::before {
+    content: "贴在" attr(data-position);
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--zhusha);
+    color: white;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(196, 92, 92, 0.3);
+}

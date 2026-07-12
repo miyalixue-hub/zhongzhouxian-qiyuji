@@ -239,10 +239,10 @@
                 console.log('[generateCandidates] 纹饰参考图:', patternRefImages);
                 
                 var beastStyles = [
-                    { name: '水墨写意', desc: '传统国画风', suffix: '，中国传统水墨画风格，毛笔笔触，宣纸质感，黑白灰为主调，留白意境', bg: 'linear-gradient(135deg, #f5f0e8, #e8dcc8)' },
-                    { name: '彩色水墨', desc: '活泼撞色风', suffix: '，现代彩色水墨插画风格，明亮撞色，活泼有趣，儿童绘本质感', bg: 'linear-gradient(135deg, #fff0f0, #f0f0ff)' },
-                    { name: '金碧辉煌', desc: '宫廷华丽风', suffix: '，中国传统宫廷风格，金色为主调，华丽精致，景泰蓝配色，工笔画质感', bg: 'linear-gradient(135deg, #fef9e7, #f5ecd0)' },
-                    { name: '青绿山水', desc: '清新淡雅风', suffix: '，青绿山水风格，石青石绿为主色，千里江山图质感，清新淡雅', bg: 'linear-gradient(135deg, #f0f7f0, #e0efe8)' }
+                    { name: '古石刻韵', desc: '石雕斑驳质感', suffix: '，中国古代石雕质感，青石材质，表面有岁月斑驳的痕迹，石刻线条流畅，博物馆文物摄影风格，柔和灯光', bg: 'linear-gradient(135deg, #e8e4dc, #d4cfc5)' },
+                    { name: '琉璃焕彩', desc: '宫城琉璃光泽', suffix: '，中国传统琉璃釉彩风格，表面有光泽质感，色彩明亮饱满，故宫琉璃瓦质感，光线折射微光', bg: 'linear-gradient(135deg, #fef9e7, #f5e6a3)' },
+                    { name: '青铜古韵', desc: '青铜器古朴感', suffix: '，中国古代青铜器质感，铜绿色锈迹斑驳，金属光泽，饕餮纹饰风格，博物馆展柜灯光', bg: 'linear-gradient(135deg, #e8efe8, #b8c9b8)' },
+                    { name: '水墨丹青', desc: '传统国画风', suffix: '，中国传统水墨画风格，毛笔笔触，宣纸质感，淡雅色调，留白意境', bg: 'linear-gradient(135deg, #f5f0e8, #e8dcc8)' }
                 ];
                 await generateAICandidatesGeneric(grid, basePrompt, beastStyles, patternRefImages);
             }
@@ -510,7 +510,7 @@
                 '表情' + ex.name + '（' + ex.desc + '），' +
                 (colorPromptParts.length ? '主色调为' + colorPromptParts.join('、') + '，' : '') +
                 (elemPromptParts.length ? '底座/配饰为' + elemPromptParts.join('、') + '，' : '') +
-                '中国传统手绘风格，水墨淡彩质感，3D渲染，干净背景，儿童插画风格，高质量，温馨可爱';
+                '3D渲染，干净背景，儿童插画风格，高质量，温馨可爱';
 
             var tags = document.querySelector('#page-9 .prompt-tags');
             if (tags) {
