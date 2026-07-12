@@ -825,7 +825,27 @@
             setTimeout(function() { toast.remove(); }, 2500);
         }
 
-        function shareToParents() {
+        // 短链接生成
+        async function shortenUrl(longUrl) {
+            try {
+                var resp = await fetch('https://tinyurl.com/api-create.php?url=' + encodeURIComponent(longUrl));
+                if (resp.ok) {
+                    var shortUrl = await resp.text();
+                    if (shortUrl.startsWith('http')) return shortUrl;
+                }
+            } catch(e) { console.warn('tinyurl failed:', e); }
+            // 降级：is.gd
+            try {
+                var resp2 = await fetch('https://is.gd/create.php?format=json&url=' + encodeURIComponent(longUrl));
+                if (resp2.ok) {
+                    var data = await resp2.json();
+                    if (data.shorturl) return data.shorturl;
+                }
+            } catch(e) { console.warn('is.gd failed:', e); }
+            return longUrl; // 最终降级：返回原 URL
+        }
+
+        async function shareToParents() {
             // 收集作品数据
             var imageData = '';
             if (state.selectedCandidate !== null && state.selectedCandidate !== undefined && state._generatedImageUrls) {
@@ -864,7 +884,7 @@
             showSharePanel(shareUrl, shareData);
         }
 
-        function showSharePanel(shareUrl, shareData) {
+        async function showSharePanel(shareUrl, shareData) {
             // 先移除已有的分享面板
             var old = document.querySelector('.share-qr-panel');
             if (old) old.remove();
@@ -884,7 +904,7 @@
                     '<button id="btn-close-qr" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:20px;cursor:pointer;color:#999;padding:4px 8px;">✕</button>' +
                     '<div style="font-size:18px;font-weight:800;color:#3a2a1a;margin-bottom:4px;">📤 分享给家长</div>' +
                     '<div style="font-size:13px;color:#7a6a56;margin-bottom:16px;">' + (creatureName ? creatureName + '的' : '') + '神兽档案已生成！</div>' +
-                    '<div id="qr-container" style="display:inline-block;padding:12px;background:white;border-radius:12px;border:2px solid #e8dcc4;margin-bottom:16px;"></div>' +
+                    '<div id="qr-container" style="display:inline-block;padding:12px;background:white;border-radius:12px;border:2px solid #e8dcc4;margin-bottom:16px;min-width:220px;min-height:220px;"><div style="padding:40px 20px;color:#aaa;font-size:13px;">正在生成二维码...</div></div>' +
                     '<div style="font-size:12px;color:#a0884a;margin-bottom:16px;line-height:1.6;">家长扫码即可查看神兽大图、3D模型<br/>并下载保存带走</div>' +
                     '<div style="display:flex;gap:8px;">' +
                         '<button id="btn-copy-share-url" style="flex:1;padding:12px;background:linear-gradient(135deg,#c04830,#a03828);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">📋 复制链接</button>' +
@@ -893,21 +913,6 @@
                 '</div>';
 
             document.body.appendChild(panel);
-
-            // 生成QR码
-            var qrContainer = document.getElementById('qr-container');
-            try {
-                new QRCode(qrContainer, {
-                    text: shareUrl,
-                    width: 200,
-                    height: 200,
-                    colorDark: '#3a2a1a',
-                    colorLight: '#ffffff',
-                    correctLevel: QRCode.CorrectLevel.L
-                });
-            } catch (e) {
-                qrContainer.innerHTML = '<div style="padding:20px;color:#c04830;font-size:13px;">二维码生成失败<br/>请直接复制链接</div>';
-            }
 
             // 绑定事件
             document.getElementById('btn-close-qr').addEventListener('click', function() { panel.remove(); });
@@ -934,6 +939,23 @@
                     setTimeout(function() { btn.textContent = '📋 复制链接'; }, 2000);
                 }
             });
+
+            // 先缩短URL再生成QR码（解决URL过长导致二维码扫不出来的问题）
+            var qrContainer = document.getElementById('qr-container');
+            var finalUrl = await shortenUrl(shareUrl);
+            qrContainer.innerHTML = '';
+            try {
+                new QRCode(qrContainer, {
+                    text: finalUrl,
+                    width: 200,
+                    height: 200,
+                    colorDark: '#3a2a1a',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.L
+                });
+            } catch (e) {
+                qrContainer.innerHTML = '<div style="padding:20px;color:#c04830;font-size:13px;">二维码生成失败<br/>请直接复制链接</div>';
+            }
         }
 
         // Expose showPage for SPA navigation from home view
