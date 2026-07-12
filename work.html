@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>中轴奇游记 · 神兽档案</title>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #FAF8F0;
+            color: #3a2a1a;
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+        .header {
+            text-align: center;
+            padding: 24px 16px 16px;
+            background: linear-gradient(180deg, #f5ede0 0%, #FAF8F0 100%);
+            border-bottom: 2px solid #e8dcc4;
+        }
+        .header h1 {
+            font-size: 22px;
+            font-weight: 800;
+            color: #3a2a1a;
+            letter-spacing: 2px;
+        }
+        .header h1 span { color: #c04830; }
+        .header .subtitle {
+            font-size: 13px;
+            color: #7a6a56;
+            margin-top: 4px;
+        }
+        .content {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+        /* 2D Image Section */
+        .image-section {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .image-section .label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #7a6a56;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+        .image-frame {
+            background: white;
+            border-radius: 16px;
+            padding: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 2px solid #e8dcc4;
+        }
+        .image-frame img {
+            width: 100%;
+            border-radius: 12px;
+            display: block;
+        }
+        /* 3D Model Section */
+        .model-section {
+            margin-top: 24px;
+            text-align: center;
+        }
+        .model-section .label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #7a6a56;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+        .model-frame {
+            background: linear-gradient(135deg, #f8f4ec, #f0e8d8);
+            border-radius: 16px;
+            padding: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 2px solid #e8dcc4;
+        }
+        model-viewer {
+            width: 100%;
+            height: 320px;
+            border-radius: 12px;
+            background: transparent;
+            --poster-color: transparent;
+        }
+        .model-hint {
+            font-size: 11px;
+            color: #a0884a;
+            margin-top: 8px;
+        }
+        .model-fallback {
+            padding: 40px 20px;
+            text-align: center;
+            color: #7a6a56;
+        }
+        .model-fallback .emoji { font-size: 48px; margin-bottom: 12px; }
+        .model-fallback p { font-size: 14px; line-height: 1.6; }
+        /* Info Section */
+        .info-section {
+            margin-top: 24px;
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            border: 1px solid #e8dcc4;
+        }
+        .info-title {
+            font-size: 18px;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 4px;
+            color: #3a2a1a;
+        }
+        .info-desc {
+            font-size: 13px;
+            text-align: center;
+            color: #7a6a56;
+            margin-bottom: 16px;
+        }
+        .info-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #e8dcc4, transparent);
+            margin: 12px 0;
+        }
+        .info-row {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+        }
+        .info-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        .info-label {
+            font-size: 12px;
+            color: #7a6a56;
+            min-width: 42px;
+        }
+        .info-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #3a2a1a;
+            margin-left: auto;
+            text-align: right;
+        }
+        .color-dot {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            vertical-align: middle;
+            margin-right: 4px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        /* Download Buttons */
+        .download-section {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+        }
+        .dl-btn {
+            flex: 1;
+            padding: 14px 12px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            transition: transform 0.15s;
+        }
+        .dl-btn:active { transform: scale(0.96); }
+        .dl-btn .dl-icon { font-size: 24px; }
+        .dl-btn .dl-text { font-size: 12px; font-weight: 600; }
+        .dl-btn-image {
+            background: linear-gradient(135deg, #FFF8E1, #FFECB3);
+            color: #856404;
+            border: 2px solid #e6a700;
+        }
+        .dl-btn-model {
+            background: linear-gradient(135deg, #c04830, #a03828);
+            color: white;
+            border: 2px solid #8a2e20;
+        }
+        /* Loading & Error */
+        .loading-screen {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .loading-screen .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid #e8dcc4;
+            border-top-color: #c04830;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error-screen {
+            text-align: center;
+            padding: 60px 20px;
+            color: #c04830;
+        }
+        .error-screen .emoji { font-size: 48px; margin-bottom: 12px; }
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 32px;
+            padding: 16px;
+            font-size: 12px;
+            color: #b0a090;
+        }
+        .footer a { color: #c04830; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div class="loading-screen" id="loading">
+        <div class="spinner"></div>
+        <p>正在加载神兽档案...</p>
+    </div>
+</div>
+
+<script>
+// ============ 数据定义（与主站一致） ============
+var creatures = [
+    { id: 'gongfu', name: '蚣蝮', desc: '镇水兽·龙生九子·趴伏桥头守望' },
+    { id: 'xishui', name: '吸水兽', desc: '桥孔兽·好吞吐·蹲踞桥孔吐水' },
+    { id: 'chaofeng', name: '嘲风', desc: '殿角兽·好望远' },
+    { id: 'bixi', name: '赑屃', desc: '碑下兽·好负重' },
+    { id: 'dangdangche', name: '铛铛车', desc: '正阳门特色·有轨电车' }
+];
+var patterns = [
+    { id: 'limb', name: '肢部纹饰', meaning: '层叠水鳞·护体镇水' },
+    { id: 'mouth_horn', name: '嘴角纹饰', meaning: '火焰吐息·威慑水患' },
+    { id: 'mane', name: '鬃毛', meaning: '风动水纹·灵气流转' },
+    { id: 'ear', name: '耳部纹饰', meaning: '旋涡听水·守望桥声' },
+    { id: 'eye', name: '眼部纹饰', meaning: '圆目凝神·明察水脉' },
+    { id: 'head_horn', name: '头部倚角', meaning: '角冠护首·镇守桥门' },
+    { id: 'back_cloud', name: '脊背云纹', meaning: '云气绕身·瑞意绵延' },
+    { id: 'neck_mane', name: '颈部鬃髯', meaning: '长髯迎风·神兽昂扬' }
+];
+var expressions = [
+    { id: 'cute', name: '呆萌' }, { id: 'fierce', name: '威武' },
+    { id: 'cool', name: '帅气' }, { id: 'funny', name: '搞笑' }
+];
+var colors = [
+    { id: 'zhusha', name: '朱砂红', hex: '#C45C5C' },
+    { id: 'shiqing', name: '石青蓝', hex: '#4A7FB5' },
+    { id: 'daiwa', name: '黛瓦灰', hex: '#6B7B8C' },
+    { id: 'liuli', name: '琉璃黄', hex: '#D4A843' },
+    { id: 'yuebai', name: '月白', hex: '#F0EDE5' },
+    { id: 'mohei', name: '墨黑', hex: '#2D2D2D' },
+    { id: 'jin', name: '鎏金', hex: '#C5A355' },
+    { id: 'yin', name: '铸银', hex: '#B0B0B0' }
+];
+var elements = [
+    { id: 'cloud_base', name: '云纹底座' },
+    { id: 'map_base', name: '中轴线地图底座' },
+    { id: 'km_marker', name: '零公里标志' },
+    { id: 'plaque', name: '正阳门牌匾' },
+    { id: 'archaeology_tag', name: '考古铭牌' },
+    { id: 'custom_tag', name: '个性化铭牌' }
+];
+
+// ============ 工具函数 ============
+function findById(arr, id) {
+    for (var i = 0; i < arr.length; i++) {
+        if (arr[i].id === id) return arr[i];
+    }
+    return null;
+}
+
+function decodeShareData() {
+    var params = new URLSearchParams(window.location.search);
+    var encoded = params.get('d');
+    if (!encoded) return null;
+    try {
+        var json = atob(encoded.replace(/-/g, '+').replace(/_/g, '/'));
+        return JSON.parse(decodeURIComponent(json));
+    } catch (e) {
+        console.error('Failed to decode share data:', e);
+        return null;
+    }
+}
+
+function showError(msg) {
+    document.getElementById('app').innerHTML =
+        '<div class="error-screen">' +
+        '<div class="emoji">😵</div>' +
+        '<p>' + msg + '</p>' +
+        '<p style="font-size:13px;color:#7a6a56;margin-top:12px;">可以让小朋友重新点"分享给家长"生成新链接</p>' +
+        '</div>';
+}
+
+// ============ 渲染页面 ============
+function render(data) {
+    var creature = findById(creatures, data.cr) || { name: '我的神兽', desc: '' };
+    var expr = findById(expressions, data.ex) || { name: '' };
+    var patNames = (data.pa || []).map(function(id) {
+        var p = findById(patterns, id);
+        return p ? p.name : '';
+    }).filter(Boolean);
+    var color = findById(colors, data.co) || { name: '', hex: '#C45C5C' };
+    var elem = findById(elements, data.el) || { name: '' };
+
+    var imageUrl = data.img || '';
+    var modelUrl = data.glb || '';
+    var thumbnailUrl = data.thumb || '';
+
+    var html = '';
+
+    // Header
+    html += '<div class="header">';
+    html += '<h1>中轴<span>奇游记</span> · 神兽档案</h1>';
+    html += '<p class="subtitle">这是我在中轴奇游记创造的神兽</p>';
+    html += '</div>';
+
+    html += '<div class="content">';
+
+    // 2D Image
+    if (imageUrl) {
+        html += '<div class="image-section">';
+        html += '<div class="label">🎨 AI 创作图</div>';
+        html += '<div class="image-frame">';
+        html += '<img id="ai-image" src="' + imageUrl + '" alt="神兽AI创作图" crossorigin="anonymous" />';
+        html += '</div>';
+        html += '</div>';
+    }
+
+    // 3D Model
+    if (modelUrl) {
+        html += '<div class="model-section">';
+        html += '<div class="label">🏛️ 3D 神兽模型</div>';
+        html += '<div class="model-frame">';
+        html += '<model-viewer id="mv" src="' + modelUrl + '"';
+        html += ' camera-controls auto-rotate shadow-intensity="1"';
+        html += ' alt="3D神兽模型"';
+        if (thumbnailUrl) {
+            html += ' poster="' + thumbnailUrl + '"';
+        }
+        html += ' style="width:100%;height:320px;background:transparent;border-radius:12px;">';
+        html += '</model-viewer>';
+        html += '</div>';
+        html += '<p class="model-hint">👆 手指滑动可以360°旋转查看</p>';
+        html += '</div>';
+    } else if (data.stlFallback) {
+        // No GLB but has fallback info
+        html += '<div class="model-section">';
+        html += '<div class="label">🏛️ 3D 神兽模型</div>';
+        html += '<div class="model-frame">';
+        html += '<div class="model-fallback">';
+        html += '<div class="emoji">📦</div>';
+        html += '<p>3D模型文件较大<br/>请点击下方按钮下载 STL 文件</p>';
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+    }
+
+    // Info Section
+    html += '<div class="info-section">';
+    html += '<div class="info-title">' + creature.name + '</div>';
+    html += '<div class="info-desc">' + creature.desc + '</div>';
+    html += '<div class="info-divider"></div>';
+
+    if (expr.name) {
+        html += '<div class="info-row">';
+        html += '<div class="info-icon" style="background:#FFF3E0;">😊</div>';
+        html += '<span class="info-label">表情</span>';
+        html += '<span class="info-value">' + expr.name + '</span>';
+        html += '</div>';
+    }
+
+    if (patNames.length > 0) {
+        html += '<div class="info-row">';
+        html += '<div class="info-icon" style="background:#E8F5E9;">🐉</div>';
+        html += '<span class="info-label">纹饰</span>';
+        html += '<span class="info-value">' + patNames.join('、') + '</span>';
+        html += '</div>';
+    }
+
+    if (color.name) {
+        html += '<div class="info-row">';
+        html += '<div class="info-icon" style="background:#F3E5F5;">🎨</div>';
+        html += '<span class="info-label">颜色</span>';
+        html += '<span class="info-value"><span class="color-dot" style="background:' + color.hex + ';"></span>' + color.name + '</span>';
+        html += '</div>';
+    }
+
+    if (elem.name) {
+        html += '<div class="info-row">';
+        html += '<div class="info-icon" style="background:#E3F2FD;">✨</div>';
+        html += '<span class="info-label">元素</span>';
+        html += '<span class="info-value">' + elem.name + '</span>';
+        html += '</div>';
+    }
+
+    html += '</div>';
+
+    // Download Buttons
+    html += '<div class="download-section">';
+    if (imageUrl) {
+        html += '<button class="dl-btn dl-btn-image" onclick="downloadImage()">';
+        html += '<span class="dl-icon">📥</span>';
+        html += '<span class="dl-text">保存图片</span>';
+        html += '</button>';
+    }
+    if (modelUrl || data.stlFallback) {
+        html += '<button class="dl-btn dl-btn-model" onclick="downloadModel()">';
+        html += '<span class="dl-icon">📦</span>';
+        html += '<span class="dl-text">保存3D模型</span>';
+        html += '</button>';
+    }
+    html += '</div>';
+
+    // Footer
+    html += '<div class="footer">';
+    html += '来自 <a href="https://mindbubble.cloud">中轴奇游记</a>';
+    html += '</div>';
+
+    html += '</div>'; // .content
+
+    document.getElementById('app').innerHTML = html;
+
+    // Store data for download functions
+    window._shareData = data;
+}
+
+// ============ 下载功能 ============
+function downloadImage() {
+    var url = window._shareData.img;
+    if (!url) return;
+
+    // Try fetching and downloading as blob (for cross-origin images)
+    fetch(url, { mode: 'cors' })
+        .then(function(resp) { return resp.blob(); })
+        .then(function(blob) {
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = (window._shareData.cr || 'my') + '_creature.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        })
+        .catch(function() {
+            // Fallback: open in new tab for manual save
+            window.open(url, '_blank');
+        });
+}
+
+function downloadModel() {
+    var url = window._shareData.glb || window._shareData.stlFallback;
+    if (!url) return;
+
+    var ext = url.indexOf('.glb') > -1 ? 'glb' : 'stl';
+    var name = (window._shareData.cr || 'my') + '_creature.' + ext;
+
+    fetch(url, { mode: 'cors' })
+        .then(function(resp) { return resp.blob(); })
+        .then(function(blob) {
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        })
+        .catch(function() {
+            window.open(url, '_blank');
+        });
+}
+
+// ============ 初始化 ============
+(function() {
+    var data = decodeShareData();
+    if (!data) {
+        showError('没有找到神兽数据<br/>这个链接可能已失效');
+        return;
+    }
+    render(data);
+})();
+</script>
+</body>
+</html>

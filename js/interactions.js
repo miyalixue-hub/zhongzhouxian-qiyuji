@@ -826,57 +826,114 @@
         }
 
         function shareToParents() {
-            if (navigator.share) {
-                navigator.share({
-                    title: '我的中轴奇游记·神兽档案',
-                    text: '我在中轴奇游记创建了一只专属神兽！快来看看！',
-                    url: window.location.href
-                }).catch(function(err) {
-                    if (err.name !== 'AbortError') {
-                        showShareFallback();
-                    }
-                });
-            } else {
-                showShareFallback();
+            // 收集作品数据
+            var imageData = '';
+            if (state.selectedCandidate !== null && state.selectedCandidate !== undefined && state._generatedImageUrls) {
+                imageData = state._generatedImageUrls[state.selectedCandidate] || '';
             }
+            var glbUrl = state.meshyModelUrl || '';
+            var stlUrl = state.meshyStlUrl || '';
+            var thumbUrl = state.meshyThumbnail || '';
+
+            // 构建分享数据对象
+            var shareData = {
+                cr: state.selectedCreature || '',
+                pa: state.selectedPatterns || [],
+                ex: state.selectedExpression || '',
+                co: (state.selectedColors && state.selectedColors.length > 0) ? state.selectedColors[0] : '',
+                el: (state.selectedElements && state.selectedElements.length > 0) ? state.selectedElements[0] : '',
+                img: imageData,
+                glb: glbUrl,
+                thumb: thumbUrl
+            };
+            // 如果有STL但没有GLB，存stl作为fallback
+            if (!glbUrl && stlUrl) {
+                shareData.stlFallback = stlUrl;
+            }
+
+            // 编码为URL参数（base64）
+            var jsonStr = JSON.stringify(shareData);
+            var encoded = btoa(unescape(encodeURIComponent(jsonStr)))
+                .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+            // 构建分享页URL
+            var baseUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '');
+            var shareUrl = baseUrl + 'work.html?d=' + encoded;
+
+            // 显示分享面板（含二维码）
+            showSharePanel(shareUrl, shareData);
         }
 
-        function showShareFallback() {
-            var sharePanel = document.createElement('div');
-            sharePanel.className = 'share-fallback-panel';
-            sharePanel.innerHTML = '<div class="share-fallback-content">' +
-                '<h3>📤 分享给家长</h3>' +
-                '<p>长按复制链接，发送给爸爸妈妈：</p>' +
-                '<div class="share-url-box">' + window.location.href + '</div>' +
-                '<button class="btn-copy-url" id="btn-copy-url-action">📋 复制链接</button>' +
-                '<button class="btn-close-share" id="btn-close-share-action">关闭</button>' +
+        function showSharePanel(shareUrl, shareData) {
+            // 先移除已有的分享面板
+            var old = document.querySelector('.share-qr-panel');
+            if (old) old.remove();
+
+            var creatureName = '';
+            if (shareData.cr) {
+                var cr = findById(creatures, shareData.cr);
+                if (cr) creatureName = cr.name;
+            }
+
+            var panel = document.createElement('div');
+            panel.className = 'share-qr-panel';
+            panel.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;';
+
+            panel.innerHTML =
+                '<div style="background:#FAF8F0;border-radius:20px;padding:24px;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative;max-height:90vh;overflow-y:auto;">' +
+                    '<button id="btn-close-qr" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:20px;cursor:pointer;color:#999;padding:4px 8px;">✕</button>' +
+                    '<div style="font-size:18px;font-weight:800;color:#3a2a1a;margin-bottom:4px;">📤 分享给家长</div>' +
+                    '<div style="font-size:13px;color:#7a6a56;margin-bottom:16px;">' + (creatureName ? creatureName + '的' : '') + '神兽档案已生成！</div>' +
+                    '<div id="qr-container" style="display:inline-block;padding:12px;background:white;border-radius:12px;border:2px solid #e8dcc4;margin-bottom:16px;"></div>' +
+                    '<div style="font-size:12px;color:#a0884a;margin-bottom:16px;line-height:1.6;">家长扫码即可查看神兽大图、3D模型<br/>并下载保存带走</div>' +
+                    '<div style="display:flex;gap:8px;">' +
+                        '<button id="btn-copy-share-url" style="flex:1;padding:12px;background:linear-gradient(135deg,#c04830,#a03828);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">📋 复制链接</button>' +
+                        '<button id="btn-close-qr2" style="flex:1;padding:12px;background:#e8dcc4;color:#3a2a1a;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">关闭</button>' +
+                    '</div>' +
                 '</div>';
-            document.body.appendChild(sharePanel);
 
-            document.getElementById('btn-copy-url-action').addEventListener('click', function() { copyURL(); });
-            document.getElementById('btn-close-share-action').addEventListener('click', function() { sharePanel.remove(); });
-            sharePanel.addEventListener('click', function(e) { if (e.target === sharePanel) sharePanel.remove(); });
-        }
+            document.body.appendChild(panel);
 
-        function copyURL() {
-            var url = window.location.href;
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(url).then(function() {
-                    var btn = document.getElementById('btn-copy-url-action');
-                    if (btn) { btn.textContent = '✅ 已复制！'; setTimeout(function() { btn.textContent = '📋 复制链接'; }, 2000); }
+            // 生成QR码
+            var qrContainer = document.getElementById('qr-container');
+            try {
+                new QRCode(qrContainer, {
+                    text: shareUrl,
+                    width: 200,
+                    height: 200,
+                    colorDark: '#3a2a1a',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.L
                 });
-            } else {
-                var input = document.createElement('input');
-                input.value = url;
-                input.style.position = 'fixed';
-                input.style.left = '-9999px';
-                document.body.appendChild(input);
-                input.select();
-                document.execCommand('copy');
-                document.body.removeChild(input);
-                var btn = document.getElementById('btn-copy-url-action');
-                if (btn) { btn.textContent = '✅ 已复制！'; setTimeout(function() { btn.textContent = '📋 复制链接'; }, 2000); }
+            } catch (e) {
+                qrContainer.innerHTML = '<div style="padding:20px;color:#c04830;font-size:13px;">二维码生成失败<br/>请直接复制链接</div>';
             }
+
+            // 绑定事件
+            document.getElementById('btn-close-qr').addEventListener('click', function() { panel.remove(); });
+            document.getElementById('btn-close-qr2').addEventListener('click', function() { panel.remove(); });
+            panel.addEventListener('click', function(e) { if (e.target === panel) panel.remove(); });
+
+            document.getElementById('btn-copy-share-url').addEventListener('click', function() {
+                var btn = this;
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(shareUrl).then(function() {
+                        btn.textContent = '✅ 已复制！';
+                        setTimeout(function() { btn.textContent = '📋 复制链接'; }, 2000);
+                    });
+                } else {
+                    var input = document.createElement('input');
+                    input.value = shareUrl;
+                    input.style.position = 'fixed';
+                    input.style.left = '-9999px';
+                    document.body.appendChild(input);
+                    input.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(input);
+                    btn.textContent = '✅ 已复制！';
+                    setTimeout(function() { btn.textContent = '📋 复制链接'; }, 2000);
+                }
+            });
         }
 
         // Expose showPage for SPA navigation from home view
