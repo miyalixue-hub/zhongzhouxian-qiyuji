@@ -85,21 +85,21 @@
             { id: 'custom_plate', name: '车牌号码', desc: '自定义数字' }
         ];
         var patterns = [
-            { id: 'limb', name: '肢部纹饰', meaning: '层叠水鳞·护体镇水',
+            { id: 'limb', name: '肢部纹饰', meaning: '层叠水鳞·护体镇水', position: '四肢', desc: '层叠水鳞纹装饰在四肢上，如同护甲般环绕腿部',
               image: 'https://miyalixue-hub.github.io/zhongzhouxian-qiyuji/assets/pattern-limb.png' },
-            { id: 'mouth_horn', name: '嘴角纹饰', meaning: '火焰吐息·威慑水患',
+            { id: 'mouth_horn', name: '嘴角纹饰', meaning: '火焰吐息·威慑水患', position: '嘴角两侧', desc: '嘴角外展的火焰状纹饰，从嘴部向两侧延伸',
               image: 'https://miyalixue-hub.github.io/zhongzhouxian-qiyuji/assets/pattern-mouth_horn.png' },
-            { id: 'mane', name: '鬃毛', meaning: '风动水纹·灵气流转',
+            { id: 'mane', name: '鬃毛', meaning: '风动水纹·灵气流转', position: '颈部后方至背部', desc: '飘逸的鬃毛从颈后垂落至背部，带有水纹流动感',
               image: 'https://miyalixue-hub.github.io/zhongzhouxian-qiyuji/assets/pattern-mane.png' },
-            { id: 'ear', name: '耳部纹饰', meaning: '旋涡听水·守望桥声',
+            { id: 'ear', name: '耳部纹饰', meaning: '旋涡听水·守望桥声', position: '耳朵及头部两侧', desc: '旋涡纹装饰在耳朵周围和头部两侧',
               image: 'https://miyalixue-hub.github.io/zhongzhouxian-qiyuji/assets/pattern-ear.png' },
-            { id: 'eye', name: '眼部纹饰', meaning: '圆目凝神·明察水脉',
+            { id: 'eye', name: '眼部纹饰', meaning: '圆目凝神·明察水脉', position: '眼眶周围', desc: '旋涡状纹路环绕在眼睛周围，增强神态',
               image: 'https://miyalixue-hub.github.io/zhongzhouxian-qiyuji/assets/pattern-eye.png' },
-            { id: 'head_horn', name: '头部倚角', meaning: '角冠护首·镇守桥门',
+            { id: 'head_horn', name: '头部倚角', meaning: '角冠护首·镇守桥门', position: '头顶/额头', desc: '角状装饰从头顶生出，向后弯曲，如同皇冠',
               image: 'https://miyalixue-hub.github.io/zhongzhouxian-qiyuji/assets/pattern-head_horn.png' },
-            { id: 'back_cloud', name: '脊背云纹', meaning: '云气绕身·瑞意绵延',
+            { id: 'back_cloud', name: '脊背云纹', meaning: '云气绕身·瑞意绵延', position: '背部脊线', desc: '云纹沿着背部脊线分布，如同祥云环绕',
               image: 'https://miyalixue-hub.github.io/zhongzhouxian-qiyuji/assets/pattern-back_cloud.png' },
-            { id: 'neck_mane', name: '颈部鬃髯', meaning: '长髯迎风·神兽昂扬',
+            { id: 'neck_mane', name: '颈部鬃髯', meaning: '长髯迎风·神兽昂扬', position: '下巴至颈部', desc: '长须从下巴垂落至颈部，随风飘动',
               image: 'https://miyalixue-hub.github.io/zhongzhouxian-qiyuji/assets/pattern-neck_mane.png' }
         ];
         var expressions = [{ id: 'cute', name: '呆萌', desc: '圆滚滚·笑眯眯', emoji: '😊' }, { id: 'fierce', name: '威武', desc: '怒目圆睁·气势十足', emoji: '😤' }, { id: 'cool', name: '帅气', desc: '昂首挺胸·神采飞扬', emoji: '😎' }, { id: 'funny', name: '搞笑', desc: '吐舌头·搞怪表情', emoji: '🤪' }];

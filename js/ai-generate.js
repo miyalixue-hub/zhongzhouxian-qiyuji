@@ -457,12 +457,16 @@
             var cr = creatures.find(function(c) { return c.id === state.selectedCreature; });
             if (!cr) { cr = creatures[0]; }
 
-            // 纹饰
+            // 纹饰（带位置信息）
             var patternNames = [];
+            var patternDescList = [];
             if (state.selectedPatterns && state.selectedPatterns.length > 0) {
                 state.selectedPatterns.forEach(function(p) {
                     var pt = patterns.find(function(x) { return x.id === p; });
-                    if (pt) patternNames.push(pt.name + '（' + pt.meaning + '）');
+                    if (pt) {
+                        patternNames.push(pt.name + '（' + pt.meaning + '）');
+                        patternDescList.push(pt.position + '装饰着' + pt.desc);
+                    }
                 });
             }
 
@@ -488,10 +492,10 @@
                 });
             }
 
-            var summonText = '我设计了一只' + cr.name + '，' + (patternNames.length ? '身上刻有' + patternNames.join('、') + '，' : '') + '表情' + ex.name + '，' + (colorNames.length ? '配色为' + colorNames.join('、') + '，' : '') + (elemNames.length ? '搭配' + elemNames.join('、') + '装饰。' : '');
+            var summonText = '我设计了一只' + cr.name + '，' + (patternDescList.length ? patternDescList.join('，') + '，' : '') + '表情' + ex.name + '，' + (colorNames.length ? '配色为' + colorNames.join('、') + '，' : '') + (elemNames.length ? '搭配' + elemNames.join('、') + '装饰。' : '');
 
             var aiPrompt = '一只可爱的中国神话小神兽「' + cr.name + '」（' + cr.desc + '），' +
-                (patternNames.length ? '表面刻有' + patternNames.join('、') + '纹样，' : '') +
+                (patternDescList.length ? patternDescList.join('，') + '，纹样紧贴身体不要飘散在空中，' : '') +
                 '表情' + ex.name + '（' + ex.desc + '），' +
                 (colorNames.length ? '主色调为' + colorNames.join('、') + '，' : '') +
                 (elemNames.length ? '底座/配饰为' + elemNames.join('、') + '，' : '') +
