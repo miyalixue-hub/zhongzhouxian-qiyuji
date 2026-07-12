@@ -494,7 +494,8 @@
 
             var summonText = '我设计了一只' + cr.name + '，' + (patternDescList.length ? patternDescList.join('，') + '，' : '') + '表情' + ex.name + '，' + (colorNames.length ? '配色为' + colorNames.join('、') + '，' : '') + (elemNames.length ? '搭配' + elemNames.join('、') + '装饰。' : '');
 
-            var aiPrompt = '一只可爱的中国神话小神兽「' + cr.name + '」（' + cr.desc + '），' +
+            var aiPrompt = '一只可爱的中国神话小神兽「' + cr.name + '」（' + cr.desc + '）' +
+                (cr.location ? '，守护在' + cr.location.split('·')[0] + '畔，' : '，') +
                 (patternDescList.length ? patternDescList.join('，') + '，纹样紧贴身体不要飘散在空中，' : '') +
                 '表情' + ex.name + '（' + ex.desc + '），' +
                 (colorNames.length ? '主色调为' + colorNames.join('、') + '，' : '') +
