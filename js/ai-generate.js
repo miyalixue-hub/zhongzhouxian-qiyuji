@@ -476,30 +476,40 @@
 
             // 颜色
             var colorNames = [];
+            var colorPromptParts = [];
             if (state.selectedColors && state.selectedColors.length > 0) {
                 state.selectedColors.forEach(function(c) {
                     var cc = colors.find(function(x) { return x.id === c; });
-                    if (cc) colorNames.push(cc.name + '（' + cc.hex + '）');
+                    if (cc) {
+                        colorNames.push(cc.name + '（' + cc.hex + '）');
+                        var levelText = cc.level === 'royal' ? '皇家御用色' : '民间传统色';
+                        colorPromptParts.push(cc.name + '（' + levelText + '）');
+                    }
                 });
             }
 
             // 装饰元素
             var elemNames = [];
+            var elemPromptParts = [];
             if (state.selectedElements && state.selectedElements.length > 0) {
                 state.selectedElements.forEach(function(e) {
                     var ee = elements.find(function(x) { return x.id === e; });
-                    if (ee) elemNames.push(ee.name);
+                    if (ee) {
+                        elemNames.push(ee.name);
+                        if (ee.desc) elemPromptParts.push(ee.name + '（' + ee.desc + '）');
+                        else elemPromptParts.push(ee.name);
+                    }
                 });
             }
 
             var summonText = '我设计了一只' + cr.name + '，' + (patternDescList.length ? patternDescList.join('，') + '，' : '') + '表情' + ex.name + '，' + (colorNames.length ? '配色为' + colorNames.join('、') + '，' : '') + (elemNames.length ? '搭配' + elemNames.join('、') + '装饰。' : '');
 
             var aiPrompt = '一只可爱的中国神话小神兽「' + cr.name + '」（' + cr.desc + '）' +
-                (cr.location ? '，守护在' + cr.location.split('·')[0] + '畔，' : '，') +
+                (cr.location ? '，守护在' + cr.location + '，' : '，') +
                 (patternDescList.length ? patternDescList.join('，') + '，纹样紧贴身体不要飘散在空中，' : '') +
                 '表情' + ex.name + '（' + ex.desc + '），' +
-                (colorNames.length ? '主色调为' + colorNames.join('、') + '，' : '') +
-                (elemNames.length ? '底座/配饰为' + elemNames.join('、') + '，' : '') +
+                (colorPromptParts.length ? '主色调为' + colorPromptParts.join('、') + '，' : '') +
+                (elemPromptParts.length ? '底座/配饰为' + elemPromptParts.join('、') + '，' : '') +
                 '中国传统手绘风格，水墨淡彩质感，3D渲染，干净背景，儿童插画风格，高质量，温馨可爱';
 
             var tags = document.querySelector('#page-9 .prompt-tags');
