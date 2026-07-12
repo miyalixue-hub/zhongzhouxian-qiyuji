@@ -1281,10 +1281,35 @@
             }
 
             function shareToParents() {
-                if (navigator.share) {
-                    navigator.share({ title: '我的中轴奇游记·神兽档案', text: '我在中轴奇游记创建了一只专属神兽！快来看看！', url: window.location.href })
-                    .catch(function(err) { if (err.name !== 'AbortError') showShareFallback(); });
-                } else { showShareFallback(); }
+                // 铛铛车模式也使用同样的分享机制
+                var imageData = '';
+                if (state.selectedCandidate !== null && state.selectedCandidate !== undefined && state._generatedImageUrls) {
+                    imageData = state._generatedImageUrls[state.selectedCandidate] || '';
+                }
+                var glbUrl = state.meshyModelUrl || '';
+                var thumbUrl = state.meshyThumbnail || '';
+
+                var shareData = {
+                    cr: state.selectedCreature || '',
+                    pa: state.selectedPatterns || [],
+                    ex: state.selectedExpression || '',
+                    co: (state.selectedColors && state.selectedColors.length > 0) ? state.selectedColors[0] : '',
+                    el: (state.selectedElements && state.selectedElements.length > 0) ? state.selectedElements[0] : '',
+                    img: imageData,
+                    glb: glbUrl,
+                    thumb: thumbUrl
+                };
+                if (!glbUrl && (state.meshyStlUrl || '')) {
+                    shareData.stlFallback = state.meshyStlUrl;
+                }
+
+                var jsonStr = JSON.stringify(shareData);
+                var encoded = btoa(unescape(encodeURIComponent(jsonStr)))
+                    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+                var baseUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '');
+                var shareUrl = baseUrl + 'work.html?d=' + encoded;
+
+                showSharePanel(shareUrl, shareData);
             }
 
             function showShareFallback() {
