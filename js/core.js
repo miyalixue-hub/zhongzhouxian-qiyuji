@@ -36,6 +36,29 @@
                 toast.classList.remove('show');
             }, 2000);
         }
+
+        /**
+         * NPC铛铛车对话轮播
+         */
+        var npcDialogues = [
+            '小探险家，点正阳门开始冒险吧！',
+            '正阳门下藏着两只镇水神兽，你找到了吗？',
+            '集齐9站印章，你就是中轴小卫士！',
+            '你知道吗？北京城的中轴线长达7.8公里！',
+            '万宁桥下700岁的石狮子，在等你去发现哦！',
+            '每座古迹都有一个故事，等你来解锁～'
+        ];
+        var npcIndex = 0;
+        function cycleNpcDialogue() {
+            npcIndex = (npcIndex + 1) % npcDialogues.length;
+            var el = document.getElementById('npc-text');
+            if (!el) return;
+            el.classList.add('npc-text-changing');
+            el.textContent = npcDialogues[npcIndex];
+            setTimeout(function() {
+                el.classList.remove('npc-text-changing');
+            }, 300);
+        }
         
         /**
          * 正阳门 - 跳转至神兽工坊

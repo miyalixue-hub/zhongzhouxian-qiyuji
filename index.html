@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>中轴奇游记</title>
-    <link rel="stylesheet" href="styles/main.css?v=20260713a">
+    <link rel="stylesheet" href="styles/main.css?v=20260713b">
     <!-- Google model-viewer: 3D模型展示组件（使用 jsdelivr CDN 国内可访问） -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js?v=20260706b"></script>
 </head>
@@ -28,10 +28,24 @@
         </defs>
     </svg>
 
-    <!-- ====== 标题区域 ====== -->
+    <!-- ====== 故事序章 ====== -->
     <header class="header">
-        <h1>中轴<span>奇游</span>记</h1>
-        <p class="subtitle">探索北京中轴线 · 解锁千年文明</p>
+        <div class="story-prologue">
+            <div class="prologue-scroll">
+                <div class="prologue-title">中轴<span>奇游</span>记</div>
+                <div class="prologue-text">
+                    北京城的正中间，藏着一条看不见的路。<br>
+                    750年前，它是一座城市的脊梁；<br>
+                    今天，它是通往过去的密钥。<br>
+                    <span class="prologue-highlight">你的任务：沿着这条线，寻找9座被时间封印的古迹。</span>
+                </div>
+                <div class="prologue-progress">
+                    <span class="prologue-progress-label">已解锁</span>
+                    <span class="prologue-progress-count"><span id="unlocked-count">1</span> / 9 站</span>
+                    <div class="prologue-bar"><div class="prologue-fill" style="width:11%"></div></div>
+                </div>
+            </div>
+        </div>
     </header>
 
     <!-- ====== 地图主体 ====== -->
@@ -128,7 +142,7 @@
             <div class="station-dot"></div>
             <div class="station-card station-hero" id="station-zhengyangmen" ontouchstart="event.preventDefault(); goToStation();" onclick="goToStation();">
                 <span class="station-number">4</span>
-                <div class="hero-badge">🔓 你的神兽守护在这里</div>
+                <div class="hero-badge">📖 第一章 · 已解锁</div>
                 <div class="hero-image">
                     <img src="assets/stations/station-zhengyangmen.png" alt="正阳门">
                 </div>
@@ -145,7 +159,7 @@
                     </div>
                 </div>
                 <div class="hero-cta">
-                    <span class="cta-btn">进入神兽工坊 →</span>
+                    <span class="cta-btn">开始第一章冒险 →</span>
                 </div>
             </div>
         </div>
@@ -199,7 +213,7 @@
     </main>
 
     <!-- ====== NPC铛铛车引导 ====== -->
-    <div class="npc-guide" id="npc-guide">
+    <div class="npc-guide" id="npc-guide" onclick="cycleNpcDialogue()">
         <div class="npc-avatar">🚃</div>
         <div class="npc-bubble">
             <div class="npc-name">铛铛车</div>
@@ -1718,7 +1732,7 @@ window.addEventListener('unhandledrejection', function(e) {
 console.log('[LOADER] Error handler installed.');
 </script>
 <script src="js/config.js?v=20260713a"></script>
-    <script src="js/core.js?v=20260710e"></script>
+    <script src="js/core.js?v=20260713a"></script>
     <script src="js/ai-generate.js?v=20260713a"></script>
     <script src="js/meshy-3d.js?v=20260710a"></script>
     <script src="js/qrcode.min.js"></script>

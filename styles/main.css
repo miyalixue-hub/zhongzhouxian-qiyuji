@@ -4197,7 +4197,11 @@
     gap: 8px;
     z-index: 100;
     animation: npcFloat 3s ease-in-out infinite;
-    pointer-events: none;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.npc-guide:active {
+    transform: scale(0.95);
 }
 
 @keyframes npcFloat {
@@ -4253,4 +4257,95 @@
     background: rgba(184, 148, 62, 0.05);
     border-radius: 6px;
     border-left: 2px solid var(--gold);
+}
+
+/* ====== 故事序章样式 ====== */
+.story-prologue {
+    padding: 0 16px 8px;
+}
+.prologue-scroll {
+    background: linear-gradient(135deg, #faf6ed 0%, #f5edd6 100%);
+    border: 1px solid rgba(184, 148, 62, 0.2);
+    border-radius: 12px;
+    padding: 20px 18px;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(184, 148, 62, 0.08);
+}
+.prologue-scroll::before {
+    content: '📜';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 22px;
+    background: #faf6ed;
+    padding: 0 8px;
+}
+.prologue-title {
+    font-family: 'Ma Shan Zheng', 'STKaiti', serif;
+    font-size: 28px;
+    color: var(--text-dark);
+    text-align: center;
+    margin-bottom: 12px;
+    letter-spacing: 4px;
+}
+.prologue-title span {
+    color: var(--primary-red);
+    font-size: 32px;
+}
+.prologue-text {
+    font-family: 'STKaiti', 'KaiTi', serif;
+    font-size: 14px;
+    color: var(--ink-light);
+    line-height: 2;
+    text-align: center;
+    margin-bottom: 16px;
+}
+.prologue-highlight {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 12px;
+    background: rgba(199, 60, 54, 0.08);
+    border-radius: 20px;
+    color: var(--primary-red);
+    font-weight: bold;
+    font-size: 13px;
+}
+.prologue-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px dashed rgba(184, 148, 62, 0.3);
+}
+.prologue-progress-label {
+    font-size: 12px;
+    color: var(--ink-light);
+}
+.prologue-progress-count {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--primary-red);
+}
+.prologue-bar {
+    flex: 1;
+    height: 8px;
+    background: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.prologue-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-red), #e8a580);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+/* NPC对话切换动画 */
+.npc-text-changing {
+    animation: npcTextFade 0.3s ease;
+}
+@keyframes npcTextFade {
+    0% { opacity: 0; transform: translateY(4px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
