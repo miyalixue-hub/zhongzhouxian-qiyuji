@@ -4264,81 +4264,131 @@
     padding: 0 16px 8px;
 }
 .prologue-scroll {
-    background: linear-gradient(135deg, #faf6ed 0%, #f5edd6 100%);
-    border: 1px solid rgba(184, 148, 62, 0.2);
-    border-radius: 12px;
-    padding: 20px 18px;
+    background: linear-gradient(180deg, #fdf8ef 0%, #f9f0da 50%, #f5e8c8 100%);
+    border: 2px solid rgba(184, 148, 62, 0.25);
+    border-radius: 16px;
+    padding: 28px 22px 22px;
     position: relative;
-    box-shadow: 0 4px 20px rgba(184, 148, 62, 0.08);
+    box-shadow: 
+        0 2px 0 rgba(255,255,255,0.6) inset,
+        0 -2px 0 rgba(139,110,50,0.08) inset,
+        0 6px 24px rgba(139, 110, 50, 0.10);
+    overflow: hidden;
 }
+/* 卷轴上下装饰线 */
 .prologue-scroll::before {
-    content: '📜';
+    content: '';
     position: absolute;
-    top: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 22px;
-    background: #faf6ed;
-    padding: 0 8px;
+    top: 6px;
+    left: 12px;
+    right: 12px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(184,148,62,0.18) 20%, rgba(184,148,62,0.25) 50%, rgba(184,148,62,0.18) 80%, transparent);
+    border-radius: 2px;
 }
+.prologue-scroll::after {
+    content: '';
+    position: absolute;
+    bottom: 6px;
+    left: 12px;
+    right: 12px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(184,148,62,0.18) 20%, rgba(184,148,62,0.25) 50%, rgba(184,148,62,0.18) 80%, transparent);
+    border-radius: 2px;
+}
+/* 卷轴角饰 */
+.prologue-scroll .corner-ornament {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    opacity: 0.2;
+}
+.prologue-scroll .corner-ornament.tl { top: 10px; left: 10px; border-top: 2px solid var(--gold); border-left: 2px solid var(--gold); border-radius: 4px 0 0 0; }
+.prologue-scroll .corner-ornament.tr { top: 10px; right: 10px; border-top: 2px solid var(--gold); border-right: 2px solid var(--gold); border-radius: 0 4px 0 0; }
+.prologue-scroll .corner-ornament.bl { bottom: 10px; left: 10px; border-bottom: 2px solid var(--gold); border-left: 2px solid var(--gold); border-radius: 0 0 0 4px; }
+.prologue-scroll .corner-ornament.br { bottom: 10px; right: 10px; border-bottom: 2px solid var(--gold); border-right: 2px solid var(--gold); border-radius: 0 0 4px 0; }
 .prologue-title {
     font-family: 'Ma Shan Zheng', 'STKaiti', serif;
-    font-size: 28px;
-    color: var(--text-dark);
+    font-size: 30px;
+    color: #2c2416;
     text-align: center;
-    margin-bottom: 12px;
-    letter-spacing: 4px;
+    margin-bottom: 6px;
+    letter-spacing: 8px;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+    position: relative;
 }
 .prologue-title span {
-    color: var(--primary-red);
-    font-size: 32px;
+    color: #c0392b;
+    font-size: 34px;
+    text-shadow: 0 1px 2px rgba(192,57,43,0.15);
+}
+/* 标题下方小分隔 */
+.prologue-divider {
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 0 auto 14px;
 }
 .prologue-text {
     font-family: 'STKaiti', 'KaiTi', serif;
-    font-size: 14px;
-    color: var(--ink-light);
-    line-height: 2;
+    font-size: 14.5px;
+    color: #5a4a3a;
+    line-height: 2.2;
     text-align: center;
     margin-bottom: 16px;
+    letter-spacing: 1px;
+}
+.prologue-text br {
+    line-height: 2.2;
 }
 .prologue-highlight {
     display: inline-block;
-    margin-top: 8px;
-    padding: 4px 12px;
-    background: rgba(199, 60, 54, 0.08);
+    margin-top: 10px;
+    padding: 6px 18px;
+    background: linear-gradient(135deg, rgba(192,57,43,0.07), rgba(192,57,43,0.03));
+    border: 1px solid rgba(192,57,43,0.15);
     border-radius: 20px;
-    color: var(--primary-red);
+    color: #a0322a;
     font-weight: bold;
     font-size: 13px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 1px 4px rgba(192,57,43,0.06);
 }
 .prologue-progress {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding-top: 12px;
-    border-top: 1px dashed rgba(184, 148, 62, 0.3);
+    gap: 10px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(184, 148, 62, 0.18);
 }
 .prologue-progress-label {
     font-size: 12px;
-    color: var(--ink-light);
+    color: #8a7a6a;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
 }
 .prologue-progress-count {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: bold;
-    color: var(--primary-red);
+    color: #c0392b;
+    white-space: nowrap;
+    min-width: 48px;
 }
 .prologue-bar {
     flex: 1;
-    height: 8px;
-    background: #eee;
-    border-radius: 4px;
+    height: 10px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.04), rgba(0,0,0,0.02));
+    border-radius: 5px;
     overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06) inset;
+    border: 1px solid rgba(0,0,0,0.04);
 }
 .prologue-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--primary-red), #e8a580);
-    border-radius: 4px;
-    transition: width 0.5s ease;
+    background: linear-gradient(90deg, #c0392b, #e8a580, #f0c080);
+    border-radius: 5px;
+    transition: width 0.6s ease;
+    box-shadow: 0 0 6px rgba(192,57,43,0.3);
 }
 
 /* NPC对话切换动画 */
