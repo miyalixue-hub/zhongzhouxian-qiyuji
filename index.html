@@ -1782,6 +1782,10 @@ if (typeof goToStation === 'function') {
             tramEl.style.left = targetLeft + 'px';
             tramEl.style.top = targetTop + 'px';
             
+            // 气泡垂直跟随当前站点
+            var routeRect = dialogueArea.parentElement.getBoundingClientRect();
+            var bubbleTop = stopRect.top - routeRect.top;
+            dialogueArea.style.top = bubbleTop + 'px';
             
         }
 
