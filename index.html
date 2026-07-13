@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>中轴奇游记</title>
-    <link rel="stylesheet" href="styles/main.css?v=20260712c">
+    <link rel="stylesheet" href="styles/main.css?v=20260713a">
     <!-- Google model-viewer: 3D模型展示组件（使用 jsdelivr CDN 国内可访问） -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js?v=20260706b"></script>
 </head>
@@ -58,7 +58,7 @@
                     <div class="card-title">钟鼓楼</div>
                 </div>
                 <div class="card-subtitle">暮鼓晨钟</div>
-                <div class="card-activities">击鼓108声节奏 · 时间信物纪念章</div>
+                <div class="card-hint">"清晨的钟声能唤醒整座城...108声鼓点藏着什么秘密？"</div>
                 <span class="status-badge">🔒 即将开放</span>
             </div>
         </div>
@@ -73,7 +73,7 @@
                     <div class="card-title">万宁桥</div>
                 </div>
                 <div class="card-subtitle">元代密码</div>
-                <div class="card-activities">水位挑战 · 古桥镇水兽设计</div>
+                <div class="card-hint">"700年前的石桥下，镇水兽还在守护...水位线刻在哪里？"</div>
                 <span class="status-badge">🔒 即将开放</span>
             </div>
         </div>
@@ -88,7 +88,7 @@
                     <div class="card-title">景山</div>
                 </div>
                 <div class="card-subtitle">中轴制高点</div>
-                <div class="card-activities">俯瞰中轴全景 · 拼龙脉地图</div>
+                <div class="card-hint">"登上这里，整条中轴线尽收眼底...龙脉的尽头在哪里？"</div>
                 <span class="status-badge">🔒 即将开放</span>
             </div>
         </div>
@@ -103,7 +103,7 @@
                     <div class="card-title">故宫</div>
                 </div>
                 <div class="card-subtitle">紫禁之巅</div>
-                <div class="card-activities">数脊兽 · 铜狮配对 · 彩画搭配</div>
+                <div class="card-hint">"屋脊上藏着几只神兽？铜狮子为什么一雌一雄？"</div>
                 <span class="status-badge">🔒 即将开放</span>
             </div>
         </div>
@@ -118,23 +118,35 @@
                     <div class="card-title">天安门</div>
                 </div>
                 <div class="card-subtitle">望君归 · 望君出</div>
-                <div class="card-activities">石犼对话 · 华表设计</div>
+                <div class="card-hint">"华表上的石犼在等什么？望君归，望君出..."</div>
                 <span class="status-badge">🔒 即将开放</span>
             </div>
         </div>
         
-        <!-- 站点4：正阳门 (已解锁!) -->
-        <div class="station unlocked" data-name="正阳门">
+        <!-- 站点4：正阳门 (英雄卡 - 已解锁!) -->
+        <div class="station unlocked station-hero-wrapper" data-name="正阳门">
             <div class="station-dot"></div>
-            <div class="station-card" id="station-zhengyangmen" ontouchstart="event.preventDefault(); goToStation();" onclick="goToStation();">
+            <div class="station-card station-hero" id="station-zhengyangmen" ontouchstart="event.preventDefault(); goToStation();" onclick="goToStation();">
                 <span class="station-number">4</span>
-                <div class="card-header">
-                    <div class="card-icon"><img src="assets/stations/station-zhengyangmen.png" alt="正阳门标识"></div>
-                    <div class="card-title">正阳门</div>
+                <div class="hero-badge">🔓 你的神兽守护在这里</div>
+                <div class="hero-image">
+                    <img src="assets/stations/station-zhengyangmen.png" alt="正阳门">
                 </div>
-                <div class="card-subtitle">神兽守护</div>
-                <div class="card-activities">神兽创造工坊</div>
-                <span class="status-badge">✨ 点击进入</span>
+                <div class="hero-content">
+                    <div class="hero-title">正阳门</div>
+                    <div class="hero-subtitle">六百年城门 · 神兽守护者</div>
+                    <div class="hero-story">
+                        "600年前，这座城门镇守着北京的正南方。护城河畔，两只神兽日夜守护——<strong>镇水兽</strong>趴在岸边石台上，<strong>吸水兽</strong>蹲在桥洞顶部..."
+                    </div>
+                    <div class="hero-activities">
+                        <span class="activity-tag">🎨 设计你的专属神兽</span>
+                        <span class="activity-tag">🏛️ 探索正阳桥遗址</span>
+                        <span class="activity-tag">🐉 3D打印带走它</span>
+                    </div>
+                </div>
+                <div class="hero-cta">
+                    <span class="cta-btn">进入神兽工坊 →</span>
+                </div>
             </div>
         </div>
         
@@ -148,7 +160,7 @@
                     <div class="card-title">先农坛</div>
                 </div>
                 <div class="card-subtitle">皇帝种地</div>
-                <div class="card-activities">藻井万花筒 · 四季农耕</div>
+                <div class="card-hint">"皇帝也要亲自下田？藻井里藏着一万个图案..."</div>
                 <span class="status-badge">🔒 即将开放</span>
             </div>
         </div>
@@ -163,7 +175,7 @@
                     <div class="card-title">天坛</div>
                 </div>
                 <div class="card-subtitle">天人对话</div>
-                <div class="card-activities">回音壁声学 · 数字密码</div>
+                <div class="card-hint">"回音壁能传多远的声音？数字里藏着天的密码..."</div>
                 <span class="status-badge">🔒 即将开放</span>
             </div>
         </div>
@@ -178,13 +190,22 @@
                     <div class="card-title">永定门</div>
                 </div>
                 <div class="card-subtitle">龙脉起点</div>
-                <div class="card-activities">拼搭城门 · 石匾书法</div>
+                <div class="card-hint">"中轴线的故事从这里开始...石匾上的字是谁写的？"</div>
                 <span class="status-badge">🔒 即将开放</span>
             </div>
         </div>
         
         <div class="direction-label bottom">▼ 南</div>
     </main>
+
+    <!-- ====== NPC铛铛车引导 ====== -->
+    <div class="npc-guide" id="npc-guide">
+        <div class="npc-avatar">🚃</div>
+        <div class="npc-bubble">
+            <div class="npc-name">铛铛车</div>
+            <div class="npc-text" id="npc-text">小探险家，点正阳门开始冒险吧！</div>
+        </div>
+    </div>
 
     <!-- ====== 底部进度条 ====== -->
     <div class="progress-bar">

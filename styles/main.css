@@ -4018,3 +4018,239 @@
     z-index: 10;
     box-shadow: 0 2px 6px rgba(196, 92, 92, 0.3);
 }
+
+/* ====== 英雄卡样式（正阳门） ====== */
+.station-hero-wrapper {
+    margin: 30px 0;
+}
+
+.station-hero-wrapper .station-dot {
+    width: 18px;
+    height: 18px;
+    background: var(--vermillion);
+    box-shadow: 0 0 0 4px rgba(192, 72, 48, 0.2), 0 0 20px rgba(192, 72, 48, 0.4);
+}
+
+.station-hero {
+    padding: 0 !important;
+    overflow: hidden;
+    border-radius: 16px !important;
+    transform: rotate(0deg) !important;
+    animation: heroGlow 3s ease-in-out infinite !important;
+    border: 3px solid var(--vermillion) !important;
+    box-shadow: 
+        0 0 0 4px rgba(192, 72, 48, 0.1),
+        0 8px 32px rgba(192, 72, 48, 0.2),
+        0 0 60px rgba(192, 72, 48, 0.1) !important;
+}
+
+.station-hero::before {
+    display: none !important;
+}
+
+.station-hero::after {
+    display: none !important;
+}
+
+@keyframes heroGlow {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(192, 72, 48, 0.1), 0 8px 32px rgba(192, 72, 48, 0.2), 0 0 60px rgba(192, 72, 48, 0.1); }
+    50% { box-shadow: 0 0 0 6px rgba(192, 72, 48, 0.15), 0 12px 40px rgba(192, 72, 48, 0.25), 0 0 80px rgba(192, 72, 48, 0.15); }
+}
+
+/* 英雄卡顶部徽章 */
+.hero-badge {
+    background: linear-gradient(135deg, var(--vermillion), var(--vermillion-dark));
+    color: white;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+/* 英雄卡图片区 */
+.hero-image {
+    background: linear-gradient(180deg, #fef9ee 0%, #fde4c0 100%);
+    padding: 24px 20px 16px;
+    text-align: center;
+    position: relative;
+}
+
+.hero-image::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: linear-gradient(180deg, transparent, rgba(254, 249, 238, 0.9));
+}
+
+.hero-image img {
+    max-width: 180px;
+    max-height: 120px;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 12px rgba(192, 72, 48, 0.2));
+    position: relative;
+    z-index: 1;
+}
+
+/* 英雄卡内容区 */
+.hero-content {
+    padding: 20px 24px 16px;
+    background: linear-gradient(180deg, #fef9ee 0%, var(--paper) 100%);
+}
+
+.hero-title {
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--vermillion-dark);
+    letter-spacing: 4px;
+    margin-bottom: 4px;
+    font-family: "STKaiti", "KaiTi", "楷体", serif;
+}
+
+.hero-subtitle {
+    font-size: 14px;
+    color: var(--ink-light);
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed var(--ink-faint);
+}
+
+.hero-story {
+    font-size: 14px;
+    color: var(--text-dark);
+    line-height: 1.8;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: rgba(184, 148, 62, 0.06);
+    border-radius: 8px;
+    border-left: 3px solid var(--gold);
+}
+
+.hero-story strong {
+    color: var(--vermillion);
+}
+
+.hero-activities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.activity-tag {
+    font-size: 12px;
+    color: var(--ink-light);
+    background: var(--paper-warm);
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--ink-faint);
+}
+
+/* 英雄卡CTA按钮 */
+.hero-cta {
+    padding: 16px 24px 20px;
+    background: var(--paper);
+}
+
+.cta-btn {
+    display: block;
+    text-align: center;
+    background: linear-gradient(135deg, var(--vermillion), var(--vermillion-dark));
+    color: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    box-shadow: 0 4px 16px rgba(192, 72, 48, 0.3);
+    transition: all 0.3s ease;
+}
+
+.station-hero:hover .cta-btn {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(192, 72, 48, 0.4);
+}
+
+/* 英雄卡序号 */
+.station-hero .station-number {
+    background: var(--vermillion);
+    color: white;
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+    top: 40px;
+    right: 12px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(192, 72, 48, 0.3);
+}
+
+/* ====== NPC铛铛车引导 ====== */
+.npc-guide {
+    position: fixed;
+    bottom: 80px;
+    right: 16px;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    z-index: 100;
+    animation: npcFloat 3s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes npcFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+.npc-avatar {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #2E7D32, #4CAF50);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 4px 16px rgba(46, 125, 50, 0.3);
+    border: 3px solid white;
+    flex-shrink: 0;
+}
+
+.npc-bubble {
+    background: white;
+    border-radius: 16px 16px 4px 16px;
+    padding: 10px 14px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    max-width: 200px;
+    position: relative;
+}
+
+.npc-name {
+    font-size: 11px;
+    color: var(--vermillion);
+    font-weight: 700;
+    margin-bottom: 2px;
+    letter-spacing: 1px;
+}
+
+.npc-text {
+    font-size: 13px;
+    color: var(--text-dark);
+    line-height: 1.4;
+}
+
+/* ====== 悬念文案样式 ====== */
+.card-hint {
+    font-size: 12px;
+    color: var(--ink-light);
+    font-style: italic;
+    line-height: 1.5;
+    margin-top: 4px;
+    padding: 8px 10px;
+    background: rgba(184, 148, 62, 0.05);
+    border-radius: 6px;
+    border-left: 2px solid var(--gold);
+}
