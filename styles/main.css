@@ -4666,81 +4666,178 @@
     margin: 0 auto 8px;
 }
 
-/* ====== 铛铛车开场旅程 ====== */
+/* ====== 铛铛车开场旅程（路线图版） ====== */
 .tram-journey-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    background: rgba(26,26,46,0.97);
     z-index: 10000;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: opacity 0.8s ease;
+    overflow: hidden;
 }
 .tram-journey-overlay.fade-out {
     opacity: 0;
     pointer-events: none;
 }
-.tram-journey-inner {
-    text-align: center;
-    padding: 24px;
-    max-width: 400px;
-    width: 90%;
+.tram-journey-container {
+    width: 96%;
+    max-width: 500px;
+    height: 92vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
 }
-.tram-journey-title {
+.tram-journey-route-area {
+    flex: 0 0 58%;
+    position: relative;
+    overflow: hidden;
+}
+.tram-journey-route-title {
     font-family: 'Noto Serif SC', serif;
-    font-size: 28px;
+    font-size: 22px;
     color: #F0EDE5;
     letter-spacing: 6px;
-    margin-bottom: 24px;
+    text-align: center;
+    margin-bottom: 8px;
     opacity: 0.9;
 }
-.tram-journey-tram {
-    font-size: 48px;
-    margin-bottom: 16px;
-    animation: tram-bounce 2s ease-in-out infinite;
+.tram-journey-route-map {
+    position: relative;
+    width: 100%;
+    height: calc(100% - 36px);
 }
-@keyframes tram-bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
+.tram-journey-rail-svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+.journey-rail-bed {
+    fill: none;
+    stroke: rgba(180,168,140,0.15);
+    stroke-width: 3;
+    stroke-linecap: round;
+}
+.journey-rail-line {
+    fill: none;
+    stroke: rgba(212,168,67,0.35);
+    stroke-width: 0.8;
+    stroke-linecap: round;
+    stroke-dasharray: 2 2;
+}
+.journey-dot {
+    fill: rgba(180,168,140,0.3);
+    transition: fill 0.4s ease, r 0.3s ease;
+}
+.journey-dot.journey-dot-active {
+    fill: #D4A843;
+}
+/* 铛铛车 */
+.tram-journey-tram {
+    position: absolute;
+    top: var(--tram-top);
+    left: var(--tram-left);
+    transform: translate(-50%, -50%);
+    font-size: 26px;
+    z-index: 10;
+    transition: top 0.6s ease, left 0.6s ease;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+}
+@keyframes tramBounce {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    15% { transform: translate(-50%, -50%) rotate(-6deg) translateY(-3px); }
+    30% { transform: translate(-50%, -50%) rotate(5deg); }
+    45% { transform: translate(-50%, -50%) rotate(-3deg); }
+    60% { transform: translate(-50%, -50%) rotate(2deg); }
+    100% { transform: translate(-50%, -50%) rotate(0deg); }
+}
+.tram-journey-tram.tram-bounce-anim {
+    animation: tramBounce 0.6s ease;
+}
+/* 站点卡片在路线图上 */
+.tram-journey-stop {
+    position: absolute;
+    top: var(--stop-top);
+    left: var(--stop-left);
+    right: auto;
+    width: 42%;
+    transform: translateY(-50%);
+    z-index: 5;
+}
+.tram-journey-stop.stop-right {
+    left: auto;
+    right: 4%;
+}
+/* 复用 .station-card-mini 基础样式，加 journey-active 状态 */
+.station-card-mini.journey-active {
+    border-color: #D4A843 !important;
+    box-shadow: 0 0 12px rgba(212,168,67,0.35), 0 0 0 2px rgba(212,168,67,0.2) inset !important;
+    background: linear-gradient(135deg, rgba(255,248,220,0.95), rgba(248,240,220,0.95)) !important;
+    animation: cardPop 0.4s ease;
+}
+@keyframes cardPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+    100% { transform: scale(1); }
+}
+/* 对话区域 */
+.tram-journey-dialogue-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 8px 4px 0;
+    overflow: hidden;
 }
 .tram-journey-station-name {
     font-family: 'Noto Serif SC', serif;
-    font-size: 22px;
+    font-size: 20px;
     color: #D4A843;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
     letter-spacing: 3px;
-    transition: opacity 0.4s ease;
+    text-align: center;
+    transition: opacity 0.3s ease;
 }
 .tram-journey-dialogue {
-    font-size: 15px;
-    line-height: 1.8;
+    font-size: 14px;
+    line-height: 1.75;
     color: #E8E0D0;
-    min-height: 120px;
-    margin-bottom: 20px;
+    flex: 1;
+    margin-bottom: 8px;
     text-align: left;
-    padding: 16px 20px;
+    padding: 12px 16px;
     background: rgba(255,255,255,0.06);
     border-radius: 12px;
     border-left: 3px solid #D4A843;
-    transition: opacity 0.4s ease;
+    transition: opacity 0.3s ease;
+    overflow-y: auto;
+    white-space: pre-line;
 }
 .tram-journey-progress {
     font-size: 12px;
     color: rgba(240,237,229,0.4);
-    margin-bottom: 12px;
+    text-align: center;
+    margin-bottom: 8px;
 }
 .tram-journey-btn {
-    display: inline-block;
-    padding: 10px 28px;
+    display: block;
+    width: 100%;
+    max-width: 260px;
+    margin: 0 auto 12px;
+    padding: 12px 28px;
     background: rgba(212,168,67,0.2);
     color: #D4A843;
     border: 1px solid rgba(212,168,67,0.4);
-    border-radius: 20px;
-    font-size: 14px;
+    border-radius: 24px;
+    font-size: 15px;
     cursor: pointer;
     transition: all 0.3s ease;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
+    text-align: center;
+    flex-shrink: 0;
 }
 .tram-journey-btn:hover {
     background: rgba(212,168,67,0.35);
@@ -4758,8 +4855,16 @@
 }
 /* 手机端适配 */
 @media (max-width: 480px) {
-    .tram-journey-title { font-size: 24px; letter-spacing: 4px; }
-    .tram-journey-station-name { font-size: 20px; }
-    .tram-journey-dialogue { font-size: 14px; min-height: 100px; padding: 12px 16px; }
-    .tram-journey-tram { font-size: 40px; }
+    .tram-journey-route-title { font-size: 18px; letter-spacing: 4px; }
+    .tram-journey-station-name { font-size: 18px; }
+    .tram-journey-dialogue { font-size: 13px; padding: 10px 12px; }
+    .tram-journey-tram { font-size: 22px; }
+    .tram-journey-stop { width: 46%; }
+    .tram-journey-container { height: 95vh; }
+    .tram-journey-route-area { flex: 0 0 52%; }
+    .station-card-mini { padding: 6px 8px; gap: 5px; }
+    .mini-num { font-size: 14px; }
+    .mini-name { font-size: 12px; }
+    .mini-icon { font-size: 13px; }
+    .mini-lock { font-size: 10px; }
 }
