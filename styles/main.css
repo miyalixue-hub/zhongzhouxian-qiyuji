@@ -1752,7 +1752,7 @@
         }
         .color-card[data-id="zhusha"] .color-swatch-wrap { background-image: url('../assets/trad-color-zhusha.png'); }
         .color-card[data-id="shiqing"] .color-swatch-wrap { background-image: url('../assets/trad-color-shiqing.png'); }
-        .color-card[data-id="douqing"] .color-swatch-wrap { background-image: url('../assets/trad-color-douqing.png'); }
+        .color-card[data-id="douqing"] .color-swatch-wrap { background-image: url('../assets/trad-color-douqing.png?v=20260713'); }
         .color-card[data-id="liuli"] .color-swatch-wrap { background-image: url('../assets/trad-color-liuli.png'); }
         .color-card[data-id="yuebai"] .color-swatch-wrap { background-image: url('../assets/trad-color-yuebai.png'); }
         .color-card[data-id="mohei"] .color-swatch-wrap { background-image: url('../assets/trad-color-mohei.png'); }
