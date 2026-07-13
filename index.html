@@ -1770,6 +1770,19 @@ if (typeof goToStation === 'function') {
         // 显示对话区域
         dialogueArea.style.display = 'block';
 
+        // 移动小车子到当前站点
+        var tramEl = document.querySelector('.route-tram');
+        var currentStop = document.querySelector('.route-stop[data-station-idx="' + index + '"]');
+        if (tramEl && currentStop && index < 8) {
+            var trackRect = tramEl.parentElement.getBoundingClientRect();
+            var stopRect = currentStop.getBoundingClientRect();
+            var targetLeft = stopRect.left - trackRect.left + stopRect.width / 2 - tramEl.offsetWidth / 2;
+            var targetTop = stopRect.top - trackRect.top + stopRect.height / 2 - tramEl.offsetHeight / 2;
+            tramEl.style.transition = 'left 0.8s ease-in-out, top 0.8s ease-in-out';
+            tramEl.style.left = targetLeft + 'px';
+            tramEl.style.top = targetTop + 'px';
+        }
+
         // 高亮当前站（移除之前的高亮）
         var allStops = document.querySelectorAll('.route-stop');
         allStops.forEach(function(s) { s.classList.remove('journey-active'); });

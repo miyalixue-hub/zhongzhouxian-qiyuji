@@ -4563,6 +4563,7 @@
     z-index: 10;
     animation: tramBob 2s ease-in-out infinite;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+    transition: left 0.8s ease-in-out, top 0.8s ease-in-out;
 }
 
 /* 站点卡片容器 */
