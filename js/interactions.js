@@ -29,8 +29,8 @@
             }
             console.log('[INIT] Default state synced:', { creature: state.selectedCreature, patterns: state.selectedPatterns, expression: state.selectedExpression, colors: state.selectedColors, elements: state.selectedElements });
             
-            showPage(0);
-            console.log('[INIT] showPage(0) OK, currentPage=' + state.currentPage);
+            if (typeof showPage === 'function') { showPage(0); console.log('[INIT] showPage(0) OK'); }
+            else { console.warn('[INIT] showPage not yet available, deferring...'); setTimeout(function(){ if(typeof showPage==='function') showPage(0); }, 100); }
             // 修改page-4的卡片点击事件，区分神兽和铛铛车
             var creatureCards = document.querySelectorAll('#page-4 .option-card');
             console.log('[INIT] Found ' + creatureCards.length + ' creature cards');
