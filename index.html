@@ -22,11 +22,22 @@
         return false;
     };
     </script>
-    <link rel="stylesheet" href="styles/main.css?v=20260713i">
+    <link rel="stylesheet" href="styles/main.css?v=20260713j">
     <!-- Google model-viewer: 3D模型展示组件（使用 jsdelivr CDN 国内可访问） -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js?v=20260706b"></script>
 </head>
 <body>
+<!-- 铛铛车开场旅程 -->
+<div id="tram-journey-overlay" class="tram-journey-overlay">
+    <div class="tram-journey-inner">
+        <div class="tram-journey-title">中轴奇游记</div>
+        <div class="tram-journey-tram">🚃</div>
+        <div class="tram-journey-station-name" id="tram-journey-station">钟鼓楼</div>
+        <div class="tram-journey-dialogue" id="tram-journey-dialogue"></div>
+        <div class="tram-journey-progress" id="tram-journey-progress">1 / 9</div>
+        <div class="tram-journey-btn" id="tram-journey-btn">下一站 →</div>
+    </div>
+</div>
 
 
 
@@ -83,9 +94,16 @@
                 </div>
                 <div class="hero-content">
                     <div class="hero-title">正阳门</div>
-                    <div class="hero-subtitle">六百年城门 · 神兽守护者</div>
+                    <div class="hero-subtitle">正门守护 · 蚣蝮与吸水兽</div>
                     <div class="hero-story">
-                        "600年前，这座城门镇守着北京的正南方。护城河畔，两只神兽日夜守护——<strong>镇水兽</strong>趴在岸边石台上，<strong>吸水兽</strong>蹲在桥洞顶部..."
+                        这哥们叫蚣蝮（gōng fù）。<br>
+龙的第九个儿子。别人家的龙子飞天入海，它选了趴在桥边看水——<br>
+因为它觉得，守住这条路比什么都重要。<br><br>
+它身上原来刻着8种纹饰，每一种都有来头。<br>
+现在全褪成白线了。<br><br>
+它不太想说话（被忘了三百年，换你你也这态度）。<br>
+但如果你帮它把纹饰找回来……<br>
+嗯，它可能会对你笑一下。大概。
                     </div>
                     <div class="hero-activities">
                         <span class="activity-tag">🎨 设计你的专属神兽</span>
@@ -197,7 +215,7 @@
         <div class="npc-avatar">🚃</div>
         <div class="npc-bubble">
             <div class="npc-name">铛铛车</div>
-            <div class="npc-text" id="npc-text">小探险家，点正阳门开始冒险吧！</div>
+            <div class="npc-text" id="npc-text">那只灰不溜秋的小兽就是镇水兽——被忘了三百年，脾气不太好。你愿意帮它吗？</div>
         </div>
     </div>
 
@@ -1725,5 +1743,107 @@ if (typeof goToStation === 'function') {
         <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:url('https://zhongzhouxian-1413555799.cos.ap-guangzhou.myqcloud.com/assets/css_bg_5.png') center/cover no-repeat;"></div>
         <button onclick="document.getElementById('splash-screen').style.display='none'; if(typeof showView==='function') showView('home');" style="position:relative; z-index:2; padding:20px 60px; font-size:1.4em; background:linear-gradient(135deg,#d4b060,#c09840); color:#fff; border:none; border-radius:30px; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.3); font-family:'KaiTi','STKaiti',serif; letter-spacing:2px;">点击进入中轴奇游记</button>
     </div>
+<script>
+// ====== 铛铛车开场旅程 ======
+(function() {
+    // 检查是否已经看过（首次访问才播放）
+    if (localStorage.getItem('tram_journey_seen') === 'true') {
+        var overlay = document.getElementById('tram-journey-overlay');
+        if (overlay) overlay.style.display = 'none';
+        return;
+    }
+
+    var stations = [
+        {
+            name: '钟鼓楼',
+            dialogue: '这是钟鼓楼。古时候没有手机没有闹钟，全北京城的人靠这俩楼知道几点——鼓楼打鼓，钟楼敲钟。站在这往南看，整条中轴线一眼望不到头。'
+        },
+        {
+            name: '万宁桥',
+            dialogue: '这座桥 700 多年了，中轴线上最老的建筑。全是石头砌的，到现在还结实着呢。桥下面的水，当年直通护城河。往下走，到正阳门你就看到了。'
+        },
+        {
+            name: '景山',
+            dialogue: '景山。爬上去能俯瞰整个故宫——金灿灿的屋顶铺满眼睛。不过今天没空爬山，我们先往下走。'
+        },
+        {
+            name: '故宫',
+            dialogue: '故宫到了。全世界最大的宫殿，传说有 9999 间半房子。你看颜色——黄的顶、红的墙、白的石头底座。这三种颜色凑一起，就是皇家的标配。'
+        },
+        {
+            name: '天安门',
+            dialogue: '天安门。以前叫承天门，皇城的正门。普通人连靠近都不行。现在嘛，谁都能去拍照打卡。'
+        },
+        {
+            name: '先农坛',
+            dialogue: '先农坛。皇帝每年春天得在这亲自下地种一回田——对，皇帝种田。你想想那个画面……估计种得不怎么样。'
+        },
+        {
+            name: '天坛',
+            dialogue: '天坛。皇帝祭天的地方。屋顶是蓝色的——因为蓝色代表天。在这儿说话，据说老天爷能听到。'
+        },
+        {
+            name: '永定门',
+            dialogue: '永定门。中轴线最南头，起点。名字意思是"永远安定"。从这里往北看——我们第一站要去的地方，就在前方。'
+        },
+        {
+            name: '正阳门',
+            dialogue: '到了。正阳门。\n\n看到地上那只灰不溜秋的东西了吗？对，就是那块丑丑的、裂了缝的、看起来像石头的东西。\n\n它不是石头。它是一只神兽，叫镇水兽。在这趴了六百年了。\n\n哦对了，桥洞顶上还有一只——叫吸水兽，倒挂着，姿势有点像蝙蝠。不过那只更害羞，先不管它。\n\n先说这只镇水兽吧。三百年没人搭理它，花纹褪了，颜色也没了。它就躺那，生闷气。\n\n你戳戳它试试？',
+            isFinal: true
+        }
+    ];
+
+    var currentStation = 0;
+    var overlay = document.getElementById('tram-journey-overlay');
+    var stationEl = document.getElementById('tram-journey-station');
+    var dialogueEl = document.getElementById('tram-journey-dialogue');
+    var progressEl = document.getElementById('tram-journey-progress');
+    var btnEl = document.getElementById('tram-journey-btn');
+
+    function showStation(index) {
+        var station = stations[index];
+        currentStation = index;
+
+        // 淡出再更新内容
+        stationEl.style.opacity = '0';
+        dialogueEl.style.opacity = '0';
+
+        setTimeout(function() {
+            stationEl.textContent = station.name;
+            dialogueEl.textContent = station.dialogue;
+            stationEl.style.opacity = '1';
+            dialogueEl.style.opacity = '1';
+
+            // 更新进度
+            if (station.isFinal) {
+                progressEl.textContent = '9 / 9';
+                btnEl.textContent = '开始冒险 →';
+                btnEl.classList.add('arriving');
+            } else {
+                progressEl.textContent = (index + 1) + ' / 9';
+                btnEl.textContent = '下一站 →';
+                btnEl.classList.remove('arriving');
+            }
+        }, 300);
+    }
+
+    // 初始化第一站
+    showStation(0);
+
+    // 点击下一站
+    btnEl.addEventListener('click', function() {
+        if (currentStation < stations.length - 1) {
+            showStation(currentStation + 1);
+        } else {
+            // 最后一站，关闭遮罩
+            localStorage.setItem('tram_journey_seen', 'true');
+            overlay.classList.add('fade-out');
+            setTimeout(function() {
+                overlay.style.display = 'none';
+            }, 800);
+        }
+    });
+})();
+</script>
 </body>
 </html>
