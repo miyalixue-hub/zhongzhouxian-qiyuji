@@ -4676,9 +4676,9 @@
 
 /* 铛铛车旅程对话区域 */
 .journey-dialogue-area {
-    position: fixed;
-    right: 20px;
-    top: 100px;
+    position: absolute;
+    right: -240px;
+    top: 0;
     width: 220px;
     padding: 10px 14px;
     background: linear-gradient(135deg, rgba(255,248,220,0.98), rgba(248,240,220,0.98));
