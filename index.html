@@ -1783,7 +1783,6 @@ if (typeof goToStation === 'function') {
             tramEl.style.top = targetTop + 'px';
             
             // 移动对话气泡到当前站点旁边
-            var dialogueArea = document.getElementById('journey-dialogue-area');
             var routeRect = dialogueArea.parentElement.getBoundingClientRect();
             var bubbleTop = stopRect.top - routeRect.top + stopRect.height / 2 - 30;
             dialogueArea.style.top = bubbleTop + 'px';
@@ -1793,7 +1792,6 @@ if (typeof goToStation === 'function') {
         var allStops = document.querySelectorAll('.route-stop');
         allStops.forEach(function(s) { s.classList.remove('journey-active'); });
         if (index < 8) {
-            var currentStop = document.querySelector('.route-stop[data-station-idx="' + index + '"]');
             if (currentStop) {
                 currentStop.classList.add('journey-active');
                 // 把锁换成✅
