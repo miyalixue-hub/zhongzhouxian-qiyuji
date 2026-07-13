@@ -424,13 +424,33 @@
         }
         
         .station.locked .station-card {
-            opacity: 0.6;
-            filter: saturate(0.7);
+            opacity: 0.65;
+            filter: saturate(0.6);
+            position: relative;
+            background: linear-gradient(180deg, rgba(245,240,225,0.95), rgba(230,222,200,0.95));
+        }
+        /* 封印迷雾覆盖层 */
+        .station.locked .station-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 12px;
+            background: 
+                radial-gradient(ellipse at 30% 20%, rgba(200,190,170,0.15), transparent 60%),
+                radial-gradient(ellipse at 70% 80%, rgba(180,170,150,0.1), transparent 50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+        .station.locked .station-card > * {
+            position: relative;
+            z-index: 2;
         }
         
         .station.locked .station-card:hover {
-            transform: translateY(-1px) rotate(-0.5deg);
-            opacity: 0.75;
+            transform: translateY(-2px);
+            opacity: 0.8;
+            filter: saturate(0.75);
+            transition: all 0.3s ease;
         }
         
         .station-card .card-header {
@@ -484,7 +504,8 @@
         }
         
         .station.locked .station-card .card-title {
-            color: #8a7a66;
+            color: #7a6a58;
+            opacity: 0.85;
         }
         
         .station-card .card-subtitle {
@@ -530,11 +551,13 @@
         }
         
         .station.locked .status-badge {
-            background: rgba(232, 220, 196, 0.5);
-            color: var(--text-light);
-            border-color: rgba(107, 87, 68, 0.15);
-            border-style: dashed;
-            transform: rotate(-0.5deg);
+            background: linear-gradient(135deg, rgba(180,60,50,0.12), rgba(180,60,50,0.06));
+            color: #8a3a30;
+            border-color: rgba(180,60,50,0.25);
+            border-style: solid;
+            transform: rotate(-1.5deg);
+            box-shadow: 0 1px 3px rgba(180,60,50,0.08);
+            letter-spacing: 2px;
         }
         
         /* ====== 序号标识 - 手绘圆圈+手写数字 ====== */
@@ -590,6 +613,14 @@
             box-shadow: 
                 1px 1px 0 rgba(192, 72, 48, 0.1),
                 inset 0 0 3px rgba(192, 72, 48, 0.08);
+        }
+        
+        .station.locked .station-number {
+            background: rgba(180,60,50,0.04);
+            color: #9a7a6a;
+            border-color: rgba(180,60,50,0.2);
+            opacity: 0.7;
+        }
         }
         
         /* ====== 底部进度条 - 卷轴刻度风格 ====== */
@@ -4248,15 +4279,37 @@
 
 /* ====== 悬念文案样式 ====== */
 .card-hint {
-    font-size: 12px;
-    color: var(--ink-light);
+    font-size: 12.5px;
+    color: #7a6a58;
     font-style: italic;
-    line-height: 1.5;
-    margin-top: 4px;
-    padding: 8px 10px;
-    background: rgba(184, 148, 62, 0.05);
-    border-radius: 6px;
-    border-left: 2px solid var(--gold);
+    line-height: 1.7;
+    margin-top: 6px;
+    padding: 10px 12px;
+    background: linear-gradient(135deg, rgba(180,160,120,0.06), rgba(180,160,120,0.02));
+    border-radius: 8px;
+    border-left: 3px solid rgba(184, 148, 62, 0.35);
+    position: relative;
+    letter-spacing: 0.3px;
+}
+.card-hint::before {
+    content: '"';
+    position: absolute;
+    top: 2px;
+    left: 4px;
+    font-size: 20px;
+    color: rgba(184, 148, 62, 0.15);
+    font-family: Georgia, serif;
+    line-height: 1;
+}
+.card-hint::after {
+    content: '"';
+    position: absolute;
+    bottom: 0;
+    right: 6px;
+    font-size: 20px;
+    color: rgba(184, 148, 62, 0.15);
+    font-family: Georgia, serif;
+    line-height: 1;
 }
 
 /* ====== 故事序章样式 ====== */
