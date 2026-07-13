@@ -4710,21 +4710,7 @@
     border-bottom: 7px solid transparent;
     border-right: 10px solid rgba(255,248,220,0.98);
 }
-/* 手机端：气泡放到铁轨下方 */
-@media (max-width: 768px) {
-    .journey-dialogue-area {
-        position: relative;
-        left: auto;
-        top: auto;
-        width: auto;
-        margin-top: 12px;
-        transition: none;
-    }
-    .journey-dialogue-area::before,
-    .journey-dialogue-area::after {
-        display: none;
-    }
-}
+
 .journey-station-name {
     font-family: 'Noto Serif SC', serif;
     font-size: 18px;
