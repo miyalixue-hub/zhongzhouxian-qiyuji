@@ -4454,7 +4454,7 @@
    铛铛车中轴路线 - 蛇形铁轨路线图
    ======================================== */
 .tram-route {
-    padding: 20px 16px 8px;
+    padding: 8px 16px 8px;
     max-width: 500px;
     margin: 0 auto;
     position: relative;
@@ -4561,11 +4561,16 @@
     position: absolute;
     left: 14%;
     top: -4%;
-    font-size: 28px;
+    font-size: 36px;
     z-index: 10;
-    animation: tramBob 2s ease-in-out infinite;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+    animation: tramBob 2s ease-in-out infinite, tramGlow 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 8px rgba(255, 200, 50, 0.6));
     transition: left 0.8s ease-in-out, top 0.8s ease-in-out;
+}
+
+@keyframes tramGlow {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(255, 200, 50, 0.6)); }
+    50% { filter: drop-shadow(0 0 16px rgba(255, 200, 50, 0.9)); }
 }
 
 /* 站点卡片容器 */
