@@ -1781,6 +1781,12 @@ if (typeof goToStation === 'function') {
             tramEl.style.transition = 'left 0.8s ease-in-out, top 0.8s ease-in-out';
             tramEl.style.left = targetLeft + 'px';
             tramEl.style.top = targetTop + 'px';
+            
+            // 移动对话气泡到当前站点旁边
+            var dialogueArea = document.getElementById('journey-dialogue-area');
+            var routeRect = dialogueArea.parentElement.getBoundingClientRect();
+            var bubbleTop = stopRect.top - routeRect.top + stopRect.height / 2 - 30;
+            dialogueArea.style.top = bubbleTop + 'px';
         }
 
         // 高亮当前站（移除之前的高亮）
