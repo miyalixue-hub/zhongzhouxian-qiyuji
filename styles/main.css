@@ -4671,39 +4671,37 @@
 
 /* 铛铛车旅程对话区域 */
 .journey-dialogue-area {
-    position: absolute;
-    left: calc(100% + 15px);
-    top: 0;
-    width: 200px;
+    margin-top: 12px;
     padding: 10px 14px;
     background: linear-gradient(135deg, rgba(255,248,220,0.98), rgba(248,240,220,0.98));
     border: 2px solid rgba(212,168,67,0.5);
     border-radius: 16px;
     box-shadow: 0 4px 16px rgba(212,168,67,0.25);
-    transition: top 0.8s ease-in-out;
-    z-index: 20;
+    position: relative;
 }
 .journey-dialogue-area::before {
     content: '';
     position: absolute;
-    left: -12px;
-    top: 20px;
+    top: -12px;
+    left: 50%;
+    margin-left: -8px;
     width: 0;
     height: 0;
-    border-top: 8px solid transparent;
-    border-bottom: 8px solid transparent;
-    border-right: 12px solid rgba(212,168,67,0.5);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 12px solid rgba(212,168,67,0.5);
 }
 .journey-dialogue-area::after {
     content: '';
     position: absolute;
-    left: -9px;
-    top: 21px;
+    top: -9px;
+    left: 50%;
+    margin-left: -7px;
     width: 0;
     height: 0;
-    border-top: 7px solid transparent;
-    border-bottom: 7px solid transparent;
-    border-right: 10px solid rgba(255,248,220,0.98);
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-bottom: 10px solid rgba(255,248,220,0.98);
 }
 .journey-station-name {
     font-family: 'Noto Serif SC', serif;
