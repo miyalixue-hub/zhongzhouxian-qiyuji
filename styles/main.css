@@ -4451,201 +4451,234 @@
 }
 
 /* ========================================
-   后续章节预告区域 - 封印石碑
+   铛铛车中轴路线 - 铁轨路线图
    ======================================== */
-.future-chapters {
-    padding: 24px 16px 12px;
+.tram-route {
+    padding: 20px 16px 8px;
     max-width: 500px;
     margin: 0 auto;
-    position: relative;
 }
 
-.future-chapters-header {
+/* 路线标题栏 */
+.route-header {
     display: flex;
     align-items: center;
-    gap: 14px;
-    margin-bottom: 6px;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e8e0d4;
+    position: relative;
+}
+.route-header::before,
+.route-header::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    width: 30px;
+    height: 2px;
+    background: var(--gold, #b8943e);
+}
+.route-header::before { left: 20%; }
+.route-header::after { right: 20%; }
+
+.route-icon {
+    font-size: 24px;
+    animation: tramBob 2s ease-in-out infinite;
+}
+@keyframes tramBob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
 }
 
-.future-line {
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, #c4b8a4 40%, #c4b8a4 60%, transparent);
-}
-
-.future-title {
+.route-title {
     font-family: 'KaiTi', 'STKaiti', '楷体', serif;
-    font-size: 13px;
-    color: #8a7a66;
-    letter-spacing: 6px;
-    white-space: nowrap;
-    padding: 0 2px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #3a2a1a;
+    letter-spacing: 4px;
 }
 
-.future-desc {
-    text-align: center;
+.route-subtitle {
     font-size: 11px;
-    color: #a8987a;
-    margin-bottom: 16px;
+    color: #a89878;
     letter-spacing: 1px;
 }
 
-/* 石碑网格 */
-.seal-grid {
+/* 轨道容器 */
+.route-track {
+    position: relative;
+    padding-left: 36px;
+}
+
+/* 铛铛车图标（轨道顶部） */
+.route-tram {
+    position: absolute;
+    left: 24px;
+    top: -20px;
+    font-size: 28px;
+    z-index: 10;
+    animation: tramBob 2s ease-in-out infinite;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+}
+
+/* 每个站段 */
+.route-section {
+    position: relative;
+    min-height: 64px;
+}
+
+/* 铁轨（双轨+枕木） */
+.route-rail {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 16px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    align-items: center;
 }
 
-/* 单个封印石碑 */
-.seal-stone {
-    background: linear-gradient(160deg, #ebe6dc 0%, #e0d9cd 40%, #d8d0c3 100%);
-    border-radius: 10px;
-    border: 1px solid rgba(160,144,120,0.15);
-    box-shadow:
-        0 1px 3px rgba(0,0,0,0.04),
-        inset 0 1px 0 rgba(255,255,255,0.5),
-        inset 0 -1px 0 rgba(0,0,0,0.03);
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    position: relative;
+.rail-line {
+    width: 3px;
+    flex: 1;
+    background: linear-gradient(180deg, #5a4a3a, #7a6a5a, #5a4a3a);
+    border-radius: 1.5px;
+    box-shadow: 0 0 2px rgba(0,0,0,0.1);
 }
 
-/* 石碑纹理叠加 */
-.seal-stone::before {
-    content: '';
+.rail-ties {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background:
-        radial-gradient(ellipse at 20% 30%, rgba(255,255,255,0.12) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 70%, rgba(0,0,0,0.02) 0%, transparent 40%);
-    pointer-events: none;
-    z-index: 0;
+    top: 15%;
+    bottom: 15%;
+    width: 14px;
+    left: 1px;
+    background: repeating-linear-gradient(
+        180deg,
+        transparent 0px,
+        transparent 8px,
+        #a0906e 8px,
+        #a0906e 10px
+    );
+    opacity: 0.5;
+    border-radius: 1px;
 }
 
-.seal-stone:hover {
-    transform: translateY(-1px);
-    box-shadow:
-        0 3px 10px rgba(0,0,0,0.07),
-        inset 0 1px 0 rgba(255,255,255,0.6),
-        inset 0 -1px 0 rgba(0,0,0,0.03);
-    border-color: rgba(160,144,120,0.25);
+/* 最后一个站段：轨道底部渐变消失 */
+.route-last .route-rail {
+    bottom: -16px;
+}
+.route-last .rail-line {
+    background: linear-gradient(180deg, #5a4a3a 0%, #5a4a3a 60%, transparent 100%);
+}
+.route-last .rail-ties {
+    background: repeating-linear-gradient(
+        180deg,
+        transparent 0px,
+        transparent 8px,
+        #a0906e 8px,
+        #a0906e 10px
+    );
+    opacity: 0.3;
+    bottom: 30%;
 }
 
-.seal-stone:active {
-    transform: translateY(0);
-}
-
-/* 展开态 */
-.seal-stone.expanded {
-    border-color: rgba(160,144,120,0.3);
-    box-shadow:
-        0 2px 8px rgba(0,0,0,0.06),
-        inset 0 1px 0 rgba(255,255,255,0.5);
-}
-
-.seal-stone.expanded .seal-top {
-    padding-bottom: 4px;
-}
-
-/* 石碑上半部分 */
-.seal-top {
+/* 站点卡片 */
+.route-station {
+    position: relative;
+    margin: 6px 0;
     display: flex;
     align-items: center;
-    padding: 10px 14px;
-    gap: 10px;
-    position: relative;
-    z-index: 1;
+    gap: 8px;
 }
 
-/* 大写序号 */
-.seal-num {
-    font-family: 'KaiTi', 'STKaiti', '楷体', serif;
+/* 站点锁图标（在轨道上） */
+.station-lock {
+    position: absolute;
+    left: -36px;
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(145deg, #d8cfc0, #c4b8a4);
+    border: 2px solid #b0a48e;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    z-index: 2;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+/* 迷你站卡 */
+.station-card-mini {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.85), rgba(248,244,236,0.9));
+    border: 1px solid rgba(180,168,140,0.25);
+    border-radius: 12px;
+    flex: 1;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 0 0 1px rgba(255,255,255,0.5) inset;
+    transition: all 0.2s ease;
+    cursor: default;
+}
+
+.station-card-mini:hover {
+    transform: translateX(2px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 0 0 1px rgba(255,255,255,0.5) inset;
+    border-color: rgba(180,168,140,0.4);
+}
+
+/* 站序号 */
+.mini-num {
+    font-family: 'Georgia', serif;
     font-size: 18px;
-    color: #9a8a74;
-    font-weight: 700;
+    font-weight: bold;
+    color: #8a7a64;
     min-width: 24px;
     text-align: center;
     line-height: 1;
 }
 
-/* emoji图标 */
-.seal-icon {
-    font-size: 20px;
-    filter: grayscale(0.5) opacity(0.75);
-    flex-shrink: 0;
-    line-height: 1;
-}
-
-/* 信息区 */
-.seal-info {
+/* 站信息 */
+.mini-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     flex: 1;
-    min-width: 0;
 }
 
-.seal-name {
+.mini-name {
     font-family: 'KaiTi', 'STKaiti', '楷体', serif;
     font-size: 15px;
     font-weight: 700;
-    color: #4a3a2a;
+    color: #3a2a1a;
     letter-spacing: 2px;
-    line-height: 1.2;
 }
 
-.seal-sub {
-    font-size: 10px;
-    color: #9a8a76;
-    margin-top: 2px;
-    letter-spacing: 1px;
+.mini-icon {
+    font-size: 16px;
+    filter: grayscale(0.4) opacity(0.7);
 }
 
-/* 章节标签 */
-.seal-tag {
-    font-size: 9px;
-    color: #a89878;
-    background: rgba(0,0,0,0.04);
-    padding: 3px 8px;
-    border-radius: 10px;
-    letter-spacing: 1px;
-    flex-shrink: 0;
-    white-space: nowrap;
-    border: 1px solid rgba(0,0,0,0.04);
-}
-
-/* 展开预览区 */
-.seal-preview {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.seal-stone.expanded .seal-preview {
-    max-height: 140px;
-}
-
-.seal-preview-inner {
-    padding: 0 14px 12px;
-    position: relative;
-    z-index: 1;
-}
-
-.seal-preview-text {
-    font-size: 12px;
-    color: #5a4a3a;
-    line-height: 1.7;
-    padding: 8px 12px;
-    background: rgba(255,255,255,0.4);
-    border-radius: 6px;
-    border-left: 2px solid #c4b8a4;
-    font-family: 'KaiTi', 'STKaiti', '楷体', serif;
-    letter-spacing: 0.5px;
-}
-
-.seal-preview-status {
+/* 终点旗帜 */
+.route-end-flag {
     text-align: center;
-    font-size: 11px;
+    font-size: 12px;
     color: #a89878;
-    margin-top: 8px;
     letter-spacing: 3px;
+    margin-top: 8px;
+    padding: 8px 0;
+    font-family: 'KaiTi', 'STKaiti', '楷体', serif;
+    position: relative;
+}
+.route-end-flag::before {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #c4b8a4, transparent);
+    margin: 0 auto 8px;
 }
