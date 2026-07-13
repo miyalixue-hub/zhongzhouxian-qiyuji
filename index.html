@@ -1738,6 +1738,12 @@ if (typeof goToStation === 'function') {
 <script>
 // ====== 铛铛车开场旅程（主页路线版） ======
 (function() {
+    // 重置逻辑：访问 ?reset=journey 清除localStorage并重定向
+    if (location.search.indexOf('reset=journey') !== -1) {
+        localStorage.removeItem('tram_journey_seen');
+        location.href = location.pathname;
+    }
+
     var stations = [
         { name: '永定门', dialogue: '永定门。中轴线最南头，起点。名字意思是"永远安定"。从这里出发，我们沿中轴线一路向北！' },
         { name: '天坛', dialogue: '天坛。皇帝祭天的地方。屋顶是蓝色的——因为蓝色代表天。在这儿说话，据说老天爷能听到。' },
