@@ -55,94 +55,8 @@
 
     <!-- ====== 地图主体 ====== -->
     <main class="map-container">
-        <div class="direction-label">▲ 北</div>
         
-        <!-- 中轴线 -->
-        <div class="axis-line"></div>
-        
-        <!-- 散落墨点装饰 -->
-        <div class="ink-dot ink-dot-1"></div>
-        <div class="ink-dot ink-dot-2"></div>
-        <div class="ink-dot ink-dot-3"></div>
-        <div class="ink-dot ink-dot-4"></div>
-        <div class="ink-dot ink-dot-5"></div>
-        
-        <!-- 站点9：钟鼓楼 (最北) -->
-        <div class="station locked" data-name="钟鼓楼">
-            <div class="station-dot"></div>
-            <div class="station-card" onclick="showToast()">
-                <span class="station-number">9</span>
-                <div class="card-header">
-                    <div class="card-icon"><img src="assets/stations/station-zhonggulou.png" alt="钟鼓楼标识"></div>
-                    <div class="card-title">钟鼓楼</div>
-                </div>
-                <div class="card-subtitle">暮鼓晨钟</div>
-                <div class="card-hint">清晨的钟声能唤醒整座城...108声鼓点藏着什么秘密？</div>
-                <span class="status-badge">🔒 即将开放</span>
-            </div>
-        </div>
-        
-        <!-- 站点8：万宁桥 -->
-        <div class="station locked" data-name="万宁桥">
-            <div class="station-dot"></div>
-            <div class="station-card" onclick="showToast()">
-                <span class="station-number">8</span>
-                <div class="card-header">
-                    <div class="card-icon"><img src="assets/stations/station-wanning-bridge.png" alt="万宁桥标识"></div>
-                    <div class="card-title">万宁桥</div>
-                </div>
-                <div class="card-subtitle">元代密码</div>
-                <div class="card-hint">700年前的石桥下，镇水兽还在守护...水位线刻在哪里？</div>
-                <span class="status-badge">🔒 即将开放</span>
-            </div>
-        </div>
-        
-        <!-- 站点7：景山 -->
-        <div class="station locked" data-name="景山">
-            <div class="station-dot"></div>
-            <div class="station-card" onclick="showToast()">
-                <span class="station-number">7</span>
-                <div class="card-header">
-                    <div class="card-icon"><img src="assets/stations/station-jingshan.png" alt="景山标识"></div>
-                    <div class="card-title">景山</div>
-                </div>
-                <div class="card-subtitle">中轴制高点</div>
-                <div class="card-hint">登上这里，整条中轴线尽收眼底...龙脉的尽头在哪里？</div>
-                <span class="status-badge">🔒 即将开放</span>
-            </div>
-        </div>
-        
-        <!-- 站点6：故宫 -->
-        <div class="station locked" data-name="故宫">
-            <div class="station-dot"></div>
-            <div class="station-card" onclick="showToast()">
-                <span class="station-number">6</span>
-                <div class="card-header">
-                    <div class="card-icon"><img src="assets/stations/station-palace.png" alt="故宫标识"></div>
-                    <div class="card-title">故宫</div>
-                </div>
-                <div class="card-subtitle">紫禁之巅</div>
-                <div class="card-hint">屋脊上藏着几只神兽？铜狮子为什么一雌一雄？</div>
-                <span class="status-badge">🔒 即将开放</span>
-            </div>
-        </div>
-        
-        <!-- 站点5：天安门 -->
-        <div class="station locked" data-name="天安门">
-            <div class="station-dot"></div>
-            <div class="station-card" onclick="showToast()">
-                <span class="station-number">5</span>
-                <div class="card-header">
-                    <div class="card-icon"><img src="assets/stations/station-tiananmen.png" alt="天安门标识"></div>
-                    <div class="card-title">天安门</div>
-                </div>
-                <div class="card-subtitle">望君归 · 望君出</div>
-                <div class="card-hint">华表上的石犼在等什么？望君归，望君出...</div>
-                <span class="status-badge">🔒 即将开放</span>
-            </div>
-        </div>
-        
-        <!-- 站点4：正阳门 (英雄卡 - 已解锁!) -->
+        <!-- ====== 正阳门英雄卡（已解锁·第一章） ====== -->
         <div class="station unlocked station-hero-wrapper" data-name="正阳门">
             <div class="station-dot"></div>
             <div class="station-card station-hero" id="station-zhengyangmen" ontouchstart="event.preventDefault(); goToStation();" onclick="goToStation();">
@@ -169,52 +83,170 @@
             </div>
         </div>
         
-        <!-- 站点3：先农坛 -->
-        <div class="station locked" data-name="先农坛">
-            <div class="station-dot"></div>
-            <div class="station-card" onclick="showToast()">
-                <span class="station-number">3</span>
-                <div class="card-header">
-                    <div class="card-icon"><img src="assets/stations/station-tiantan.png" alt="先农坛标识"></div>
-                    <div class="card-title">先农坛</div>
+        <!-- ====== 后续章节预告区域 ====== -->
+        <div class="future-chapters">
+            <div class="future-chapters-header">
+                <div class="future-line"></div>
+                <span class="future-title">后续章节</span>
+                <div class="future-line"></div>
+            </div>
+            <p class="future-desc">中轴线上还有 8 座古迹等待解封</p>
+            
+            <div class="seal-grid">
+                <!-- 石碑9：钟鼓楼 -->
+                <div class="seal-stone" onclick="toggleSealPreview(this)">
+                    <div class="seal-top">
+                        <span class="seal-num">玖</span>
+                        <span class="seal-icon">🔔</span>
+                        <div class="seal-info">
+                            <div class="seal-name">钟鼓楼</div>
+                            <div class="seal-sub">暮鼓晨钟</div>
+                        </div>
+                        <span class="seal-tag">第九章</span>
+                    </div>
+                    <div class="seal-preview">
+                        <div class="seal-preview-inner">
+                            <div class="seal-preview-text">清晨的钟声能唤醒整座城……108声鼓点藏着什么秘密？</div>
+                            <div class="seal-preview-status">🔮 即将揭晓</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-subtitle">皇帝种地</div>
-                <div class="card-hint">皇帝也要亲自下田？藻井里藏着一万个图案...</div>
-                <span class="status-badge">🔒 即将开放</span>
+                
+                <!-- 石碑8：万宁桥 -->
+                <div class="seal-stone" onclick="toggleSealPreview(this)">
+                    <div class="seal-top">
+                        <span class="seal-num">捌</span>
+                        <span class="seal-icon">🌉</span>
+                        <div class="seal-info">
+                            <div class="seal-name">万宁桥</div>
+                            <div class="seal-sub">元代密码</div>
+                        </div>
+                        <span class="seal-tag">第八章</span>
+                    </div>
+                    <div class="seal-preview">
+                        <div class="seal-preview-inner">
+                            <div class="seal-preview-text">700年前的石桥下，镇水兽还在守护……水位线刻在哪里？</div>
+                            <div class="seal-preview-status">🔮 即将揭晓</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 石碑7：景山 -->
+                <div class="seal-stone" onclick="toggleSealPreview(this)">
+                    <div class="seal-top">
+                        <span class="seal-num">柒</span>
+                        <span class="seal-icon">⛰️</span>
+                        <div class="seal-info">
+                            <div class="seal-name">景山</div>
+                            <div class="seal-sub">中轴制高点</div>
+                        </div>
+                        <span class="seal-tag">第七章</span>
+                    </div>
+                    <div class="seal-preview">
+                        <div class="seal-preview-inner">
+                            <div class="seal-preview-text">登上这里，整条中轴线尽收眼底……龙脉的尽头在哪里？</div>
+                            <div class="seal-preview-status">🔮 即将揭晓</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 石碑6：故宫 -->
+                <div class="seal-stone" onclick="toggleSealPreview(this)">
+                    <div class="seal-top">
+                        <span class="seal-num">陆</span>
+                        <span class="seal-icon">🏯</span>
+                        <div class="seal-info">
+                            <div class="seal-name">故宫</div>
+                            <div class="seal-sub">紫禁之巅</div>
+                        </div>
+                        <span class="seal-tag">第六章</span>
+                    </div>
+                    <div class="seal-preview">
+                        <div class="seal-preview-inner">
+                            <div class="seal-preview-text">屋脊上藏着几只神兽？铜狮子为什么一雌一雄？</div>
+                            <div class="seal-preview-status">🔮 即将揭晓</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 石碑5：天安门 -->
+                <div class="seal-stone" onclick="toggleSealPreview(this)">
+                    <div class="seal-top">
+                        <span class="seal-num">伍</span>
+                        <span class="seal-icon">🏛️</span>
+                        <div class="seal-info">
+                            <div class="seal-name">天安门</div>
+                            <div class="seal-sub">望君归 · 望君出</div>
+                        </div>
+                        <span class="seal-tag">第五章</span>
+                    </div>
+                    <div class="seal-preview">
+                        <div class="seal-preview-inner">
+                            <div class="seal-preview-text">华表上的石犼在等什么？望君归，望君出……</div>
+                            <div class="seal-preview-status">🔮 即将揭晓</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 石碑3：先农坛 -->
+                <div class="seal-stone" onclick="toggleSealPreview(this)">
+                    <div class="seal-top">
+                        <span class="seal-num">叁</span>
+                        <span class="seal-icon">🌾</span>
+                        <div class="seal-info">
+                            <div class="seal-name">先农坛</div>
+                            <div class="seal-sub">皇帝种地</div>
+                        </div>
+                        <span class="seal-tag">第三章</span>
+                    </div>
+                    <div class="seal-preview">
+                        <div class="seal-preview-inner">
+                            <div class="seal-preview-text">皇帝也要亲自下田？藻井里藏着一万个图案……</div>
+                            <div class="seal-preview-status">🔮 即将揭晓</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 石碑2：天坛 -->
+                <div class="seal-stone" onclick="toggleSealPreview(this)">
+                    <div class="seal-top">
+                        <span class="seal-num">贰</span>
+                        <span class="seal-icon">☀️</span>
+                        <div class="seal-info">
+                            <div class="seal-name">天坛</div>
+                            <div class="seal-sub">天人对话</div>
+                        </div>
+                        <span class="seal-tag">第二章</span>
+                    </div>
+                    <div class="seal-preview">
+                        <div class="seal-preview-inner">
+                            <div class="seal-preview-text">回音壁能传多远的声音？数字里藏着天的密码……</div>
+                            <div class="seal-preview-status">🔮 即将揭晓</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 石碑1：永定门 -->
+                <div class="seal-stone" onclick="toggleSealPreview(this)">
+                    <div class="seal-top">
+                        <span class="seal-num">壹</span>
+                        <span class="seal-icon">🚪</span>
+                        <div class="seal-info">
+                            <div class="seal-name">永定门</div>
+                            <div class="seal-sub">龙脉起点</div>
+                        </div>
+                        <span class="seal-tag">第一章</span>
+                    </div>
+                    <div class="seal-preview">
+                        <div class="seal-preview-inner">
+                            <div class="seal-preview-text">中轴线的故事从这里开始……石匾上的字是谁写的？</div>
+                            <div class="seal-preview-status">🔮 即将揭晓</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         
-        <!-- 站点2：天坛 -->
-        <div class="station locked" data-name="天坛">
-            <div class="station-dot"></div>
-            <div class="station-card" onclick="showToast()">
-                <span class="station-number">2</span>
-                <div class="card-header">
-                    <div class="card-icon"><img src="assets/stations/station-tiantan.png" alt="天坛标识"></div>
-                    <div class="card-title">天坛</div>
-                </div>
-                <div class="card-subtitle">天人对话</div>
-                <div class="card-hint">回音壁能传多远的声音？数字里藏着天的密码...</div>
-                <span class="status-badge">🔒 即将开放</span>
-            </div>
-        </div>
-        
-        <!-- 站点1：永定门 (最南) -->
-        <div class="station locked" data-name="永定门">
-            <div class="station-dot"></div>
-            <div class="station-card" onclick="showToast()">
-                <span class="station-number">1</span>
-                <div class="card-header">
-                    <div class="card-icon"><img src="assets/stations/station-yongdingmen.png" alt="永定门标识"></div>
-                    <div class="card-title">永定门</div>
-                </div>
-                <div class="card-subtitle">龙脉起点</div>
-                <div class="card-hint">中轴线的故事从这里开始...石匾上的字是谁写的？</div>
-                <span class="status-badge">🔒 即将开放</span>
-            </div>
-        </div>
-        
-        <div class="direction-label bottom">▼ 南</div>
     </main>
 
     <!-- ====== NPC铛铛车引导 ====== -->
@@ -1737,7 +1769,7 @@ window.addEventListener('unhandledrejection', function(e) {
 console.log('[LOADER] Error handler installed.');
 </script>
 <script src="js/config.js?v=20260713a"></script>
-    <script src="js/core.js?v=20260713b"></script>
+    <script src="js/core.js?v=20260713c"></script>
     <script src="js/ai-generate.js?v=20260713a"></script>
     <script src="js/meshy-3d.js?v=20260710a"></script>
     <script src="js/qrcode.min.js"></script>

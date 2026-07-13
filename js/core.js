@@ -38,6 +38,21 @@
         }
 
         /**
+         * 封印石碑点击展开/收起预告
+         */
+        function toggleSealPreview(el) {
+            var wasExpanded = el.classList.contains('expanded');
+            // 关闭其他展开的
+            document.querySelectorAll('.seal-stone.expanded').forEach(function(s) {
+                s.classList.remove('expanded');
+            });
+            // 切换当前
+            if (!wasExpanded) {
+                el.classList.add('expanded');
+            }
+        }
+        
+        /**
          * NPC铛铛车对话轮播
          */
         var npcDialogues = [
