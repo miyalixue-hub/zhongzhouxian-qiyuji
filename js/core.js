@@ -214,18 +214,6 @@ showPage(2);
                     }
                 }
                 
-                // 表情
-                if (state.selectedExpression) {
-                    var expression = findById(expressions, state.selectedExpression);
-                    if (expression) {
-                        items.push({
-                            icon: expression.emoji || '😊',
-                            label: '表情',
-                            value: expression.name
-                        });
-                    }
-                }
-                
                 // 颜色
                 if (state.selectedColors && state.selectedColors.length > 0) {
                     var colorNames = state.selectedColors.map(function(c) {
@@ -313,7 +301,7 @@ showPage(2);
             var tags = {
                 creature: { label: state.isTramMode ? "铛铛车" : (state.selectedCreature ? (findById(creatures, state.selectedCreature) ? findById(creatures, state.selectedCreature).name : null) : null) },
                 pattern: { label: state.selectedPatterns && state.selectedPatterns.length > 0 ? state.selectedPatterns.map(function(p) { var x = findById(patterns, p); return x ? x.name : ''; }).filter(Boolean).join('·') : null },
-                face: { label: state.selectedExpression ? (findById(expressions, state.selectedExpression) ? findById(expressions, state.selectedExpression).emoji + ' ' + findById(expressions, state.selectedExpression).name : null) : null },
+                face: { label: null },
                 color: { label: state.selectedColors && state.selectedColors.length > 0 ? state.selectedColors.map(function(c) { var x = findById(colors, c); return x ? x.name : ''; }).filter(Boolean).join('·') : null },
                 decoration: { label: state.selectedElements && state.selectedElements.length > 0 ? state.selectedElements.map(function(e) { var x = findById(elements, e); return x ? x.name : ''; }).filter(Boolean).join('·') : null }
             };

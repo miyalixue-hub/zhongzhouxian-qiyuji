@@ -253,10 +253,6 @@ var patterns = [
     { id: 'back_cloud', name: '脊背云纹', meaning: '云气绕身·瑞意绵延' },
     { id: 'neck_mane', name: '颈部鬃髯', meaning: '长髯迎风·神兽昂扬' }
 ];
-var expressions = [
-    { id: 'cute', name: '呆萌' }, { id: 'fierce', name: '威武' },
-    { id: 'cool', name: '帅气' }, { id: 'funny', name: '搞笑' }
-];
 var colors = [
     { id: 'zhusha', name: '朱砂红', hex: '#C45C5C', level: 'royal' },
     { id: 'shiqing', name: '石青蓝', hex: '#4A7FB5', level: 'folk' },
@@ -309,7 +305,6 @@ function showError(msg) {
 // ============ 渲染页面 ============
 function render(data) {
     var creature = findById(creatures, data.cr) || { name: '我的神兽', desc: '' };
-    var expr = findById(expressions, data.ex) || { name: '' };
     var patNames = (data.pa || []).map(function(id) {
         var p = findById(patterns, id);
         return p ? p.name : '';
@@ -375,14 +370,6 @@ function render(data) {
     html += '<div class="info-title">' + creature.name + '</div>';
     html += '<div class="info-desc">' + creature.desc + '</div>';
     html += '<div class="info-divider"></div>';
-
-    if (expr.name) {
-        html += '<div class="info-row">';
-        html += '<div class="info-icon" style="background:#FFF3E0;">😊</div>';
-        html += '<span class="info-label">表情</span>';
-        html += '<span class="info-value">' + expr.name + '</span>';
-        html += '</div>';
-    }
 
     if (patNames.length > 0) {
         html += '<div class="info-row">';
