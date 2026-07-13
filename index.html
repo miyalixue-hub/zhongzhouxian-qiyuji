@@ -1826,7 +1826,11 @@ if (typeof goToStation === 'function') {
 <script>
 // ====== 铛铛车开场旅程（路线图版） ======
 (function() {
-    if (localStorage.getItem('tram_journey_seen') === 'true') {
+    // 检查 URL 参数 ?replay=true 强制重播
+    var urlParams = new URLSearchParams(window.location.search);
+    var forceReplay = urlParams.get('replay') === 'true';
+    
+    if (!forceReplay && localStorage.getItem('tram_journey_seen') === 'true') {
         var overlay = document.getElementById('tram-journey-overlay');
         if (overlay) overlay.style.display = 'none';
         return;
