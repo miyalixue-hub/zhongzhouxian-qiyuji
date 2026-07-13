@@ -506,6 +506,7 @@
 
             var aiPrompt = '一只可爱的中国神话小神兽「' + cr.name + '」（' + cr.desc + '）' +
                 (cr.location ? '，守护在' + cr.location + '，' : '，') +
+                (cr.pose ? cr.pose + '，' : '') +
                 (patternDescList.length ? patternDescList.join('，') + '，纹样紧贴身体不要飘散在空中，' : '') +
                 '表情' + ex.name + '（' + ex.desc + '），' +
                 (colorPromptParts.length ? '主色调为' + colorPromptParts.join('、') + '，' : '') +

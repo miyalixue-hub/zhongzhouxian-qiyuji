@@ -61,8 +61,8 @@
             meshyTaskId: null
         };
         var creatures = [
-            { id: 'gongfu', name: '蚣蝮', desc: '镇水兽·龙生九子·趴伏桥头守望', location: '正阳桥·正阳门箭楼南侧护城河', color: '#4A7FB5', image: 'https://zhongzhouxian-1413555799.cos.ap-guangzhou.myqcloud.com/assets/zhenshui_shou.png' },
-            { id: 'xishui', name: '吸水兽', desc: '桥孔兽·好吞吐·蹲踞桥孔吐水', location: '正阳桥·桥洞券脸顶部', color: '#5B8C6B', image: 'https://zhongzhouxian-1413555799.cos.ap-guangzhou.myqcloud.com/assets/xishui_shou.png' },
+            { id: 'gongfu', name: '镇水兽', desc: '龙生九子·趴伏镇守', pose: '敦厚壮实，四爪紧扣岸边岩石，趴伏镇守姿态', location: '正阳桥·正阳门箭楼南侧护城河', color: '#4A7FB5', image: 'https://zhongzhouxian-1413555799.cos.ap-guangzhou.myqcloud.com/assets/zhenshui_shou.png' },
+            { id: 'xishui', name: '吸水兽', desc: '好吞吐·探身吸水', pose: '修长灵巧，悬挂在桥洞顶部，前身探向水面做吸水状', location: '正阳桥·桥洞券脸顶部', color: '#5B8C6B', image: 'https://zhongzhouxian-1413555799.cos.ap-guangzhou.myqcloud.com/assets/xishui_shou.png' },
             { id: 'dangdangche', name: '铛铛车', desc: '正阳门特色·有轨电车', color: '#2E7D32', image: 'https://miyalixue-hub.github.io/zhongzhouxian-qiyuji/assets/dangdangche.png?v=20260705' }
         ];
         
