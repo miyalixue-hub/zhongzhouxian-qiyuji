@@ -959,7 +959,7 @@
         }
 
         // Expose showPage for SPA navigation from home view
-        window.showPage = showPage;
+        if (typeof showPage === "function") window.showPage = showPage;
         // Expose state globally so oracle system (outside IIFE) can write fortune to it
         window.appState = state;
         // Expose generatePromptSummary so oracle event handlers can call it
@@ -1403,7 +1403,7 @@
             }
 
             // Expose globals
-            window.showPage = showPage;
+            if (typeof showPage === "function") window.showPage = showPage;
             window.appState = state;
             window.generatePromptSummary = generatePromptSummary;
             window.generateSVGFallback = generateSVGFallback;
