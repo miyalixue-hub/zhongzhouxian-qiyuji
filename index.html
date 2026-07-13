@@ -22,7 +22,7 @@
         return false;
     };
     </script>
-    <link rel="stylesheet" href="styles/main.css?v=20260713h">
+    <link rel="stylesheet" href="styles/main.css?v=20260713i">
     <!-- Google model-viewer: 3D模型展示组件（使用 jsdelivr CDN 国内可访问） -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js?v=20260706b"></script>
 </head>
@@ -107,152 +107,87 @@
                 <span class="route-subtitle">8站待探索</span>
             </div>
             <div class="route-track">
+                <!-- 蛇形铁轨 SVG -->
+                <svg class="route-rail-svg" viewBox="0 0 340 600" xmlns="http://www.w3.org/2000/svg">
+                    <!-- 路基 -->
+                    <path class="rail-bed" d="M80,30 C80,60 260,60 260,90 C260,120 80,120 80,150 C80,180 260,180 260,210 C260,240 80,240 80,270 C80,300 260,300 260,330 C260,360 80,360 80,390 C80,420 260,420 260,450 L260,530"/>
+                    <!-- 枕木 -->
+                    <path class="rail-ties-svg" d="M80,30 C80,60 260,60 260,90 C260,120 80,120 80,150 C80,180 260,180 260,210 C260,240 80,240 80,270 C80,300 260,300 260,330 C260,360 80,360 80,390 C80,420 260,420 260,450 L260,530"/>
+                    <!-- 左轨 -->
+                    <path class="rail-line-svg" d="M75,30 C75,60 255,60 255,90 C255,120 75,120 75,150 C75,180 255,180 255,210 C255,240 75,240 75,270 C75,300 255,300 255,330 C255,360 75,360 75,390 C75,420 255,420 255,450 L255,530"/>
+                    <!-- 右轨 -->
+                    <path class="rail-line-svg" d="M85,30 C85,60 265,60 265,90 C265,120 85,120 85,150 C85,180 265,180 265,210 C265,240 85,240 85,270 C85,300 265,300 265,330 C265,360 85,360 85,390 C85,420 265,420 265,450 L265,530"/>
+                    <!-- 站点圆点 -->
+                    <circle cx="80" cy="30" r="9" class="rail-dot"/>
+                    <circle cx="260" cy="90" r="9" class="rail-dot"/>
+                    <circle cx="80" cy="150" r="9" class="rail-dot"/>
+                    <circle cx="260" cy="210" r="9" class="rail-dot"/>
+                    <circle cx="80" cy="270" r="9" class="rail-dot"/>
+                    <circle cx="260" cy="330" r="9" class="rail-dot"/>
+                    <circle cx="80" cy="390" r="9" class="rail-dot"/>
+                    <circle cx="260" cy="450" r="9" class="rail-dot"/>
+                </svg>
+                <!-- 铛铛车 -->
                 <div class="route-tram">🚃</div>
-                
-                <div class="route-section">
-                    <div class="route-rail">
-                        <div class="rail-line"></div>
-                        <div class="rail-ties"></div>
-                        <div class="rail-line"></div>
-                    </div>
-                    <div class="route-station side-left">
-                        <div class="station-lock">🔒</div>
-                        <div class="station-card-mini">
-                            <span class="mini-num">9</span>
-                            <div class="mini-info">
-                                <span class="mini-name">钟鼓楼</span>
-                                <span class="mini-icon">🔔</span>
-                            </div>
-                        </div>
+                <!-- 站点卡片 -->
+                <div class="route-stop stop-right" style="--stop-top:5%">
+                    <div class="station-card-mini">
+                        <span class="mini-num">9</span>
+                        <div class="mini-info"><span class="mini-name">钟鼓楼</span><span class="mini-icon">🔔</span></div>
+                        <span class="mini-lock">🔒</span>
                     </div>
                 </div>
-                
-                <div class="route-section">
-                    <div class="route-rail">
-                        <div class="rail-line"></div>
-                        <div class="rail-ties"></div>
-                        <div class="rail-line"></div>
-                    </div>
-                    <div class="route-station side-right">
-                        <div class="station-lock">🔒</div>
-                        <div class="station-card-mini">
-                            <span class="mini-num">8</span>
-                            <div class="mini-info">
-                                <span class="mini-name">万宁桥</span>
-                                <span class="mini-icon">🌉</span>
-                            </div>
-                        </div>
+                <div class="route-stop stop-left" style="--stop-top:15%">
+                    <div class="station-card-mini">
+                        <span class="mini-num">8</span>
+                        <div class="mini-info"><span class="mini-name">万宁桥</span><span class="mini-icon">🌉</span></div>
+                        <span class="mini-lock">🔒</span>
                     </div>
                 </div>
-                
-                <div class="route-section">
-                    <div class="route-rail">
-                        <div class="rail-line"></div>
-                        <div class="rail-ties"></div>
-                        <div class="rail-line"></div>
-                    </div>
-                    <div class="route-station side-left">
-                        <div class="station-lock">🔒</div>
-                        <div class="station-card-mini">
-                            <span class="mini-num">7</span>
-                            <div class="mini-info">
-                                <span class="mini-name">景山</span>
-                                <span class="mini-icon">⛰️</span>
-                            </div>
-                        </div>
+                <div class="route-stop stop-right" style="--stop-top:25%">
+                    <div class="station-card-mini">
+                        <span class="mini-num">7</span>
+                        <div class="mini-info"><span class="mini-name">景山</span><span class="mini-icon">⛰️</span></div>
+                        <span class="mini-lock">🔒</span>
                     </div>
                 </div>
-                
-                <div class="route-section">
-                    <div class="route-rail">
-                        <div class="rail-line"></div>
-                        <div class="rail-ties"></div>
-                        <div class="rail-line"></div>
-                    </div>
-                    <div class="route-station side-right">
-                        <div class="station-lock">🔒</div>
-                        <div class="station-card-mini">
-                            <span class="mini-num">6</span>
-                            <div class="mini-info">
-                                <span class="mini-name">故宫</span>
-                                <span class="mini-icon">🏯</span>
-                            </div>
-                        </div>
+                <div class="route-stop stop-left" style="--stop-top:35%">
+                    <div class="station-card-mini">
+                        <span class="mini-num">6</span>
+                        <div class="mini-info"><span class="mini-name">故宫</span><span class="mini-icon">🏯</span></div>
+                        <span class="mini-lock">🔒</span>
                     </div>
                 </div>
-                
-                <div class="route-section">
-                    <div class="route-rail">
-                        <div class="rail-line"></div>
-                        <div class="rail-ties"></div>
-                        <div class="rail-line"></div>
-                    </div>
-                    <div class="route-station side-left">
-                        <div class="station-lock">🔒</div>
-                        <div class="station-card-mini">
-                            <span class="mini-num">5</span>
-                            <div class="mini-info">
-                                <span class="mini-name">天安门</span>
-                                <span class="mini-icon">🏛️</span>
-                            </div>
-                        </div>
+                <div class="route-stop stop-right" style="--stop-top:45%">
+                    <div class="station-card-mini">
+                        <span class="mini-num">5</span>
+                        <div class="mini-info"><span class="mini-name">天安门</span><span class="mini-icon">🏛️</span></div>
+                        <span class="mini-lock">🔒</span>
                     </div>
                 </div>
-                
-                <div class="route-section">
-                    <div class="route-rail">
-                        <div class="rail-line"></div>
-                        <div class="rail-ties"></div>
-                        <div class="rail-line"></div>
-                    </div>
-                    <div class="route-station side-right">
-                        <div class="station-lock">🔒</div>
-                        <div class="station-card-mini">
-                            <span class="mini-num">3</span>
-                            <div class="mini-info">
-                                <span class="mini-name">先农坛</span>
-                                <span class="mini-icon">🌾</span>
-                            </div>
-                        </div>
+                <div class="route-stop stop-left" style="--stop-top:55%">
+                    <div class="station-card-mini">
+                        <span class="mini-num">3</span>
+                        <div class="mini-info"><span class="mini-name">先农坛</span><span class="mini-icon">🌾</span></div>
+                        <span class="mini-lock">🔒</span>
                     </div>
                 </div>
-                
-                <div class="route-section">
-                    <div class="route-rail">
-                        <div class="rail-line"></div>
-                        <div class="rail-ties"></div>
-                        <div class="rail-line"></div>
-                    </div>
-                    <div class="route-station side-left">
-                        <div class="station-lock">🔒</div>
-                        <div class="station-card-mini">
-                            <span class="mini-num">2</span>
-                            <div class="mini-info">
-                                <span class="mini-name">天坛</span>
-                                <span class="mini-icon">🔮</span>
-                            </div>
-                        </div>
+                <div class="route-stop stop-right" style="--stop-top:65%">
+                    <div class="station-card-mini">
+                        <span class="mini-num">2</span>
+                        <div class="mini-info"><span class="mini-name">天坛</span><span class="mini-icon">🔮</span></div>
+                        <span class="mini-lock">🔒</span>
                     </div>
                 </div>
-                
-                <div class="route-section route-last">
-                    <div class="route-rail">
-                        <div class="rail-line"></div>
-                    </div>
-                    <div class="route-station side-right">
-                        <div class="station-lock">🔒</div>
-                        <div class="station-card-mini">
-                            <span class="mini-num">1</span>
-                            <div class="mini-info">
-                                <span class="mini-name">永定门</span>
-                                <span class="mini-icon">🚪</span>
-                            </div>
-                        </div>
+                <div class="route-stop stop-left" style="--stop-top:75%">
+                    <div class="station-card-mini">
+                        <span class="mini-num">1</span>
+                        <div class="mini-info"><span class="mini-name">永定门</span><span class="mini-icon">🚪</span></div>
+                        <span class="mini-lock">🔒</span>
                     </div>
                 </div>
-                
-                <div class="route-end-flag">🏁 中轴线起点</div>
             </div>
+            <div class="route-end-flag">🏁 中轴线起点</div>
         </div>
         
     </main>

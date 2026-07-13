@@ -4451,7 +4451,7 @@
 }
 
 /* ========================================
-   铛铛车中轴路线 - 铁轨路线图
+   铛铛车中轴路线 - 蛇形铁轨路线图
    ======================================== */
 .tram-route {
     padding: 20px 16px 8px;
@@ -4508,106 +4508,81 @@
 /* 轨道容器 */
 .route-track {
     position: relative;
-    padding-left: 36px;
 }
 
-/* 铛铛车图标（轨道顶部） */
+/* 蛇形铁轨 SVG */
+.route-rail-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+/* 路基（宽浅色线） */
+.rail-bed {
+    fill: none;
+    stroke: #e0d6c4;
+    stroke-width: 18;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.45;
+}
+
+/* 枕木（虚线效果） */
+.rail-ties-svg {
+    fill: none;
+    stroke: #a0906e;
+    stroke-width: 14;
+    stroke-dasharray: 3 14;
+    stroke-linecap: round;
+    opacity: 0.3;
+}
+
+/* 铁轨线条 */
+.rail-line-svg {
+    fill: none;
+    stroke: #5a4a3a;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.7;
+}
+
+/* 站点圆点 */
+.rail-dot {
+    fill: #f0e8d8;
+    stroke: #8a7a64;
+    stroke-width: 2;
+}
+
+/* 铛铛车图标 */
 .route-tram {
     position: absolute;
-    left: 24px;
-    top: -20px;
+    left: 14%;
+    top: -4%;
     font-size: 28px;
     z-index: 10;
     animation: tramBob 2s ease-in-out infinite;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
 }
 
-/* 每个站段 */
-.route-section {
-    position: relative;
-    min-height: 64px;
-}
-
-/* 铁轨（双轨+枕木） */
-.route-rail {
+/* 站点卡片容器 */
+.route-stop {
     position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    top: var(--stop-top);
+    transform: translateY(-50%);
+    z-index: 5;
 }
 
-.rail-line {
-    width: 3px;
-    flex: 1;
-    background: linear-gradient(180deg, #5a4a3a, #7a6a5a, #5a4a3a);
-    border-radius: 1.5px;
-    box-shadow: 0 0 2px rgba(0,0,0,0.1);
+/* 右侧卡片（左站点→卡片在右） */
+.stop-right {
+    left: 30%;
+    right: 4%;
 }
 
-.rail-ties {
-    position: absolute;
-    top: 15%;
-    bottom: 15%;
-    width: 14px;
-    left: 1px;
-    background: repeating-linear-gradient(
-        180deg,
-        transparent 0px,
-        transparent 8px,
-        #a0906e 8px,
-        #a0906e 10px
-    );
-    opacity: 0.5;
-    border-radius: 1px;
-}
-
-/* 最后一个站段：轨道底部渐变消失 */
-.route-last .route-rail {
-    bottom: -16px;
-}
-.route-last .rail-line {
-    background: linear-gradient(180deg, #5a4a3a 0%, #5a4a3a 60%, transparent 100%);
-}
-.route-last .rail-ties {
-    background: repeating-linear-gradient(
-        180deg,
-        transparent 0px,
-        transparent 8px,
-        #a0906e 8px,
-        #a0906e 10px
-    );
-    opacity: 0.3;
-    bottom: 30%;
-}
-
-/* 站点卡片 */
-.route-station {
-    position: relative;
-    margin: 6px 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-/* 站点锁图标（在轨道上） */
-.station-lock {
-    position: absolute;
-    left: -36px;
-    width: 24px;
-    height: 24px;
-    background: linear-gradient(145deg, #d8cfc0, #c4b8a4);
-    border: 2px solid #b0a48e;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    z-index: 2;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+/* 左侧卡片（右站点→卡片在左） */
+.stop-left {
+    left: 4%;
+    right: 30%;
 }
 
 /* 迷你站卡 */
@@ -4615,11 +4590,12 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 14px;
-    background: linear-gradient(135deg, rgba(255,255,255,0.85), rgba(248,244,236,0.9));
+    padding: 8px 12px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.88), rgba(248,244,236,0.92));
     border: 1px solid rgba(180,168,140,0.25);
     border-radius: 12px;
-    flex: 1;
+    width: 100%;
+    box-sizing: border-box;
     box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 0 0 1px rgba(255,255,255,0.5) inset;
     transition: all 0.2s ease;
     cursor: default;
@@ -4634,10 +4610,10 @@
 /* 站序号 */
 .mini-num {
     font-family: 'Georgia', serif;
-    font-size: 18px;
+    font-size: 17px;
     font-weight: bold;
     color: #8a7a64;
-    min-width: 24px;
+    min-width: 20px;
     text-align: center;
     line-height: 1;
 }
@@ -4646,21 +4622,28 @@
 .mini-info {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     flex: 1;
 }
 
 .mini-name {
     font-family: 'KaiTi', 'STKaiti', '楷体', serif;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
     color: #3a2a1a;
     letter-spacing: 2px;
 }
 
 .mini-icon {
-    font-size: 16px;
+    font-size: 15px;
     filter: grayscale(0.4) opacity(0.7);
+}
+
+/* 锁图标 */
+.mini-lock {
+    font-size: 11px;
+    opacity: 0.5;
+    flex-shrink: 0;
 }
 
 /* 终点旗帜 */
@@ -4669,7 +4652,7 @@
     font-size: 12px;
     color: #a89878;
     letter-spacing: 3px;
-    margin-top: 8px;
+    margin-top: 4px;
     padding: 8px 0;
     font-family: 'KaiTi', 'STKaiti', '楷体', serif;
     position: relative;
