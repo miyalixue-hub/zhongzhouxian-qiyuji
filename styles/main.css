@@ -4457,6 +4457,7 @@
     padding: 20px 16px 8px;
     max-width: 500px;
     margin: 0 auto;
+    position: relative;
 }
 
 /* 路线标题栏 */
@@ -4670,9 +4671,9 @@
 /* 铛铛车旅程对话区域 */
 .journey-dialogue-area {
     position: absolute;
-    right: -10px;
-    width: 280px;
-    padding: 12px 16px;
+    left: 55%;
+    width: 180px;
+    padding: 10px 14px;
     background: linear-gradient(135deg, rgba(255,248,220,0.98), rgba(248,240,220,0.98));
     border: 2px solid rgba(212,168,67,0.5);
     border-radius: 16px;
