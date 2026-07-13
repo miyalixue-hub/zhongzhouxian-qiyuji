@@ -37,13 +37,6 @@
             }, 2000);
         }
 
-        );
-            // 切换当前
-            if (!wasExpanded) {
-                el.classList.add('expanded');
-            }
-        }
-        
         /**
          * NPC铛铛车对话轮播
          */
