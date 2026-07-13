@@ -1750,7 +1750,7 @@
         .color-swatch-wrap svg {
             display: none;
         }
-        .color-card[data-id="zhusha"] .color-swatch-wrap { background-image: url('../assets/trad-color-zhusha.png'); }
+        .color-card[data-id="zhusha"] .color-swatch-wrap { background-image: url('../assets/trad-color-zhusha-v2.png'); }
         .color-card[data-id="shiqing"] .color-swatch-wrap { background-image: url('../assets/trad-color-shiqing.png'); }
         .color-card[data-id="douqing"] .color-swatch-wrap { background-image: url('../assets/trad-color-douqing.png?v=20260713'); }
         .color-card[data-id="liuli"] .color-swatch-wrap { background-image: url('../assets/trad-color-liuli.png'); }
@@ -1762,9 +1762,11 @@
         .color-card[data-id="yin"] {
             display: none;
         }
-        .color-card:hover .color-swatch-wrap,
-        .color-card.selected .color-swatch-wrap {
+        .color-card:hover .color-swatch-wrap {
             transform: translateY(-2px) scale(1.04);
+        }
+        .color-card.selected .color-swatch-wrap {
+            transform: none;
         }
         @media (max-width: 480px) {
             .color-grid {
@@ -3024,12 +3026,10 @@
         }
 
         .color-card.selected {
-            background:
-                radial-gradient(circle at 50% 0%, rgba(255,252,245,0.96), rgba(255,247,232,0.92) 48%, rgba(255,239,218,0.9) 100%) !important;
-            border-color: var(--zhusha) !important;
+            background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,254,250,0.95)) !important;
+            border-color: rgba(232, 220, 196, 0.9) !important;
             box-shadow:
-                0 10px 24px rgba(58,42,26,0.1),
-                0 0 0 1px rgba(196,92,92,0.28),
+                0 8px 18px rgba(58,42,26,0.08),
                 inset 0 1px 0 rgba(255,255,255,0.95) !important;
         }
 
