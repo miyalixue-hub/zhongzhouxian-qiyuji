@@ -22,106 +22,11 @@
         return false;
     };
     </script>
-    <link rel="stylesheet" href="styles/main.css?v=20260713k">
+    <link rel="stylesheet" href="styles/main.css?v=20260713l">
     <!-- Google model-viewer: 3D模型展示组件（使用 jsdelivr CDN 国内可访问） -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js?v=20260706b"></script>
 </head>
 <body>
-<!-- 铛铛车开场旅程 -->
-<div id="tram-journey-overlay" class="tram-journey-overlay">
-    <div class="tram-journey-container">
-        <!-- 路线地图区域 -->
-        <div class="tram-journey-route-area">
-            <div class="tram-journey-route-title">中轴奇游记</div>
-            <div class="tram-journey-route-map" id="tram-route-map">
-                <!-- 蛇形路线 SVG -->
-                <svg class="tram-journey-rail-svg" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-                    <path class="journey-rail-bed" d="M16,74 C16,74 72,68 72,64 C72,58 16,56 16,50 C16,44 72,42 72,36 C72,30 16,26 16,20 C16,14 72,10 72,6"/>
-                    <path class="journey-rail-line" d="M16,74 C16,74 72,68 72,64 C72,58 16,56 16,50 C16,44 72,42 72,36 C72,30 16,26 16,20 C16,14 72,10 72,6"/>
-                    <!-- 站点圆点 -->
-                    <circle cx="16" cy="74" r="1.8" class="journey-dot" data-idx="0"/>
-                    <circle cx="72" cy="64" r="1.8" class="journey-dot" data-idx="1"/>
-                    <circle cx="16" cy="52" r="1.8" class="journey-dot" data-idx="2"/>
-                    <circle cx="72" cy="40" r="1.8" class="journey-dot" data-idx="3"/>
-                    <circle cx="16" cy="32" r="1.8" class="journey-dot" data-idx="4"/>
-                    <circle cx="72" cy="22" r="1.8" class="journey-dot" data-idx="5"/>
-                    <circle cx="16" cy="16" r="1.8" class="journey-dot" data-idx="6"/>
-                    <circle cx="72" cy="6" r="1.8" class="journey-dot" data-idx="7"/>
-                </svg>
-                <!-- 铛铛车 -->
-                <div class="tram-journey-tram" id="tram-journey-tram" style="--tram-top:74%;--tram-left:14%;">🚃</div>
-                <!-- 8个站点卡片（不含正阳门） -->
-                <div class="tram-journey-stop stop-left" style="--stop-top:74%;--stop-left:24%;" data-idx="0">
-                    <div class="station-card-mini" id="jcard-0">
-                        <span class="mini-num">1</span>
-                        <div class="mini-info"><span class="mini-name">永定门</span><span class="mini-icon">🚪</span></div>
-                        <span class="mini-lock">🔒</span>
-                    </div>
-                </div>
-                <div class="tram-journey-stop stop-right" style="--stop-top:64%;--stop-left:4%;" data-idx="1">
-                    <div class="station-card-mini" id="jcard-1">
-                        <span class="mini-num">2</span>
-                        <div class="mini-info"><span class="mini-name">天坛</span><span class="mini-icon">🔮</span></div>
-                        <span class="mini-lock">🔒</span>
-                    </div>
-                </div>
-                <div class="tram-journey-stop stop-left" style="--stop-top:52%;--stop-left:24%;" data-idx="2">
-                    <div class="station-card-mini" id="jcard-2">
-                        <span class="mini-num">3</span>
-                        <div class="mini-info"><span class="mini-name">先农坛</span><span class="mini-icon">🌾</span></div>
-                        <span class="mini-lock">🔒</span>
-                    </div>
-                </div>
-                <div class="tram-journey-stop stop-right" style="--stop-top:40%;--stop-left:4%;" data-idx="3">
-                    <div class="station-card-mini" id="jcard-3">
-                        <span class="mini-num">5</span>
-                        <div class="mini-info"><span class="mini-name">天安门</span><span class="mini-icon">🏛️</span></div>
-                        <span class="mini-lock">🔒</span>
-                    </div>
-                </div>
-                <div class="tram-journey-stop stop-left" style="--stop-top:32%;--stop-left:24%;" data-idx="4">
-                    <div class="station-card-mini" id="jcard-4">
-                        <span class="mini-num">6</span>
-                        <div class="mini-info"><span class="mini-name">故宫</span><span class="mini-icon">🏯</span></div>
-                        <span class="mini-lock">🔒</span>
-                    </div>
-                </div>
-                <div class="tram-journey-stop stop-right" style="--stop-top:22%;--stop-left:4%;" data-idx="5">
-                    <div class="station-card-mini" id="jcard-5">
-                        <span class="mini-num">7</span>
-                        <div class="mini-info"><span class="mini-name">景山</span><span class="mini-icon">⛰️</span></div>
-                        <span class="mini-lock">🔒</span>
-                    </div>
-                </div>
-                <div class="tram-journey-stop stop-left" style="--stop-top:16%;--stop-left:24%;" data-idx="6">
-                    <div class="station-card-mini" id="jcard-6">
-                        <span class="mini-num">8</span>
-                        <div class="mini-info"><span class="mini-name">万宁桥</span><span class="mini-icon">🌉</span></div>
-                        <span class="mini-lock">🔒</span>
-                    </div>
-                </div>
-                <div class="tram-journey-stop stop-right" style="--stop-top:6%;--stop-left:4%;" data-idx="7">
-                    <div class="station-card-mini" id="jcard-7">
-                        <span class="mini-num">9</span>
-                        <div class="mini-info"><span class="mini-name">钟鼓楼</span><span class="mini-icon">🔔</span></div>
-                        <span class="mini-lock">🔒</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- 对话区域 -->
-        <div class="tram-journey-dialogue-area">
-            <div class="tram-journey-station-name" id="tram-journey-station">永定门</div>
-            <div class="tram-journey-dialogue" id="tram-journey-dialogue"></div>
-            <div class="tram-journey-progress" id="tram-journey-progress">1 / 9</div>
-            <div class="tram-journey-btn" id="tram-journey-btn">下一站 →</div>
-        </div>
-    </div>
-</div>
-
-
-
-
     <!-- ====== 首页视图 (地图) ====== -->
     <div id="view-home">
 <!-- SVG手绘滤镜定义 -->
@@ -228,56 +133,56 @@
                 <!-- 铛铛车 -->
                 <div class="route-tram">🚃</div>
                 <!-- 站点卡片 -->
-                <div class="route-stop stop-right" style="--stop-top:5%">
+                <div class="route-stop stop-right" data-station-idx="7" style="--stop-top:5%">
                     <div class="station-card-mini">
                         <span class="mini-num">9</span>
                         <div class="mini-info"><span class="mini-name">钟鼓楼</span><span class="mini-icon">🔔</span></div>
                         <span class="mini-lock">🔒</span>
                     </div>
                 </div>
-                <div class="route-stop stop-left" style="--stop-top:15%">
+                <div class="route-stop stop-left" data-station-idx="6" style="--stop-top:15%">
                     <div class="station-card-mini">
                         <span class="mini-num">8</span>
                         <div class="mini-info"><span class="mini-name">万宁桥</span><span class="mini-icon">🌉</span></div>
                         <span class="mini-lock">🔒</span>
                     </div>
                 </div>
-                <div class="route-stop stop-right" style="--stop-top:25%">
+                <div class="route-stop stop-right" data-station-idx="5" style="--stop-top:25%">
                     <div class="station-card-mini">
                         <span class="mini-num">7</span>
                         <div class="mini-info"><span class="mini-name">景山</span><span class="mini-icon">⛰️</span></div>
                         <span class="mini-lock">🔒</span>
                     </div>
                 </div>
-                <div class="route-stop stop-left" style="--stop-top:35%">
+                <div class="route-stop stop-left" data-station-idx="4" style="--stop-top:35%">
                     <div class="station-card-mini">
                         <span class="mini-num">6</span>
                         <div class="mini-info"><span class="mini-name">故宫</span><span class="mini-icon">🏯</span></div>
                         <span class="mini-lock">🔒</span>
                     </div>
                 </div>
-                <div class="route-stop stop-right" style="--stop-top:45%">
+                <div class="route-stop stop-right" data-station-idx="3" style="--stop-top:45%">
                     <div class="station-card-mini">
                         <span class="mini-num">5</span>
                         <div class="mini-info"><span class="mini-name">天安门</span><span class="mini-icon">🏛️</span></div>
                         <span class="mini-lock">🔒</span>
                     </div>
                 </div>
-                <div class="route-stop stop-left" style="--stop-top:55%">
+                <div class="route-stop stop-left" data-station-idx="2" style="--stop-top:55%">
                     <div class="station-card-mini">
                         <span class="mini-num">3</span>
                         <div class="mini-info"><span class="mini-name">先农坛</span><span class="mini-icon">🌾</span></div>
                         <span class="mini-lock">🔒</span>
                     </div>
                 </div>
-                <div class="route-stop stop-right" style="--stop-top:65%">
+                <div class="route-stop stop-right" data-station-idx="1" style="--stop-top:65%">
                     <div class="station-card-mini">
                         <span class="mini-num">2</span>
                         <div class="mini-info"><span class="mini-name">天坛</span><span class="mini-icon">🔮</span></div>
                         <span class="mini-lock">🔒</span>
                     </div>
                 </div>
-                <div class="route-stop stop-left" style="--stop-top:75%">
+                <div class="route-stop stop-left" data-station-idx="0" style="--stop-top:75%">
                     <div class="station-card-mini">
                         <span class="mini-num">1</span>
                         <div class="mini-info"><span class="mini-name">永定门</span><span class="mini-icon">🚪</span></div>
@@ -286,6 +191,13 @@
                 </div>
             </div>
             <div class="route-end-flag">🏁 中轴线起点</div>
+            <!-- 铛铛车旅程对话区域 -->
+            <div class="journey-dialogue-area" id="journey-dialogue-area" style="display:none;">
+                <div class="journey-station-name" id="journey-station-name">永定门</div>
+                <div class="journey-dialogue" id="journey-dialogue"></div>
+                <div class="journey-progress" id="journey-progress">1 / 9</div>
+                <div class="journey-btn" id="journey-btn" onclick="nextJourneyStation()">下一站 →</div>
+            </div>
         </div>
         
     </main>
@@ -1824,72 +1736,58 @@ if (typeof goToStation === 'function') {
         <button onclick="document.getElementById('splash-screen').style.display='none'; if(typeof showView==='function') showView('home');" style="position:relative; z-index:2; padding:20px 60px; font-size:1.4em; background:linear-gradient(135deg,#d4b060,#c09840); color:#fff; border:none; border-radius:30px; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.3); font-family:'KaiTi','STKaiti',serif; letter-spacing:2px;">点击进入中轴奇游记</button>
     </div>
 <script>
-// ====== 铛铛车开场旅程（路线图版） ======
+// ====== 铛铛车开场旅程（主页路线版） ======
 (function() {
-    // 检查 URL 参数 ?replay=true 强制重播
-    var urlParams = new URLSearchParams(window.location.search);
-    var forceReplay = urlParams.get('replay') === 'true';
-    
-    if (!forceReplay && localStorage.getItem('tram_journey_seen') === 'true') {
-        var overlay = document.getElementById('tram-journey-overlay');
-        if (overlay) overlay.style.display = 'none';
-        return;
-    }
-
     var stations = [
-        { name: '永定门', top: 74, left: 16, dialogue: '永定门。中轴线最南头，起点。名字意思是"永远安定"。从这里出发，我们沿中轴线一路向北！' },
-        { name: '天坛', top: 64, left: 72, dialogue: '天坛。皇帝祭天的地方。屋顶是蓝色的——因为蓝色代表天。在这儿说话，据说老天爷能听到。' },
-        { name: '先农坛', top: 52, left: 16, dialogue: '先农坛。皇帝每年春天得在这亲自下地种一回田——对，皇帝种田。你想想那个画面……估计种得不怎么样。' },
-        { name: '天安门', top: 40, left: 72, dialogue: '天安门。以前叫承天门，皇城的正门。普通人连靠近都不行。现在嘛，谁都能去拍照打卡。' },
-        { name: '故宫', top: 32, left: 16, dialogue: '故宫到了。全世界最大的宫殿，传说有 9999 间半房子。你看颜色——黄的顶、红的墙、白的石头底座。这三种颜色凑一起，就是皇家的标配。' },
-        { name: '景山', top: 22, left: 72, dialogue: '景山。爬上去能俯瞰整个故宫——金灿灿的屋顶铺满眼睛。不过今天没空爬山，继续往北走。' },
-        { name: '万宁桥', top: 16, left: 16, dialogue: '这座桥 700 多年了，中轴线上最老的建筑。全是石头砌的，到现在还结实着呢。桥下面的水，当年直通护城河。' },
-        { name: '钟鼓楼', top: 6, left: 72, dialogue: '这是钟鼓楼。古时候没有手机没有闹钟，全北京城的人靠这俩楼知道几点——鼓楼打鼓，钟楼敲钟。站在这往南看，整条中轴线一眼望不到头。' },
-        { name: '正阳门', top: 64, left: 16, dialogue: '到了。正阳门。\n\n看到地上那只灰不溜秋的东西了吗？对，就是那块丑丑的、裂了缝的、看起来像石头的东西。\n\n它不是石头。它是一只神兽，叫镇水兽。在这趴了六百年了。\n\n哦对了，桥洞顶上还有一只——叫吸水兽，倒挂着，姿势有点像蝙蝠。不过那只更害羞，先不管它。\n\n先说这只镇水兽吧。三百年没人搭理它，花纹褪了，颜色也没了。它就躺那，生闷气。\n\n你戳戳它试试？', isFinal: true }
+        { name: '永定门', dialogue: '永定门。中轴线最南头，起点。名字意思是"永远安定"。从这里出发，我们沿中轴线一路向北！' },
+        { name: '天坛', dialogue: '天坛。皇帝祭天的地方。屋顶是蓝色的——因为蓝色代表天。在这儿说话，据说老天爷能听到。' },
+        { name: '先农坛', dialogue: '先农坛。皇帝每年春天得在这亲自下地种一回田——对，皇帝种田。你想想那个画面……估计种得不怎么样。' },
+        { name: '天安门', dialogue: '天安门。以前叫承天门，皇城的正门。普通人连靠近都不行。现在嘛，谁都能去拍照打卡。' },
+        { name: '故宫', dialogue: '故宫到了。全世界最大的宫殿，传说有 9999 间半房子。你看颜色——黄的顶、红的墙、白的石头底座。这三种颜色凑一起，就是皇家的标配。' },
+        { name: '景山', dialogue: '景山。爬上去能俯瞰整个故宫——金灿灿的屋顶铺满眼睛。不过今天没空爬山，继续往北走。' },
+        { name: '万宁桥', dialogue: '这座桥 700 多年了，中轴线上最老的建筑。全是石头砌的，到现在还结实着呢。桥下面的水，当年直通护城河。' },
+        { name: '钟鼓楼', dialogue: '这是钟鼓楼。古时候没有手机没有闹钟，全北京城的人靠这俩楼知道几点——鼓楼打鼓，钟楼敲钟。站在这往南看，整条中轴线一眼望不到头。' },
+        { name: '正阳门', dialogue: '到了。正阳门。
+
+看到地上那只灰不溜秋的东西了吗？对，就是那块丑丑的、裂了缝的、看起来像石头的东西。
+
+它不是石头。它是一只神兽，叫镇水兽。在这趴了六百年了。
+
+哦对了，桥洞顶上还有一只——叫吸水兽，倒挂着，姿势有点像蝙蝠。不过那只更害羞，先不管它。
+
+先说这只镇水兽吧。三百年没人搭理它，花纹褪了，颜色也没了。它就躺那，生闷气。
+
+你戳戳它试试？', isFinal: true }
     ];
 
     var currentStation = -1;
-    var overlay = document.getElementById('tram-journey-overlay');
-    var tramEl = document.getElementById('tram-journey-tram');
-    var stationEl = document.getElementById('tram-journey-station');
-    var dialogueEl = document.getElementById('tram-journey-dialogue');
-    var progressEl = document.getElementById('tram-journey-progress');
-    var btnEl = document.getElementById('tram-journey-btn');
+    var dialogueArea = document.getElementById('journey-dialogue-area');
+    var stationEl = document.getElementById('journey-station-name');
+    var dialogueEl = document.getElementById('journey-dialogue');
+    var progressEl = document.getElementById('journey-progress');
+    var btnEl = document.getElementById('journey-btn');
 
     function showStation(index) {
         var station = stations[index];
         currentStation = index;
 
-        // 移动铛铛车到站点位置
-        tramEl.style.setProperty('--tram-top', station.top + '%');
-        tramEl.style.setProperty('--tram-left', station.left + '%');
+        // 显示对话区域
+        dialogueArea.style.display = 'block';
 
-        // 触发晃动动画
-        tramEl.classList.remove('tram-bounce-anim');
-        void tramEl.offsetWidth;
-        tramEl.classList.add('tram-bounce-anim');
-
-        // 解锁当前站卡
+        // 高亮当前站（移除之前的高亮）
+        var allStops = document.querySelectorAll('.route-stop');
+        allStops.forEach(function(s) { s.classList.remove('journey-active'); });
         if (index < 8) {
-            var card = document.getElementById('jcard-' + index);
-            if (card) {
-                // 移除之前的高亮
-                for (var i = 0; i < 8; i++) {
-                    var c = document.getElementById('jcard-' + i);
-                    if (c) c.classList.remove('journey-active');
-                }
-                card.classList.add('journey-active');
-                var lock = card.querySelector('.mini-lock');
+            var currentStop = document.querySelector('.route-stop[data-station-idx="' + index + '"]');
+            if (currentStop) {
+                currentStop.classList.add('journey-active');
+                // 把锁换成✅
+                var lock = currentStop.querySelector('.mini-lock');
                 if (lock) lock.textContent = '✅';
             }
-            // 高亮对应路线圆点
-            var dots = document.querySelectorAll('.journey-dot');
-            dots.forEach(function(d, di) {
-                if (di <= index) d.classList.add('journey-dot-active');
-            });
         }
 
-        // 更新对话内容（带淡入）
+        // 更新对话内容
         stationEl.style.opacity = '0';
         dialogueEl.style.opacity = '0';
         setTimeout(function() {
@@ -1897,7 +1795,6 @@ if (typeof goToStation === 'function') {
             dialogueEl.textContent = station.dialogue;
             stationEl.style.opacity = '1';
             dialogueEl.style.opacity = '1';
-
             if (station.isFinal) {
                 progressEl.textContent = '9 / 9';
                 btnEl.textContent = '开始冒险 →';
@@ -1910,18 +1807,28 @@ if (typeof goToStation === 'function') {
         }, 200);
     }
 
-    // 初始化第一站
-    setTimeout(function() { showStation(0); }, 400);
+    // 首次访问自动开始
+    if (!localStorage.getItem('tram_journey_seen')) {
+        setTimeout(function() { showStation(0); }, 800);
+    } else {
+        // 已经看过，直接解锁所有站点
+        var allStops = document.querySelectorAll('.route-stop');
+        allStops.forEach(function(s) {
+            s.classList.add('journey-active');
+            var lock = s.querySelector('.mini-lock');
+            if (lock) lock.textContent = '✅';
+        });
+    }
 
-    btnEl.addEventListener('click', function() {
+    window.nextJourneyStation = function() {
         if (currentStation < stations.length - 1) {
             showStation(currentStation + 1);
         } else {
             localStorage.setItem('tram_journey_seen', 'true');
-            overlay.classList.add('fade-out');
-            setTimeout(function() { overlay.style.display = 'none'; }, 800);
+            // 滚动到英雄卡
+            document.getElementById('station-zhengyangmen').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-    });
+    };
 })();
 </script>
 </body>
