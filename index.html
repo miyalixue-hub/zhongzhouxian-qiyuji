@@ -1782,9 +1782,9 @@ if (typeof goToStation === 'function') {
             tramEl.style.left = targetLeft + 'px';
             tramEl.style.top = targetTop + 'px';
             
-            // 移动对话气泡到当前站点旁边
+            // 移动对话气泡到铁轨右侧，垂直跟随当前站点
             var routeRect = dialogueArea.parentElement.getBoundingClientRect();
-            var bubbleTop = stopRect.top - routeRect.top + stopRect.height / 2 - 30;
+            var bubbleTop = stopRect.top - routeRect.top;
             dialogueArea.style.top = bubbleTop + 'px';
         }
 
