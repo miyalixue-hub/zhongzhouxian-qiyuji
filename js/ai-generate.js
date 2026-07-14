@@ -528,13 +528,27 @@
                 });
             }
 
-            var summonText = '我设计了一只' + cr.name + '，' + (patternDescList.length ? patternDescList.join('，') + '，' : '') +  + (colorNames.length ? '配色为' + colorNames.join('、') + '，' : '') + (elemNames.length ? '搭配' + elemNames.join('、') + '装饰。' : '');
+            // 抽签结果（fortune）
+            var fortune = state.fortune || {};
+            var fortuneParts = [];
+            if (fortune.nature) fortuneParts.push('天性' + fortune.nature);
+            if (fortune.power) fortuneParts.push('拥有' + fortune.power + '的神力');
+            if (fortune.hobby) fortuneParts.push('平时' + fortune.hobby);
+            var fortuneDesc = fortuneParts.length ? fortuneParts.join('，') + '。' : '';
+
+            var summonText = '我设计了一只' + cr.name + '，' + 
+                (fortuneDesc ? fortuneDesc : '') +
+                (patternDescList.length ? patternDescList.join('，') + '，' : '') + 
+                (colorNames.length ? '配色为' + colorNames.join('、') + '，' : '') + 
+                (elemNames.length ? '搭配' + elemNames.join('、') + '装饰。' : '');
 
             var aiPrompt = '一只可爱的中国神话小神兽「' + cr.name + '」（' + cr.desc + '）' +
                 (cr.location ? '，守护在' + cr.location + '，' : '，') +
                 (cr.pose ? cr.pose + '，' : '') +
+                (fortune.nature ? '它' + fortune.nature + '，' : '') +
+                (fortune.power ? '拥有' + fortune.power + '的神奇能力，' : '') +
+                (fortune.hobby ? '平时喜欢' + fortune.hobby + '，' : '') +
                 (patternDescList.length ? patternDescList.join('，') + '，纹样紧贴身体不要飘散在空中，' : '') +
-                 +
                 (colorPromptParts.length ? '主色调为' + colorPromptParts.join('、') + '，' : '') +
                 (elemPromptParts.length ? '底座/配饰为' + elemPromptParts.join('、') + '，' : '') +
                 '3D渲染，干净背景，儿童插画风格，高质量，温馨可爱';
@@ -542,6 +556,8 @@
             var tags = document.querySelector('#page-9 .prompt-tags');
             if (tags) {
                 tags.innerHTML = '<div class="prompt-tag-dynamic"><span class="prompt-tag-label">类型</span><span>' + cr.name + '</span></div>' +
+                    (fortune.nature ? '<div class="prompt-tag-dynamic"><span class="prompt-tag-label">天性</span><span>' + fortune.nature + '</span></div>' : '') +
+                    (fortune.power ? '<div class="prompt-tag-dynamic"><span class="prompt-tag-label">神力</span><span>' + fortune.power + '</span></div>' : '') +
                     (patternNames.length ? '<div class="prompt-tag-dynamic"><span class="prompt-tag-label">纹饰</span><span>' + patternNames.join('、') + '</span></div>' : '') +
                     (colorNames.length ? '<div class="prompt-tag-dynamic"><span class="prompt-tag-label">颜色</span><span>' + colorNames.join('、') + '</span></div>' : '') +
                     (elemNames.length ? '<div class="prompt-tag-dynamic"><span class="prompt-tag-label">装饰</span><span>' + elemNames.join('、') + '</span></div>' : '');
