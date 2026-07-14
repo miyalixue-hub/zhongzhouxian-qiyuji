@@ -133,7 +133,7 @@
                     </div>
                 </div>
                 <div class="hero-cta">
-                    <span class="cta-btn" onclick="event.stopPropagation(); goToStation();" style="cursor:pointer;">开始第一章冒险 →</span>
+                    <button type="button" class="cta-btn" id="cta-start-adventure" style="cursor:pointer;border:none;font-family:inherit;width:100%;" onclick="console.log('[CTA] 按钮被点击'); event.stopPropagation(); if(typeof goToStation==='function'){console.log('[CTA] 调用goToStation'); goToStation();}else{console.error('[CTA] goToStation未定义!');}">开始第一章冒险 →</button>
                 </div>
             </div>
         </div>
@@ -1589,7 +1589,7 @@ if (typeof goToStation === 'function') {
     <!-- JS模块加载（注意顺序：config -> core -> ai -> meshy -> interactions） -->
     
 <script src="js/config.js?v=20260714a"></script>
-    <script src="js/core.js?v=20260714c"></script>
+    <script src="js/core.js?v=20260714d"></script>
     <script src="js/ai-generate.js?v=20260714c"></script>
     <script src="js/meshy-3d.js?v=20260713b"></script>
     <script src="js/qrcode.min.js"></script>
