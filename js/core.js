@@ -73,28 +73,47 @@
         }
         
         /**
-         * 正阳门 - 跳转至神兽工坊
+         * 正阳门 - 跳转至神兽工坊（健壮版本：视图切换与页面切换解耦）
          */
         function goToStation() {
+            console.log('[goToStation] 开始跳转');
+            // 第一步：强制切换视图（不依赖任何其他函数）
+            var home = document.getElementById('view-home');
+            var zyg = document.getElementById('view-zhengyangmen');
+            if (home) home.style.display = 'none';
+            if (zyg) {
+                zyg.style.display = 'block';
+                void zyg.offsetHeight; // 强制回流
+            }
+            window.scrollTo(0, 0);
+            console.log('[goToStation] 视图切换完成, zyg display=' + (zyg ? zyg.style.display : 'null'));
+
+            // 第二步：切换页面（带容错）
             try {
-                showView('zhengyangmen');
-                // 强制浏览器完成布局计算（修复Chrome下显示空白问题）
-                var zyg = document.getElementById('view-zhengyangmen');
-                if (zyg) void zyg.offsetHeight;
                 if (typeof showPage === 'function') {
                     showPage(2);
+                    console.log('[goToStation] showPage(2) 完成');
+                } else {
+                    console.error('[goToStation] showPage 不可用，手动激活page-2');
+                    var p2 = document.getElementById('page-2');
+                    if (p2) {
+                        document.querySelectorAll('.page-section').forEach(function(p) { p.classList.remove('active'); });
+                        p2.classList.add('active');
+                    }
                 }
-                // 滚动到顶部
-                window.scrollTo(0, 0);
             } catch(e) {
-                console.error('[goToStation] error:', e);
-                // 降级：直接跳转
-                var zyg2 = document.getElementById('view-zhengyangmen');
-                if (zyg2) zyg2.style.display = 'block';
-                var home = document.getElementById('view-home');
-                if (home) home.style.display = 'none';
-                var p2 = document.getElementById('page-2');
-                if (p2) p2.classList.add('active');
+                console.error('[goToStation] showPage报错:', e);
+                // 最后兜底：直接激活page-2
+                try {
+                    var p2b = document.getElementById('page-2');
+                    if (p2b) {
+                        document.querySelectorAll('.page-section').forEach(function(p) { p.classList.remove('active'); });
+                        p2b.classList.add('active');
+                        console.log('[goToStation] 兜底激活page-2完成');
+                    }
+                } catch(e2) {
+                    console.error('[goToStation] 兜底也失败:', e2);
+                }
             }
         }
         
