@@ -1750,19 +1750,24 @@ if (typeof goToStation === 'function') {
     // 启动旅程函数 - 由home-story的enterGame调用
     window.startJourney = function() {
         console.log('[startJourney] Called');
-        // 显示旅程容器
         var wrapper = document.getElementById('journey-wrapper');
-        console.log('[startJourney] wrapper:', wrapper, 'display:', wrapper ? wrapper.style.display : 'null');
         if (wrapper) {
             wrapper.style.display = 'block';
-            // 强制 Chrome 完成布局计算（同步回流）
             void wrapper.offsetHeight;
-            console.log('[startJourney] wrapper set to block');
         }
-        // 使用 setTimeout 确保 Chrome 布局完全稳定后再定位
         setTimeout(function() {
-            console.log('[startJourney] Calling showStation(0)');
-            showStation(0);
+            try {
+                window.debugLog && window.debugLog('setTimeout fired, checking showStation...');
+                window.debugLog && window.debugLog('typeof showStation: ' + typeof showStation);
+                window.debugLog && window.debugLog('typeof stations: ' + typeof stations);
+                window.debugLog && window.debugLog('stations length: ' + (typeof stations !== 'undefined' ? stations.length : 'N/A'));
+                window.debugLog && window.debugLog('typeof dialogueArea: ' + typeof dialogueArea);
+                window.debugLog && window.debugLog('dialogueArea: ' + (typeof dialogueArea !== 'undefined' ? !!dialogueArea : 'N/A'));
+                showStation(0);
+                window.debugLog && window.debugLog('showStation(0) completed');
+            } catch(e) {
+                window.debugLog && window.debugLog('ERROR: ' + e.message + ' at ' + e.stack);
+            }
         }, 100);
     };
 
