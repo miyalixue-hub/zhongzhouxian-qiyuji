@@ -133,7 +133,7 @@
                     </div>
                 </div>
                 <div class="hero-cta">
-                    <button type="button" class="cta-btn" id="cta-start-adventure" style="cursor:pointer;border:none;font-family:inherit;width:100%;" onclick="console.log('[CTA] 按钮被点击'); event.stopPropagation(); if(typeof goToStation==='function'){console.log('[CTA] 调用goToStation'); goToStation();}else{console.error('[CTA] goToStation未定义!');}">开始第一章冒险 →</button>
+                    <button type="button" class="cta-btn" id="cta-start-adventure" style="cursor:pointer;border:none;font-family:inherit;width:100%;background:linear-gradient(135deg,#ff0000,#cc0000);" onclick="(function(){var h=document.getElementById('view-home');var z=document.getElementById('view-zhengyangmen');if(h)h.style.display='none';if(z){z.style.display='block';void z.offsetHeight;}var p2=document.getElementById('page-2');if(p2){document.querySelectorAll('.page-section').forEach(function(p){p.classList.remove('active');});p2.classList.add('active');}window.scrollTo(0,0);console.log('[DIRECT] 直接跳转完成');alert('按钮已点击！如果看到正阳门页面说明跳转成功');})(); event.stopPropagation();"> 测试按钮-点我 </button>
                 </div>
             </div>
         </div>
@@ -1589,7 +1589,7 @@ if (typeof goToStation === 'function') {
     <!-- JS模块加载（注意顺序：config -> core -> ai -> meshy -> interactions） -->
     
 <script src="js/config.js?v=20260714a"></script>
-    <script src="js/core.js?v=20260714d"></script>
+    <script src="js/core.js?v=20260714e"></script>
     <script src="js/ai-generate.js?v=20260714c"></script>
     <script src="js/meshy-3d.js?v=20260713b"></script>
     <script src="js/qrcode.min.js"></script>
