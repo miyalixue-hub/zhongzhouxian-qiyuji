@@ -22,7 +22,7 @@
         return false;
     };
     </script>
-    <link rel="stylesheet" href="styles/main.css?v=20260714h">
+    <link rel="stylesheet" href="styles/main.css?v=20260714i">
     <link rel="stylesheet" href="styles/home-story.css?v=20260714b">
     <!-- Google model-viewer: 3D模型展示组件（使用 jsdelivr CDN 国内可访问） -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js?v=20260706b"></script>
@@ -133,7 +133,7 @@
                     </div>
                 </div>
                 <div class="hero-cta">
-                    <button type="button" class="cta-btn" id="cta-start-adventure" style="cursor:pointer;border:none;font-family:inherit;width:100%;background:linear-gradient(135deg,#ff0000,#cc0000);" onclick="try{if(typeof goToStation==='function'){goToStation();setTimeout(function(){var zheng=document.getElementById('view-zhengyangmen');zheng.style.setProperty('width','100vw','important');zheng.style.setProperty('min-height','100vh','important');zheng.style.setProperty('height','auto','important');zheng.style.setProperty('overflow','auto','important');zheng.style.setProperty('position','relative','important');zheng.style.setProperty('top','0','important');zheng.style.setProperty('left','0','important');var page2=document.getElementById('page-2');if(page2){page2.style.setProperty('display','block','important');page2.style.setProperty('width','100%','important');page2.style.setProperty('min-height','100vh','important');page2.style.setProperty('height','auto','important');}var msg='After JS force:\\nzheng offset:'+zheng.offsetWidth+'x'+zheng.offsetHeight+'\\npage2 offset:'+(page2?page2.offsetWidth:0)+'x'+(page2?page2.offsetHeight:0)+'\\nbody offset:'+document.body.offsetWidth+'x'+document.body.offsetHeight;alert(msg);},300);}else{alert('[ERR] goToStation 未定义');}}catch(e){alert('[ERR] '+e.message);}"> 测试按钮-点我 </button>
+                    <button type="button" class="cta-btn" id="cta-start-adventure" onclick="goToStation()"> 进入正阳门 → </button>
                 </div>
             </div>
         </div>

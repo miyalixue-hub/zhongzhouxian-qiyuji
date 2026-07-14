@@ -2477,8 +2477,8 @@
 
     
         /* ============ 交互增强样式 ============ */
-        .page-section { display: none; opacity: 0; transition: opacity 0.3s ease; }
-        .page-section.active { display: block; opacity: 1; }
+        .page-section { display: none !important; opacity: 0; transition: opacity 0.3s ease; }
+        .page-section.active { display: block !important; opacity: 1; }
         
         .option-card.selected, .pattern-card.selected, .expression-card.selected,
         .color-card.selected, .element-card.selected {
@@ -3135,7 +3135,6 @@
 
         /* 修复 page-2 全屏布局：覆盖 .page-section 的 min-height:auto 和 background */
         #page-2 {
-            display: block !important;
             opacity: 1 !important;
             min-height: 100vh !important;
             background: #1a1209 !important;
