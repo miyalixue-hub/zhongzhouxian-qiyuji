@@ -360,18 +360,7 @@ showPage(2);
                 }
             }
             
-            // === 第3步：表情姿态（步骤3及之后显示） ===
-            previewContainer.classList.remove('pose-cute', 'pose-fierce', 'pose-cool', 'pose-funny');
-            if (state.selectedExpression && page >= 4) {
-                previewContainer.classList.add('pose-' + state.selectedExpression);
-                updateCreatureFace(page);
-            } else {
-                // 清除表情特效
-                var faceFx = $('#face-fx-' + page);
-                if (faceFx) faceFx.innerHTML = '';
-            }
-            
-            // === 第4步：颜色覆盖（步骤4及之后显示，覆盖默认色） ===
+            // === 第3步：颜色覆盖（步骤4及之后显示，覆盖默认色） ===
             if (state.selectedColors.length > 0 && page >= 5) {
                 if (state.selectedColors[0]) {
                     var c0 = findById(colors, state.selectedColors[0]);
@@ -404,58 +393,6 @@ showPage(2);
             updatePreviewHint(page, hint, creatureName);
         }
         
-        // ============ 表情特效更新 ============
-        function updateCreatureFace(page) {
-            var faceFx = $('#face-fx-' + page);
-            var svg = $('#preview-svg-' + page);
-            if (!faceFx || !svg) return;
-            
-            faceFx.innerHTML = '';
-            
-            if (!state.selectedExpression) return;
-            
-            var svgContent = '';
-            switch(state.selectedExpression) {
-                case 'cute':
-                    // 大眼睛高光 + 小爱心
-                    svgContent = '<circle cx="48" cy="43" r="2.5" fill="white" opacity="0.9"/>' +
-                                 '<circle cx="68" cy="43" r="2.5" fill="white" opacity="0.9"/>' +
-                                 '<path d="M56 38 L58 35 L60 38 L62 35 L64 38" stroke="#FF6B8A" stroke-width="1.5" fill="none"/>';
-                    // 修改嘴巴为小微笑
-                    var mouth = svg.querySelector('.creature-mouth');
-                    if (mouth) mouth.setAttribute('d', 'M53 63 Q60 67 67 63');
-                    break;
-                case 'fierce':
-                    // 怒眉 + 尖牙
-                    svgContent = '<line x1="42" y1="36" x2="54" y2="40" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>' +
-                                 '<line x1="78" y1="36" x2="66" y2="40" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>' +
-                                 '<path d="M52 62 L55 68 L58 62" fill="white" stroke="#333" stroke-width="1"/>' +
-                                 '<path d="M62 62 L65 68 L68 62" fill="white" stroke="#333" stroke-width="1"/>';
-                    var mouth = svg.querySelector('.creature-mouth');
-                    if (mouth) mouth.setAttribute('d', 'M48 62 L60 65 L72 62');
-                    break;
-                case 'cool':
-                    // 墨镜效果
-                    svgContent = '<rect x="40" y="40" width="16" height="10" rx="3" fill="#333" opacity="0.85"/>' +
-                                 '<rect x="64" y="40" width="16" height="10" rx="3" fill="#333" opacity="0.85"/>' +
-                                 '<line x1="56" y1="45" x2="64" y2="45" stroke="#333" stroke-width="1.5"/>' +
-                                 '<line x1="40" y1="45" x2="34" y2="42" stroke="#333" stroke-width="1.5"/>' +
-                                 '<line x1="80" y1="45" x2="86" y2="42" stroke="#333" stroke-width="1.5"/>';
-                    var mouth = svg.querySelector('.creature-mouth');
-                    if (mouth) mouth.setAttribute('d', 'M52 62 Q58 64 66 60');
-                    break;
-                case 'funny':
-                    // 吐舌头 + 星星眼
-                    svgContent = '<path d="M56 64 Q60 75 64 64" fill="#FF6B8A" stroke="#E05570" stroke-width="0.8"/>' +
-                                 '<path d="M46 42 L48 38 L50 42 L46 42" fill="#D4A843"/>' +
-                                 '<path d="M70 42 L72 38 L74 42 L70 42" fill="#D4A843"/>';
-                    var mouth = svg.querySelector('.creature-mouth');
-                    if (mouth) mouth.setAttribute('d', 'M48 60 Q54 68 60 64 Q66 68 72 60');
-                    break;
-            }
-            faceFx.innerHTML = svgContent;
-        }
-        
         // ============ 累积式提示文字 ============
         function updatePreviewHint(page, hint, creatureName) {
             if (!hint) return;
@@ -473,13 +410,7 @@ showPage(2);
                 if (pNames.length) parts.push('✨ ' + pNames.join('、'));
             }
             
-            // 步骤3+: 表情
-            if (state.selectedExpression && page >= 4) {
-                var ex = findById(expressions, state.selectedExpression);
-                if (ex) parts.push(ex.emoji + ' ' + ex.name);
-            }
-            
-            // 步骤4+: 配色
+            // 步骤3+: 配色
             if (state.selectedColors && state.selectedColors.length > 0 && page >= 5) {
                 var cNames = state.selectedColors.map(function(x) {
                     return findById(colors, x) ? findById(colors, x).name : '';
@@ -510,7 +441,6 @@ showPage(2);
             var nb = el.querySelector('.btn-next');
             if (p === 2) if (nb) nb.disabled = !state.selectedCreature;
             else if (p === 3) if (nb) nb.disabled = state.selectedPatterns.length === 0;
-            else if (p === 4) if (nb) nb.disabled = !state.selectedExpression;
             else if (p === 5) if (nb) nb.disabled = state.selectedColors.length === 0;
             else if (p === 6) if (nb) nb.disabled = state.selectedElements.length === 0;
             else if (p === 8) if (nb) nb.disabled = state.selectedElements.length === 0;
@@ -627,7 +557,6 @@ showPage(2);
         function resetAndGoHome() {
             state.selectedCreature = null;
             state.selectedPatterns = [];
-            state.selectedExpression = 'cute';
             state.selectedColors = [];
             state.selectedElements = [];
             state.selectedCandidate = null;
@@ -635,7 +564,7 @@ showPage(2);
             state.tramColor = null;
             state.tramEra = null;
             state.tramDecors = [];
-            var selectedCards = $$('.option-card.selected, .pattern-card.selected, .expression-card.selected, .color-card.selected, .element-card.selected');
+            var selectedCards = $$('.option-card.selected, .pattern-card.selected, .color-card.selected, .element-card.selected');
             for (var i = 0; i < selectedCards.length; i++) selectedCards[i].classList.remove('selected');
             var s = $('#result-showcase');
             if (s) s.remove();
