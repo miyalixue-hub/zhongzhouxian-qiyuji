@@ -1662,7 +1662,11 @@ if (typeof goToStation === 'function') {
         var station = stations[index];
         currentStation = index;
 
-        // 显示对话区域
+        // 显示对话区域（首次显示时禁用 transition，避免 Chrome 从 auto/0 动画过渡到错误位置）
+        var isFirstShow = (dialogueArea.style.display === 'none' || dialogueArea.style.display === '');
+        if (isFirstShow) {
+            dialogueArea.style.transition = 'none';
+        }
         dialogueArea.style.display = 'block';
 
         // 移动小车子到当前站点
@@ -1692,6 +1696,11 @@ if (typeof goToStation === 'function') {
             }
             dialogueArea.style.top = (stopRect.top - 10) + 'px';
             
+            // 首次显示：强制回流后再恢复 transition（避免 Chrome 从默认位置动画过渡）
+            if (isFirstShow) {
+                void dialogueArea.offsetHeight;
+                dialogueArea.style.transition = 'top 0.8s ease-in-out, left 0.8s ease-in-out';
+            }
         }
 
         // 高亮当前站（移除之前的高亮）
@@ -1735,13 +1744,15 @@ if (typeof goToStation === 'function') {
     window.startJourney = function() {
         // 显示旅程容器
         var wrapper = document.getElementById('journey-wrapper');
-        if (wrapper) wrapper.style.display = 'block';
-        // 延迟一帧让布局完成
-        requestAnimationFrame(function() {
-            requestAnimationFrame(function() {
-                showStation(0);
-            });
-        });
+        if (wrapper) {
+            wrapper.style.display = 'block';
+            // 强制 Chrome 完成布局计算（同步回流）
+            void wrapper.offsetHeight;
+        }
+        // 使用 setTimeout 确保 Chrome 布局完全稳定后再定位
+        setTimeout(function() {
+            showStation(0);
+        }, 100);
     };
 
     // 解锁所有站点（已看过旅程时调用）
