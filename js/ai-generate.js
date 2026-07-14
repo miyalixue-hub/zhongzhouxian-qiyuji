@@ -561,7 +561,7 @@
                 isTram: false,
                 cr: cr,
                 patternNames: patternNames,
-                ex: ex,
+                ex: 'cute',
                 colorNames: colorNames,
                 elemNames: elemNames
             };
