@@ -22,7 +22,7 @@
         return false;
     };
     </script>
-    <link rel="stylesheet" href="styles/main.css?v=20260714a">
+    <link rel="stylesheet" href="styles/main.css?v=20260714b">
     <!-- Google model-viewer: 3D模型展示组件（使用 jsdelivr CDN 国内可访问） -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js?v=20260706b"></script>
 </head>
@@ -1778,10 +1778,20 @@ if (typeof goToStation === 'function') {
             tramEl.style.left = targetLeft + 'px';
             tramEl.style.top = targetTop + 'px';
             
-            // 气泡垂直跟随当前站点
-            var routeRect = dialogueArea.parentElement.getBoundingClientRect();
-            var bubbleTop = stopRect.top - routeRect.top;
-            dialogueArea.style.top = bubbleTop + 'px';
+            // 气泡用 fixed 定位，动态计算在铁轨右边（视口内）
+            var vw = window.innerWidth;
+            var stopCenterX = stopRect.left + stopRect.width / 2;
+            var routeRight = routeRect.right;
+            // 优先放在铁轨右侧，如果右边空间不够就放左侧
+            if (vw - routeRight > 260) {
+                dialogueArea.style.left = (routeRight + 16) + 'px';
+            } else if (routeRect.left > 260) {
+                dialogueArea.style.left = (routeRect.left - 236) + 'px';
+            } else {
+                // 屏幕太窄，放右下角
+                dialogueArea.style.left = (vw - 236) + 'px';
+            }
+            dialogueArea.style.top = (stopRect.top - 10) + 'px';
             
         }
 
