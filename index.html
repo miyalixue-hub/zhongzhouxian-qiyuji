@@ -1817,60 +1817,41 @@ if (typeof goToStation === 'function') {
 <script>
 (function(){
     var panel = document.getElementById('debug-panel');
+    if (!panel) return;
+    panel.style.display = 'block';
     var logs = [];
     
     function log(msg) {
         logs.push(msg);
-        if (panel) {
-            panel.style.display = 'block';
-            panel.innerHTML = logs.join('<br>');
-        }
-        console.log('[DEBUG]', msg);
+        panel.innerHTML = logs.join('<br>');
     }
     
     window.debugLog = log;
+    log('Debug initialized');
     
-    // 监听showStation调用
-    var origShowStation = window._journeyShowStation;
-    if (origShowStation) {
-        window._journeyShowStation = function(idx) {
-            log('showStation called with index: ' + idx);
-            var area = document.getElementById('journey-dialogue-area');
-            log('dialogueArea exists: ' + !!area);
-            if (area) {
-                log('dialogueArea display before: ' + area.style.display);
-            }
-            var result = origShowStation(idx);
-            if (area) {
-                log('dialogueArea display after: ' + area.style.display);
-                log('dialogueArea left: ' + area.style.left);
-                log('dialogueArea top: ' + area.style.top);
-                log('dialogueArea computed left: ' + window.getComputedStyle(area).left);
-                log('dialogueArea computed top: ' + window.getComputedStyle(area).top);
-                log('dialogueArea computed display: ' + window.getComputedStyle(area).display);
-                log('dialogueArea offsetWidth: ' + area.offsetWidth);
-                log('dialogueArea offsetHeight: ' + area.offsetHeight);
-            }
-            return result;
-        };
-    }
-    
-    // 监听startJourney调用
-    var origStartJourney = window.startJourney;
-    if (origStartJourney) {
-        window.startJourney = function() {
-            log('startJourney called');
-            var wrapper = document.getElementById('journey-wrapper');
-            log('wrapper exists: ' + !!wrapper);
-            log('wrapper display before: ' + (wrapper ? wrapper.style.display : 'null'));
-            var result = origStartJourney();
-            log('wrapper display after: ' + (wrapper ? wrapper.style.display : 'null'));
-            return result;
-        };
-    }
-    
-    log('Debug panel initialized');
+    // 3秒后检查dialogueArea状态
+    setTimeout(function() {
+        var area = document.getElementById('journey-dialogue-area');
+        if (area) {
+            log('=== 3s check ===');
+            log('display: ' + area.style.display);
+            log('left: ' + area.style.left);
+            log('top: ' + area.style.top);
+            var cs = window.getComputedStyle(area);
+            log('computed display: ' + cs.display);
+            log('computed left: ' + cs.left);
+            log('computed top: ' + cs.top);
+            log('computed width: ' + cs.width);
+            log('computed height: ' + cs.height);
+            log('offsetWxH: ' + area.offsetWidth + 'x' + area.offsetHeight);
+        } else {
+            log('dialogueArea NOT found!');
+        }
+    }, 3000);
 })();
 </script>
+
+<!-- 清除旅程记录按钮（调试用） -->
+<div id="clear-btn" style="position:fixed;bottom:20px;right:20px;background:#c04830;color:#fff;padding:10px 16px;border-radius:8px;cursor:pointer;z-index:99999;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.3);" onclick="localStorage.removeItem('tram_journey_seen');this.textContent='已清除！请刷新页面';this.style.background='#4a8';setTimeout(function(){location.reload();},1000)">🔄 清除旅程记录</div>
 </body>
 </html>
