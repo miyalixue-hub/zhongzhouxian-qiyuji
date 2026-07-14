@@ -103,11 +103,12 @@
             if (!signalReceived) return;
             setState(STATES.ENTER_GAME);
             
-            // 隐藏home-story内容
+            // 隐藏home-story内容，并通过body class让view-home释放视口高度
             var homeStoryEl = document.getElementById('home-story');
             if (homeStoryEl) {
                 homeStoryEl.style.display = 'none';
             }
+            document.body.classList.add('home-story-hidden');
             
             // 启动9站旅程动画
             if (typeof window.startJourney === 'function') {
@@ -124,6 +125,12 @@
 
         window.homeStoryController = {
             showHome: function () {
+                // 恢复home-story显示
+                var homeStoryEl = document.getElementById('home-story');
+                if (homeStoryEl) {
+                    homeStoryEl.style.display = '';
+                }
+                document.body.classList.remove('home-story-hidden');
                 setState(signalReceived ? STATES.SHOW_DIALOG : STATES.WAIT_CLICK);
             }
         };

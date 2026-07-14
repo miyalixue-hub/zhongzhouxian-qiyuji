@@ -409,3 +409,14 @@
         transition-duration: .01ms !important;
     }
 }
+
+/* Journey wrapper 显示时的布局修复 */
+#journey-wrapper {
+    min-height: 100vh;
+    padding-bottom: 40px;
+}
+
+/* 当home-story隐藏时，让#view-home不再占满视口 */
+.home-story-hidden #view-home {
+    min-height: auto !important;
+}
