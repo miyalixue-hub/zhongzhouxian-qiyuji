@@ -358,14 +358,18 @@ if (typeof goToStation === 'function') {
                 </div>
                 <div class="progress-step">
                     <div class="progress-circle pending">3</div>
-                    <div class="progress-label">传统色</div>
+                    <div class="progress-label">姿态表情</div>
                 </div>
                 <div class="progress-step">
                     <div class="progress-circle pending">4</div>
-                    <div class="progress-label">附加元素</div>
+                    <div class="progress-label">传统色</div>
                 </div>
                 <div class="progress-step">
                     <div class="progress-circle pending">5</div>
+                    <div class="progress-label">附加元素</div>
+                </div>
+                <div class="progress-step">
+                    <div class="progress-circle pending">6</div>
                     <div class="progress-label">确认提示词</div>
                 </div>
             </div>
@@ -443,12 +447,13 @@ if (typeof goToStation === 'function') {
             <div class="recipe-bar">
                 <span class="recipe-tag" data-step="creature" onclick="showPage(4)"><span class="tag-icon">🐾</span><span class="tag-label">未选择</span></span>
                 <span class="recipe-tag" data-step="pattern" onclick="showPage(5)"><span class="tag-icon">✨</span><span class="tag-label">未选择</span></span>
+                <span class="recipe-tag" data-step="face" onclick="showPage(6)"><span class="tag-icon">😊</span><span class="tag-label">未选择</span></span>
                 <span class="recipe-tag" data-step="color" onclick="showPage(7)"><span class="tag-icon">🎨</span><span class="tag-label">未选择</span></span>
                 <span class="recipe-tag" data-step="decoration" onclick="showPage(8)"><span class="tag-icon">🏛️</span><span class="tag-label">未选择</span></span>
             </div>
             <!-- 底部实时预览区 -->
             <div class="bottom-preview-section">
-                <div class="step-indicator">步骤1/4</div>
+                <div class="step-indicator">步骤1/5</div>
                 <div class="bottom-preview-title">📋 你的选择</div>
                 <div class="bottom-preview-canvas">
                     <div class="preview-creature-container" id="preview-creature-2">
@@ -485,19 +490,23 @@ if (typeof goToStation === 'function') {
                     <div class="progress-label">选择模型</div>
                 </div>
                 <div class="progress-step">
-                    <div class="progress-circle active">1</div>
+                    <div class="progress-circle active">2</div>
                     <div class="progress-label active">辨纹饰</div>
                 </div>
                 <div class="progress-step">
-                    <div class="progress-circle pending">2</div>
-                    <div class="progress-label">传统色</div>
-                </div>
-                <div class="progress-step">
                     <div class="progress-circle pending">3</div>
-                    <div class="progress-label">附加元素</div>
+                    <div class="progress-label">姿态表情</div>
                 </div>
                 <div class="progress-step">
                     <div class="progress-circle pending">4</div>
+                    <div class="progress-label">传统色</div>
+                </div>
+                <div class="progress-step">
+                    <div class="progress-circle pending">5</div>
+                    <div class="progress-label">附加元素</div>
+                </div>
+                <div class="progress-step">
+                    <div class="progress-circle pending">6</div>
                     <div class="progress-label">确认提示词</div>
                 </div>
             </div>
@@ -627,12 +636,13 @@ if (typeof goToStation === 'function') {
             <div class="recipe-bar">
                 <span class="recipe-tag" data-step="creature" onclick="showPage(4)"><span class="tag-icon">🐾</span><span class="tag-label">未选择</span></span>
                 <span class="recipe-tag" data-step="pattern" onclick="showPage(5)"><span class="tag-icon">✨</span><span class="tag-label">未选择</span></span>
+                <span class="recipe-tag" data-step="face" onclick="showPage(6)"><span class="tag-icon">😊</span><span class="tag-label">未选择</span></span>
                 <span class="recipe-tag" data-step="color" onclick="showPage(7)"><span class="tag-icon">🎨</span><span class="tag-label">未选择</span></span>
                 <span class="recipe-tag" data-step="decoration" onclick="showPage(8)"><span class="tag-icon">🏛️</span><span class="tag-label">未选择</span></span>
             </div>
             <!-- 底部实时预览区 -->
             <div class="bottom-preview-section">
-                <div class="step-indicator">步骤2/4</div>
+                <div class="step-indicator">步骤2/5</div>
                 <div class="bottom-preview-title">📋 你的选择</div>
                 <div class="bottom-preview-canvas">
                     <div class="preview-creature-container" id="preview-creature-3">
@@ -664,7 +674,116 @@ if (typeof goToStation === 'function') {
             
         </div>
 
-
+        <!-- Page 4: Step 3 姿态表情 -->
+        <div class="page-section" id="page-6">
+            <div class="progress-bar">
+                <div class="progress-step">
+                    <div class="progress-circle completed">✓</div>
+                    <div class="progress-label">选择模型</div>
+                </div>
+                <div class="progress-step">
+                    <div class="progress-circle completed">✓</div>
+                    <div class="progress-label">贴纹饰</div>
+                </div>
+                <div class="progress-step">
+                    <div class="progress-circle active">3</div>
+                    <div class="progress-label active">姿态表情</div>
+                </div>
+                <div class="progress-step">
+                    <div class="progress-circle pending">4</div>
+                    <div class="progress-label">传统色</div>
+                </div>
+                <div class="progress-step">
+                    <div class="progress-circle pending">5</div>
+                    <div class="progress-label">附加元素</div>
+                </div>
+                <div class="progress-step">
+                    <div class="progress-circle pending">6</div>
+                    <div class="progress-label">确认提示词</div>
+                </div>
+            </div>
+            
+            <div class="page-content">
+                <div class="page-header">
+                    <h2 class="page-title">姿态与表情</h2>
+                    <p class="page-subtitle">赋予神兽独特的性格</p>
+                </div>
+                
+                <div class="expression-grid">
+                    <div class="expression-card selected" data-id="cute">
+                        <div class="expression-emoji">😊</div>
+                        <div class="expression-name">呆萌</div>
+                        <div class="expression-desc">圆滚滚 · 笑眯眯</div>
+                    </div>
+                    
+                    <div class="expression-card" data-id="fierce">
+                        <div class="expression-emoji">😤</div>
+                        <div class="expression-name">威武</div>
+                        <div class="expression-desc">怒目圆睁 · 气势十足</div>
+                    </div>
+                    
+                    <div class="expression-card" data-id="cool">
+                        <div class="expression-emoji">😎</div>
+                        <div class="expression-name">帅气</div>
+                        <div class="expression-desc">昂首挺胸 · 神采飞扬</div>
+                    </div>
+                    
+                    <div class="expression-card" data-id="funny">
+                        <div class="expression-emoji">🤪</div>
+                        <div class="expression-name">搞笑</div>
+                        <div class="expression-desc">吐舌头 · 搞怪表情</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bottom-buttons">
+                <button class="btn-back" id="btn-back-4">← 返回</button>
+                <button class="btn-next" id="btn-next-4">发现下一条线索 →</button>
+            </div>
+            
+            <!-- 配方卡 -->
+            <div class="recipe-bar">
+                <span class="recipe-tag" data-step="creature" onclick="showPage(4)"><span class="tag-icon">🐾</span><span class="tag-label">未选择</span></span>
+                <span class="recipe-tag" data-step="pattern" onclick="showPage(5)"><span class="tag-icon">✨</span><span class="tag-label">未选择</span></span>
+                <span class="recipe-tag" data-step="face" onclick="showPage(6)"><span class="tag-icon">😊</span><span class="tag-label">未选择</span></span>
+                <span class="recipe-tag" data-step="color" onclick="showPage(7)"><span class="tag-icon">🎨</span><span class="tag-label">未选择</span></span>
+                <span class="recipe-tag" data-step="decoration" onclick="showPage(8)"><span class="tag-icon">🏛️</span><span class="tag-label">未选择</span></span>
+            </div>
+            <!-- 底部实时预览区 -->
+            <div class="bottom-preview-section">
+                <div class="step-indicator">步骤3/5</div>
+                <div class="bottom-preview-title">📋 你的选择</div>
+                <div class="bottom-preview-canvas">
+                    <div class="preview-creature-container pose-cute" id="preview-creature-4">
+                        <svg width="120" height="120" viewBox="0 0 120 120" id="preview-svg-4">
+                            <!-- 神兽基础形态 -->
+                            <ellipse cx="60" cy="75" rx="35" ry="28" fill="#4A7FB5" id="body-part-4"/>
+                            <circle cx="60" cy="48" r="26" fill="#4A7FB5" id="head-part-4"/>
+                            <ellipse cx="34" cy="28" rx="12" ry="18" fill="#4A7FB5" id="horn-left-4"/>
+                            <ellipse cx="86" cy="28" rx="12" ry="18" fill="#4A7FB5" id="horn-right-4"/>
+                            <circle cx="50" cy="45" r="7" fill="white"/>
+                            <circle cx="70" cy="45" r="7" fill="white"/>
+                            <circle cx="51" cy="46" r="4" fill="#333"/>
+                            <circle cx="71" cy="46" r="4" fill="#333"/>
+                            <!-- 呆萌腮红 -->
+                            <circle cx="42" cy="54" r="6" fill="#C45C5C" opacity="0.3"/>
+                            <circle cx="78" cy="54" r="6" fill="#C45C5C" opacity="0.3"/>
+                            <ellipse cx="60" cy="56" rx="5" ry="4" fill="#333"/>
+                            <path d="M50 62 Q60 70 70 62" stroke="#333" stroke-width="2" fill="none" class="creature-mouth"/>
+                            <!-- 表情特效层 -->
+                            <g id="face-fx-4"></g>
+                            <!-- 纹饰叠加层 -->
+                            <g id="pattern-overlay-4" class="pattern-overlay"></g>
+                            <!-- 装饰元素 -->
+                            <g id="decor-overlay-4" class="preview-decorations"></g>
+                        </svg>
+                    </div>
+                </div>
+                <div class="bottom-preview-hint" id="preview-hint-4">呆萌姿态预览</div>
+            </div>
+            
+            
+        </div>
 
         
         <!-- Page 4A: 铛铛车 - 选择车身颜色 -->
@@ -930,15 +1049,19 @@ if (typeof goToStation === 'function') {
                     <div class="progress-label">贴纹饰</div>
                 </div>
                 <div class="progress-step">
-                    <div class="progress-circle active">1</div>
+                    <div class="progress-circle completed">✓</div>
+                    <div class="progress-label">姿态表情</div>
+                </div>
+                <div class="progress-step">
+                    <div class="progress-circle active">4</div>
                     <div class="progress-label active">传统色</div>
                 </div>
                 <div class="progress-step">
-                    <div class="progress-circle pending">2</div>
+                    <div class="progress-circle pending">5</div>
                     <div class="progress-label">附加元素</div>
                 </div>
                 <div class="progress-step">
-                    <div class="progress-circle pending">3</div>
+                    <div class="progress-circle pending">6</div>
                     <div class="progress-label">确认提示词</div>
                 </div>
             </div>
@@ -1017,12 +1140,13 @@ if (typeof goToStation === 'function') {
             <div class="recipe-bar">
                 <span class="recipe-tag" data-step="creature" onclick="showPage(4)"><span class="tag-icon">🐾</span><span class="tag-label">未选择</span></span>
                 <span class="recipe-tag" data-step="pattern" onclick="showPage(5)"><span class="tag-icon">✨</span><span class="tag-label">未选择</span></span>
+                <span class="recipe-tag" data-step="face" onclick="showPage(6)"><span class="tag-icon">😊</span><span class="tag-label">未选择</span></span>
                 <span class="recipe-tag" data-step="color" onclick="showPage(7)"><span class="tag-icon">🎨</span><span class="tag-label">未选择</span></span>
                 <span class="recipe-tag" data-step="decoration" onclick="showPage(8)"><span class="tag-icon">🏛️</span><span class="tag-label">未选择</span></span>
             </div>
             <!-- 底部实时预览区 -->
             <div class="bottom-preview-section">
-                <div class="step-indicator">步骤3/4</div>
+                <div class="step-indicator">步骤4/5</div>
                 <div class="bottom-preview-title">📋 你的选择</div>
                 <div class="bottom-preview-canvas">
                     <div class="preview-creature-container" id="preview-creature-5">
@@ -1066,14 +1190,18 @@ if (typeof goToStation === 'function') {
                 </div>
                 <div class="progress-step">
                     <div class="progress-circle completed">✓</div>
+                    <div class="progress-label">姿态表情</div>
+                </div>
+                <div class="progress-step">
+                    <div class="progress-circle completed">✓</div>
                     <div class="progress-label">传统色</div>
                 </div>
                 <div class="progress-step">
-                    <div class="progress-circle active">1</div>
+                    <div class="progress-circle active">5</div>
                     <div class="progress-label active">附加元素</div>
                 </div>
                 <div class="progress-step">
-                    <div class="progress-circle pending">2</div>
+                    <div class="progress-circle pending">6</div>
                     <div class="progress-label">确认提示词</div>
                 </div>
             </div>
@@ -1158,12 +1286,13 @@ if (typeof goToStation === 'function') {
             <div class="recipe-bar">
                 <span class="recipe-tag" data-step="creature" onclick="showPage(4)"><span class="tag-icon">🐾</span><span class="tag-label">未选择</span></span>
                 <span class="recipe-tag" data-step="pattern" onclick="showPage(5)"><span class="tag-icon">✨</span><span class="tag-label">未选择</span></span>
+                <span class="recipe-tag" data-step="face" onclick="showPage(6)"><span class="tag-icon">😊</span><span class="tag-label">未选择</span></span>
                 <span class="recipe-tag" data-step="color" onclick="showPage(7)"><span class="tag-icon">🎨</span><span class="tag-label">未选择</span></span>
                 <span class="recipe-tag" data-step="decoration" onclick="showPage(8)"><span class="tag-icon">🏛️</span><span class="tag-label">未选择</span></span>
             </div>
             <!-- 底部实时预览区 -->
             <div class="bottom-preview-section">
-                <div class="step-indicator">步骤4/4</div>
+                <div class="step-indicator">步骤5/5</div>
                 <div class="bottom-preview-title">📋 你的选择</div>
                 <div class="bottom-preview-canvas">
                     <div class="preview-creature-container" id="preview-creature-6">
@@ -1212,6 +1341,10 @@ if (typeof goToStation === 'function') {
                 </div>
                 <div class="progress-step">
                     <div class="progress-circle completed">✓</div>
+                    <div class="progress-label">姿态表情</div>
+                </div>
+                <div class="progress-step">
+                    <div class="progress-circle completed">✓</div>
                     <div class="progress-label">传统色</div>
                 </div>
                 <div class="progress-step">
@@ -1219,7 +1352,7 @@ if (typeof goToStation === 'function') {
                     <div class="progress-label">附加元素</div>
                 </div>
                 <div class="progress-step">
-                    <div class="progress-circle active">1</div>
+                    <div class="progress-circle active">6</div>
                     <div class="progress-label active">确认提示词</div>
                 </div>
             </div>
@@ -1240,6 +1373,7 @@ if (typeof goToStation === 'function') {
                         <span>云纹</span>
                     </div>
                     <div class="prompt-tag">
+                        <span class="prompt-tag-label">表情</span>
                         <span>呆萌</span>
                     </div>
                     <div class="prompt-tag">
@@ -1332,7 +1466,7 @@ if (typeof goToStation === 'function') {
             
             <!-- 底部实时预览区 -->
             <div class="bottom-preview-section">
-                <div class="step-indicator">步骤4/4</div>
+                <div class="step-indicator">步骤5/5</div>
                 <div class="bottom-preview-title">🔮 你选中的神兽</div>
                 <div class="bottom-preview-canvas">
                     <div class="preview-creature-container" id="preview-creature-8">

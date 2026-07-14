@@ -364,7 +364,7 @@
             var color3 = state.selectedColors.length > 2 ? findById(colors, state.selectedColors[2]).hex : color;
             var cr = findById(creatures, state.selectedCreature);
             var beastColor = cr ? cr.color : color;
-            var ex = 'cute';  // 表情步骤已移除，SVG降级默认使用cute
+            var ex = state.selectedExpression || 'cute';
             
             var styles = [
                 { name: '水墨写意', desc: '传统国画风', bg: 'linear-gradient(135deg, #f5f0e8, #e8dcc8)' },
@@ -373,7 +373,7 @@
                 { name: '青绿山水', desc: '清新淡雅风', bg: 'linear-gradient(135deg, #f0f7f0, #e0efe8)' }
             ];
             
-            // expressions 已移除
+            var expressions = { cute: 'M42 52 Q50 58 58 52', fierce: 'M40 54 L50 50 L60 54', cool: 'M42 50 Q50 56 58 50', funny: 'M40 48 Q50 58 60 48' };
             var eyeStyles = {
                 cute: '<circle cx="43" cy="38" r="3" fill="#333"/><circle cx="59" cy="38" r="3" fill="#333"/>',
                 fierce: '<path d="M38 36 L48 34" stroke="#333" stroke-width="2"/><path d="M52 34 L62 36" stroke="#333" stroke-width="2"/><circle cx="43" cy="38" r="2" fill="#333"/><circle cx="57" cy="38" r="2" fill="#333"/>',
@@ -404,7 +404,7 @@
                     '<circle cx="58" cy="37" r="5" fill="white"/>' +
                     eyeStyles[ex] +
                     '<ellipse cx="50" cy="47" rx="4" ry="3" fill="#333"/>' +
-                    
+                    '<path d="' + expressions[ex] + '" stroke="#333" stroke-width="2" fill="none"/>' +
                     (state.selectedPatterns.length > 0 ? '<path d="M30 65 Q40 60 50 65 Q60 70 70 65" stroke="' + cs.body + '" stroke-width="2" fill="none" opacity="0.5"/>' : '') +
                     '</svg></div>' +
                     '<div class="candidate-info"><div class="candidate-name">方案' + (i+1) + ' · ' + style.name + '</div>' +
@@ -500,6 +500,10 @@
                 });
             }
 
+            // 表情
+            var ex = expressions.find(function(e) { return e.id === state.selectedExpression; });
+            if (!ex) { ex = expressions[0]; }
+
             // 颜色
             var colorNames = [];
             var colorPromptParts = [];
@@ -528,13 +532,13 @@
                 });
             }
 
-            var summonText = '我设计了一只' + cr.name + '，' + (patternDescList.length ? patternDescList.join('，') + '，' : '') +  + (colorNames.length ? '配色为' + colorNames.join('、') + '，' : '') + (elemNames.length ? '搭配' + elemNames.join('、') + '装饰。' : '');
+            var summonText = '我设计了一只' + cr.name + '，' + (patternDescList.length ? patternDescList.join('，') + '，' : '') + '表情' + ex.name + '，' + (colorNames.length ? '配色为' + colorNames.join('、') + '，' : '') + (elemNames.length ? '搭配' + elemNames.join('、') + '装饰。' : '');
 
             var aiPrompt = '一只可爱的中国神话小神兽「' + cr.name + '」（' + cr.desc + '）' +
                 (cr.location ? '，守护在' + cr.location + '，' : '，') +
                 (cr.pose ? cr.pose + '，' : '') +
                 (patternDescList.length ? patternDescList.join('，') + '，纹样紧贴身体不要飘散在空中，' : '') +
-                 +
+                '表情' + ex.name + '（' + ex.desc + '），' +
                 (colorPromptParts.length ? '主色调为' + colorPromptParts.join('、') + '，' : '') +
                 (elemPromptParts.length ? '底座/配饰为' + elemPromptParts.join('、') + '，' : '') +
                 '3D渲染，干净背景，儿童插画风格，高质量，温馨可爱';
@@ -543,6 +547,7 @@
             if (tags) {
                 tags.innerHTML = '<div class="prompt-tag-dynamic"><span class="prompt-tag-label">类型</span><span>' + cr.name + '</span></div>' +
                     (patternNames.length ? '<div class="prompt-tag-dynamic"><span class="prompt-tag-label">纹饰</span><span>' + patternNames.join('、') + '</span></div>' : '') +
+                    '<div class="prompt-tag-dynamic"><span class="prompt-tag-label">表情</span><span>' + ex.name + ' ' + ex.emoji + '</span></div>' +
                     (colorNames.length ? '<div class="prompt-tag-dynamic"><span class="prompt-tag-label">颜色</span><span>' + colorNames.join('、') + '</span></div>' : '') +
                     (elemNames.length ? '<div class="prompt-tag-dynamic"><span class="prompt-tag-label">装饰</span><span>' + elemNames.join('、') + '</span></div>' : '');
             }

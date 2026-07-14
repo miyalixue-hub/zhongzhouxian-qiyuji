@@ -15,6 +15,10 @@
             if (defaultPattern && defaultPattern.dataset.id) {
                 state.selectedPatterns = [defaultPattern.dataset.id];
             }
+            var defaultExpression = document.querySelector('#page-6 .expression-card.selected');
+            if (defaultExpression && defaultExpression.dataset.id) {
+                state.selectedExpression = defaultExpression.dataset.id;
+            }
             var defaultColor = document.querySelector('#page-7 .color-card.selected');
             if (defaultColor && defaultColor.dataset.id) {
                 state.selectedColors = [defaultColor.dataset.id];
@@ -23,7 +27,7 @@
             if (defaultElement && defaultElement.dataset.id) {
                 state.selectedElements = [defaultElement.dataset.id];
             }
-            console.log('[INIT] Default state synced:', { creature: state.selectedCreature, patterns: state.selectedPatterns, colors: state.selectedColors, elements: state.selectedElements });
+            console.log('[INIT] Default state synced:', { creature: state.selectedCreature, patterns: state.selectedPatterns, expression: state.selectedExpression, colors: state.selectedColors, elements: state.selectedElements });
             
             if (typeof showPage === 'function') { showPage(0); console.log('[INIT] showPage(0) OK'); }
             else { console.warn('[INIT] showPage not yet available, deferring...'); setTimeout(function(){ if(typeof showPage==='function') showPage(0); }, 100); }
@@ -50,7 +54,7 @@
                     updatePreview();
                 });
             });
-            // expression-card handler removed (page-6 removed)
+            handleSingle('.expression-card', 'selectedExpression');
             // 颜色多选
             var ch = document.createElement('div'); ch.className = 'selection-hint'; ch.id = 'color-hint'; ch.textContent = '💡 可选择1-3种颜色，分别对应身体/头部/角';
             var cg = $('#page-5 .color-grid');
@@ -479,6 +483,10 @@
                 var pnames = state.selectedPatterns.map(function(p) { var pp = findById(patterns, p); return pp ? pp.name : ''; }).filter(Boolean);
                 if (pnames.length > 0) tags.push({text: '纹饰：' + pnames.join('、'), type: 'normal'});
             }
+            if (state.selectedExpression) {
+                var ex = findById(expressions, state.selectedExpression);
+                if (ex) tags.push({text: ex.emoji + ' ' + ex.name, type: 'gold'});
+            }
             if (state.selectedColors && state.selectedColors.length > 0) {
                 var cnames = state.selectedColors.map(function(c) { var cc = findById(colors, c); return cc ? cc.name : ''; }).filter(Boolean);
                 if (cnames.length > 0) tags.push({text: '色彩：' + cnames.join('、'), type: 'gold'});
@@ -572,6 +580,10 @@
             if (state.selectedPatterns && state.selectedPatterns.length > 0) {
                 var pnames = state.selectedPatterns.map(function(p) { var pp = findById(patterns, p); return pp ? pp.name : ''; }).filter(Boolean);
                 if (pnames.length > 0) { ctx.fillText('纹饰：' + pnames.join('、'), 375, y); y += 38; }
+            }
+            if (state.selectedExpression) {
+                var ex = findById(expressions, state.selectedExpression);
+                if (ex) { ctx.fillText('表情：' + ex.emoji + ' ' + ex.name, 375, y); y += 38; }
             }
             if (state.selectedColors && state.selectedColors.length > 0) {
                 var cnames = state.selectedColors.map(function(c) { var cc = findById(colors, c); return cc ? cc.name : ''; }).filter(Boolean);
@@ -732,6 +744,11 @@
                     if (pp) patternNames.push(pp.name);
                 });
             }
+            var expressionName = '';
+            if (state.selectedExpression) {
+                var ex = findById(expressions, state.selectedExpression);
+                if (ex) expressionName = ex.name;
+            }
             var colorNames = [];
             if (state.selectedColors && state.selectedColors.length > 0) {
                 state.selectedColors.forEach(function(c) {
@@ -752,7 +769,7 @@
             var content = '=== 中轴奇游记·神兽3D打印工单 ===\n\n';
             content += '神兽名称：' + (creatureName || '未命名') + '\n';
             content += '纹饰风格：' + (patternNames.join('、') || '无') + '\n';
-            // 表情姿态已移除
+            content += '表情姿态：' + (expressionName || '未选择') + '\n';
             content += '传统色彩：' + (colorNames.join('、') || '未选择') + '\n';
             content += '附加元素：' + (elementNames.join('、') || '无') + '\n';
             content += 'AI提示词：' + (aiPrompt || '无') + '\n\n';
@@ -842,7 +859,8 @@
             var shareData = {
                 cr: state.selectedCreature || '',
                 pa: state.selectedPatterns || [],
-                                co: (state.selectedColors && state.selectedColors.length > 0) ? state.selectedColors[0] : '',
+                ex: state.selectedExpression || '',
+                co: (state.selectedColors && state.selectedColors.length > 0) ? state.selectedColors[0] : '',
                 el: (state.selectedElements && state.selectedElements.length > 0) ? state.selectedElements[0] : '',
                 img: imageData,
                 glb: glbUrl,
@@ -1201,6 +1219,10 @@
                     var pnames = state.selectedPatterns.map(function(p) { var pp = findById(patterns, p); return pp ? pp.name : ''; }).filter(Boolean);
                     if (pnames.length > 0) tags.push({text: '纹饰：' + pnames.join('、'), type: 'normal'});
                 }
+                if (state.selectedExpression) {
+                    var ex = findById(expressions, state.selectedExpression);
+                    if (ex) tags.push({text: ex.emoji + ' ' + ex.name, type: 'normal'});
+                }
                 if (state.selectedColors && state.selectedColors.length > 0) {
                     var cnames = state.selectedColors.map(function(c) { var cc = findById(colors, c); return cc ? cc.name : ''; }).filter(Boolean);
                     if (cnames.length > 0) tags.push({text: '配色：' + cnames.join('、'), type: 'normal'});
@@ -1250,6 +1272,7 @@
                     var pnames = state.selectedPatterns.map(function(p) { var pp = findById(patterns, p); return pp ? pp.name : ''; }).filter(Boolean);
                     if (pnames.length > 0) { ctx.fillText('纹饰：' + pnames.join('、'), 375, y); y += 38; }
                 }
+                if (state.selectedExpression) { var ex = findById(expressions, state.selectedExpression); if (ex) { ctx.fillText('表情：' + ex.emoji + ' ' + ex.name, 375, y); y += 38; } }
                 if (state.selectedColors && state.selectedColors.length > 0) {
                     var cnames = state.selectedColors.map(function(c) { var cc = findById(colors, c); return cc ? cc.name : ''; }).filter(Boolean);
                     if (cnames.length > 0) { ctx.fillText('颜色：' + cnames.join('、'), 375, y); y += 38; }
@@ -1291,7 +1314,8 @@
                 var shareData = {
                     cr: state.selectedCreature || '',
                     pa: state.selectedPatterns || [],
-                                        co: (state.selectedColors && state.selectedColors.length > 0) ? state.selectedColors[0] : '',
+                    ex: state.selectedExpression || '',
+                    co: (state.selectedColors && state.selectedColors.length > 0) ? state.selectedColors[0] : '',
                     el: (state.selectedElements && state.selectedElements.length > 0) ? state.selectedElements[0] : '',
                     img: imageData,
                     glb: glbUrl,
