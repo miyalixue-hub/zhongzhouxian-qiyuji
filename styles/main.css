@@ -51,6 +51,8 @@
         
         #view-zhengyangmen {
             padding: 20px 10px 40px;
+            width: 100%;
+            min-height: 100vh;
         }
 
         /* ====== 首页 (地图) 样式 ====== */
