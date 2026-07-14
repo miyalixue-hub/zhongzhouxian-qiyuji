@@ -23,12 +23,48 @@
     };
     </script>
     <link rel="stylesheet" href="styles/main.css?v=20260714c">
+    <link rel="stylesheet" href="styles/home-story.css?v=20260714b">
     <!-- Google model-viewer: 3D模型展示组件（使用 jsdelivr CDN 国内可访问） -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js?v=20260706b"></script>
 </head>
 <body>
-    <!-- ====== 首页视图 (地图) ====== -->
+    <!-- ====== 首页视图 ====== -->
     <div id="view-home">
+        <main class="home-story" id="home-story" data-story-state="LOADING" aria-label="北京中轴线序章">
+            <div class="story-paper-grain" aria-hidden="true"></div>
+            <header class="story-heading">
+                <h1>中轴奇游记</h1>
+                <p>探索中轴线上的十座历史空间</p>
+            </header>
+
+            <div class="story-layout">
+                <section class="story-copy-card" aria-label="序章故事">
+                    <span class="story-seal" aria-hidden="true">序</span>
+                    <div class="story-typewriter" id="story-typewriter" aria-live="polite"></div>
+                    <button class="signal-button" id="signal-button" type="button" disabled></button>
+                </section>
+
+                <section class="story-map" id="story-map" aria-label="北京中轴线手绘地图">
+                    <img class="story-map-base" src="assets/home/central-axis-story-map.png" alt="从钟鼓楼到永定门的北京中轴线手绘地图">
+                    <div class="zhengyangmen-signal" aria-hidden="true"></div>
+                    <img class="zhengyangmen-awake" src="assets/stations/station-zhengyangmen.png" alt="" aria-hidden="true">
+                    <div class="axis-signal-beam" aria-hidden="true"><span></span></div>
+
+                    <div class="story-tram" id="story-tram">
+                        <span class="tram-lamp" aria-hidden="true"></span>
+                        <img src="assets/dangdangche.png" alt="老北京铛铛车">
+                        <aside class="tram-dialog" id="tram-dialog" role="status" aria-live="polite">
+                            <strong id="tram-dialog-title"></strong>
+                            <p id="tram-dialog-body"></p>
+                            <button class="story-enter-btn" id="story-enter-btn" type="button"></button>
+                        </aside>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+    <!-- ====== 9站旅程动画区域（隐藏，由home-story触发显示） ====== -->
+    <div id="journey-wrapper" style="display:none;">
 <!-- SVG手绘滤镜定义 -->
     <svg class="svg-filters" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -244,9 +280,11 @@ if (typeof goToStation === 'function') {
         }
     })();
     </script>
-</div>
     </div>
 
+    <!-- ====== Toast提示 ====== -->
+    <div class="toast" id="toast">🔒 即将开放，敬请期待！</div>
+    </div>
     <!-- 正阳门快捷入口浮动按钮已移除 -->
 
     <!-- ====== 正阳门视图 (神兽工坊) ====== -->
@@ -1557,6 +1595,8 @@ if (typeof goToStation === 'function') {
     <script src="js/qrcode.min.js"></script>
     <script src="js/interactions.js?v=20260714a"></script>
     <script src="js/patrol-game.js?v=20260713b"></script>
+    <script src="js/home-story-config.js?v=20260714b"></script>
+    <script src="js/home-story.js?v=20260714d"></script>
 
     <!-- 天赋签抽签屏 -->
     <div id="oracle-screen" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.9); z-index:10000; justify-content:center; align-items:center; flex-direction:column;">
@@ -1686,26 +1726,46 @@ if (typeof goToStation === 'function') {
         }, 200);
     }
 
-    // 首次访问自动开始
-    if (!localStorage.getItem('tram_journey_seen')) {
-        setTimeout(function() { showStation(0); }, 800);
-    } else {
-        // 已经看过，直接解锁所有站点
+    // 暴露showStation和stations供外部调用
+    window._journeyShowStation = showStation;
+    window._journeyStations = stations;
+    window._journeyCurrentStation = function() { return currentStation; };
+
+    // 启动旅程函数 - 由home-story的enterGame调用
+    window.startJourney = function() {
+        // 显示旅程容器
+        var wrapper = document.getElementById('journey-wrapper');
+        if (wrapper) wrapper.style.display = 'block';
+        // 延迟一帧让布局完成
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                showStation(0);
+            });
+        });
+    };
+
+    // 解锁所有站点（已看过旅程时调用）
+    window.unlockAllStations = function() {
         var allStops = document.querySelectorAll('.route-stop');
         allStops.forEach(function(s) {
             s.classList.add('journey-active');
             var lock = s.querySelector('.mini-lock');
             if (lock) lock.textContent = '✅';
         });
-    }
+    };
 
     window.nextJourneyStation = function() {
         if (currentStation < stations.length - 1) {
             showStation(currentStation + 1);
         } else {
             localStorage.setItem('tram_journey_seen', 'true');
-            // 滚动到英雄卡
-            document.getElementById('station-zhengyangmen').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // 旅程完成，进入正阳门
+            if (typeof showView === 'function') {
+                showView('zhengyangmen');
+            }
+            if (typeof showPage === 'function') {
+                showPage(2);
+            }
         }
     };
 })();

@@ -8,6 +8,16 @@
             document.getElementById('view-home').style.display = viewName === 'home' ? 'block' : 'none';
             document.getElementById('view-zhengyangmen').style.display = viewName === 'zhengyangmen' ? 'block' : 'none';
             window.scrollTo(0, 0);
+            if (viewName === 'home') {
+                // 恢复home-story显示，隐藏旅程区域
+                var homeStoryEl = document.getElementById('home-story');
+                if (homeStoryEl) homeStoryEl.style.display = '';
+                var journeyWrapper = document.getElementById('journey-wrapper');
+                if (journeyWrapper) journeyWrapper.style.display = 'none';
+                if (window.homeStoryController) {
+                    window.homeStoryController.showHome();
+                }
+            }
         }
 
         function goBackToMap() {
@@ -24,6 +34,8 @@
             }
         }
         window.goToStation = goToStation;
+        window.showView = showView;
+        window.goBackToMap = goBackToMap;
 
 
 /**

@@ -2941,6 +2941,7 @@
             top: 16px;
             left: 16px;
             z-index: 9999;
+            pointer-events: auto;
             display: flex;
             align-items: center;
             gap: 6px;
