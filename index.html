@@ -1661,15 +1661,18 @@ if (typeof goToStation === 'function') {
     var btnEl = document.getElementById('journey-btn');
 
     function showStation(index) {
+        console.log('[showStation] Called with index:', index);
         var station = stations[index];
         currentStation = index;
 
         // 显示对话区域（首次显示时禁用 transition，避免 Chrome 从 auto/0 动画过渡到错误位置）
         var isFirstShow = (dialogueArea.style.display === 'none' || dialogueArea.style.display === '');
+        console.log('[showStation] isFirstShow:', isFirstShow, 'current display:', dialogueArea.style.display);
         if (isFirstShow) {
             dialogueArea.style.transition = 'none';
         }
         dialogueArea.style.display = 'block';
+        console.log('[showStation] Set display to block');
 
         // 移动小车子到当前站点
         var tramEl = document.querySelector('.route-tram');
@@ -1697,6 +1700,8 @@ if (typeof goToStation === 'function') {
                 dialogueArea.style.left = (vw - 236) + 'px';
             }
             dialogueArea.style.top = (stopRect.top - 10) + 'px';
+            console.log('[showStation] Positioned dialogue at left:', dialogueArea.style.left, 'top:', dialogueArea.style.top);
+            console.log('[showStation] routeRect:', routeRect, 'vw:', vw);
             
             // 首次显示：强制回流后再恢复 transition（避免 Chrome 从默认位置动画过渡）
             if (isFirstShow) {
@@ -1744,15 +1749,19 @@ if (typeof goToStation === 'function') {
 
     // 启动旅程函数 - 由home-story的enterGame调用
     window.startJourney = function() {
+        console.log('[startJourney] Called');
         // 显示旅程容器
         var wrapper = document.getElementById('journey-wrapper');
+        console.log('[startJourney] wrapper:', wrapper, 'display:', wrapper ? wrapper.style.display : 'null');
         if (wrapper) {
             wrapper.style.display = 'block';
             // 强制 Chrome 完成布局计算（同步回流）
             void wrapper.offsetHeight;
+            console.log('[startJourney] wrapper set to block');
         }
         // 使用 setTimeout 确保 Chrome 布局完全稳定后再定位
         setTimeout(function() {
+            console.log('[startJourney] Calling showStation(0)');
             showStation(0);
         }, 100);
     };
