@@ -1780,7 +1780,7 @@ if (typeof goToStation === 'function') {
             
             // 气泡用 fixed 定位，动态计算在铁轨右边（视口内）
             var vw = window.innerWidth;
-            var stopCenterX = stopRect.left + stopRect.width / 2;
+            var routeRect = dialogueArea.parentElement.getBoundingClientRect();
             var routeRight = routeRect.right;
             // 优先放在铁轨右侧，如果右边空间不够就放左侧
             if (vw - routeRight > 260) {
