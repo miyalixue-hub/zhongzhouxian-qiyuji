@@ -1661,18 +1661,18 @@ if (typeof goToStation === 'function') {
     var btnEl = document.getElementById('journey-btn');
 
     function showStation(index) {
-        console.log('[showStation] Called with index:', index);
+        window.debugLog && window.debugLog('showStation called with index: ' + index);
         var station = stations[index];
         currentStation = index;
 
         // 显示对话区域（首次显示时禁用 transition，避免 Chrome 从 auto/0 动画过渡到错误位置）
         var isFirstShow = (dialogueArea.style.display === 'none' || dialogueArea.style.display === '');
-        console.log('[showStation] isFirstShow:', isFirstShow, 'current display:', dialogueArea.style.display);
+        window.debugLog && window.debugLog('isFirstShow: ' + isFirstShow + ', current inline display: ' + dialogueArea.style.display);
         if (isFirstShow) {
             dialogueArea.style.transition = 'none';
         }
         dialogueArea.style.display = 'block';
-        console.log('[showStation] Set display to block');
+        window.debugLog && window.debugLog('After set display:block, inline display: ' + dialogueArea.style.display);
 
         // 移动小车子到当前站点
         var tramEl = document.querySelector('.route-tram');
@@ -1700,8 +1700,8 @@ if (typeof goToStation === 'function') {
                 dialogueArea.style.left = (vw - 236) + 'px';
             }
             dialogueArea.style.top = (stopRect.top - 10) + 'px';
-            console.log('[showStation] Positioned dialogue at left:', dialogueArea.style.left, 'top:', dialogueArea.style.top);
-            console.log('[showStation] routeRect:', routeRect, 'vw:', vw);
+            window.debugLog && window.debugLog('Positioned: left=' + dialogueArea.style.left + ' top=' + dialogueArea.style.top);
+            window.debugLog && window.debugLog('routeRect.right=' + routeRect.right + ' vw=' + vw + ' routeRect.left=' + routeRect.left);
             
             // 首次显示：强制回流后再恢复 transition（避免 Chrome 从默认位置动画过渡）
             if (isFirstShow) {
@@ -1765,6 +1765,20 @@ if (typeof goToStation === 'function') {
                 window.debugLog && window.debugLog('dialogueArea: ' + (typeof dialogueArea !== 'undefined' ? !!dialogueArea : 'N/A'));
                 showStation(0);
                 window.debugLog && window.debugLog('showStation(0) completed');
+                var area = document.getElementById('journey-dialogue-area');
+                if (area) {
+                    var cs = window.getComputedStyle(area);
+                    window.debugLog && window.debugLog('COMPUTED display: ' + cs.display);
+                    window.debugLog && window.debugLog('COMPUTED left: ' + cs.left);
+                    window.debugLog && window.debugLog('COMPUTED top: ' + cs.top);
+                    window.debugLog && window.debugLog('COMPUTED width: ' + cs.width);
+                    window.debugLog && window.debugLog('COMPUTED height: ' + cs.height);
+                    window.debugLog && window.debugLog('COMPUTED opacity: ' + cs.opacity);
+                    window.debugLog && window.debugLog('COMPUTED visibility: ' + cs.visibility);
+                    window.debugLog && window.debugLog('COMPUTED z-index: ' + cs.zIndex);
+                    window.debugLog && window.debugLog('offsetWidth: ' + area.offsetWidth + ' offsetHeight: ' + area.offsetHeight);
+                    window.debugLog && window.debugLog('parent: ' + area.parentElement.tagName + ' class: ' + area.parentElement.className);
+                }
             } catch(e) {
                 window.debugLog && window.debugLog('ERROR: ' + e.message + ' at ' + e.stack);
             }
