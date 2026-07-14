@@ -76,12 +76,26 @@
          * 正阳门 - 跳转至神兽工坊
          */
         function goToStation() {
-showView('zhengyangmen');
-            // Start the creation flow from page-3 (story intro)
-            if (typeof showPage === 'function') {
-showPage(2);
-            } else {
-}
+            try {
+                showView('zhengyangmen');
+                // 强制浏览器完成布局计算（修复Chrome下显示空白问题）
+                var zyg = document.getElementById('view-zhengyangmen');
+                if (zyg) void zyg.offsetHeight;
+                if (typeof showPage === 'function') {
+                    showPage(2);
+                }
+                // 滚动到顶部
+                window.scrollTo(0, 0);
+            } catch(e) {
+                console.error('[goToStation] error:', e);
+                // 降级：直接跳转
+                var zyg2 = document.getElementById('view-zhengyangmen');
+                if (zyg2) zyg2.style.display = 'block';
+                var home = document.getElementById('view-home');
+                if (home) home.style.display = 'none';
+                var p2 = document.getElementById('page-2');
+                if (p2) p2.classList.add('active');
+            }
         }
         
         /**
