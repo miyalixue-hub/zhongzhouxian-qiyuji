@@ -1792,5 +1792,66 @@ if (typeof goToStation === 'function') {
     };
 })();
 </script>
+
+<!-- 调试面板 -->
+<div id="debug-panel" style="position:fixed;top:10px;left:10px;background:rgba(0,0,0,0.8);color:#fff;padding:10px;font-size:12px;z-index:99999;max-width:400px;display:none;font-family:monospace;"></div>
+<script>
+(function(){
+    var panel = document.getElementById('debug-panel');
+    var logs = [];
+    
+    function log(msg) {
+        logs.push(msg);
+        if (panel) {
+            panel.style.display = 'block';
+            panel.innerHTML = logs.join('<br>');
+        }
+        console.log('[DEBUG]', msg);
+    }
+    
+    window.debugLog = log;
+    
+    // 监听showStation调用
+    var origShowStation = window._journeyShowStation;
+    if (origShowStation) {
+        window._journeyShowStation = function(idx) {
+            log('showStation called with index: ' + idx);
+            var area = document.getElementById('journey-dialogue-area');
+            log('dialogueArea exists: ' + !!area);
+            if (area) {
+                log('dialogueArea display before: ' + area.style.display);
+            }
+            var result = origShowStation(idx);
+            if (area) {
+                log('dialogueArea display after: ' + area.style.display);
+                log('dialogueArea left: ' + area.style.left);
+                log('dialogueArea top: ' + area.style.top);
+                log('dialogueArea computed left: ' + window.getComputedStyle(area).left);
+                log('dialogueArea computed top: ' + window.getComputedStyle(area).top);
+                log('dialogueArea computed display: ' + window.getComputedStyle(area).display);
+                log('dialogueArea offsetWidth: ' + area.offsetWidth);
+                log('dialogueArea offsetHeight: ' + area.offsetHeight);
+            }
+            return result;
+        };
+    }
+    
+    // 监听startJourney调用
+    var origStartJourney = window.startJourney;
+    if (origStartJourney) {
+        window.startJourney = function() {
+            log('startJourney called');
+            var wrapper = document.getElementById('journey-wrapper');
+            log('wrapper exists: ' + !!wrapper);
+            log('wrapper display before: ' + (wrapper ? wrapper.style.display : 'null'));
+            var result = origStartJourney();
+            log('wrapper display after: ' + (wrapper ? wrapper.style.display : 'null'));
+            return result;
+        };
+    }
+    
+    log('Debug panel initialized');
+})();
+</script>
 </body>
 </html>
