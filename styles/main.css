@@ -3148,22 +3148,6 @@
             overflow: hidden !important;
         }
 
-        /* 强制 view-zhengyangmen 可见 - 修复跳转空白页 */
-        #view-zhengyangmen {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            position: relative !important;
-            z-index: 100 !important;
-            min-height: 100vh !important;
-        }
-        #view-zhengyangmen .container {
-            display: block !important;
-            visibility: visible !important;
-            position: relative !important;
-            z-index: 101 !important;
-        }
-
         /* 3D生成等待小游戏：神兽巡桥 */
         .patrol-game {
             margin-top: 14px;
