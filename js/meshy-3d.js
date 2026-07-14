@@ -55,7 +55,11 @@
             });
         }
         
-        function start3DGeneration() {
+        async function start3DGeneration() {
+            // 先确保已认证
+            var authed = await ensureAuthenticated();
+            if (!authed) return;
+
             var viewer = $('#model-viewer-3d');
             var progress = $('#gen-progress-fill');
             var opts = $('#print-options');
@@ -138,17 +142,24 @@
                 };
                 console.log('[Meshy] 提交 image-to-3d 任务（base64模式）');
                 
+                var meshyHeaders = { 'Content-Type': 'application/json' };
+                var authHdr = getAuthHeader();
+                if (authHdr) meshyHeaders['Authorization'] = authHdr;
+                
                 return fetch(MESHY_CONFIG.proxyUrl + '/api/image-to-3d', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: meshyHeaders,
                     body: JSON.stringify(requestBody)
                 }).then(function(resp) {
                     return resp.text().then(function(text) {
                         console.log('[Meshy] 响应状态:', resp.status, '响应内容:', text.substring(0, 500));
                         var data;
                         try { data = JSON.parse(text); } catch(e) { data = null; }
+                        // 401 时清除 token 提示重新认证
+                        if (resp.status === 401) {
+                            clearToken();
+                            throw new Error('访问密码已失效，请刷新页面重新输入');
+                        }
                         if (!resp.ok) {
                             var errMsg = 'HTTP ' + resp.status;
                             if (data) {
@@ -272,8 +283,13 @@
             }
             
             setTimeout(function() {
+                var pollHeaders = {};
+                var authHdr = getAuthHeader();
+                if (authHdr) pollHeaders['Authorization'] = authHdr;
+                
                 fetch(MESHY_CONFIG.proxyUrl + '/api/image-to-3d/' + taskId, {
-                    method: 'GET'
+                    method: 'GET',
+                    headers: pollHeaders
                 })
                 .then(function(resp) { return resp.json(); })
                 .then(function(data) {

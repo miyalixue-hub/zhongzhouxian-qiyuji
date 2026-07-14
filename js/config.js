@@ -58,8 +58,125 @@
             meshyStlUrl: null,
             meshyAllUrls: null,
             meshyThumbnail: null,
-            meshyTaskId: null
+            meshyTaskId: null,
+            // 认证相关
+            _authToken: null
         };
+
+        // ============ Token 管理 ============
+        function getStoredToken() {
+            try {
+                var raw = localStorage.getItem('auth_token');
+                if (!raw) return null;
+                var data = JSON.parse(raw);
+                // 检查是否过期（提前1天刷新）
+                if (data.exp && data.exp > Date.now() + 86400000) {
+                    return data.token;
+                }
+                localStorage.removeItem('auth_token');
+                return null;
+            } catch(e) { return null; }
+        }
+
+        function storeToken(token, exp) {
+            try {
+                localStorage.setItem('auth_token', JSON.stringify({ token: token, exp: exp }));
+            } catch(e) {}
+        }
+
+        function clearToken() {
+            state._authToken = null;
+            localStorage.removeItem('auth_token');
+        }
+
+        function getAuthHeader() {
+            var token = state._authToken || getStoredToken();
+            if (token) {
+                state._authToken = token;
+                return 'Bearer ' + token;
+            }
+            return null;
+        }
+
+        // 认证：确保有有效 token
+        async function ensureAuthenticated() {
+            if (getAuthHeader()) return true;
+            // 弹出密码输入框
+            return new Promise(function(resolve) {
+                showPasswordDialog(resolve);
+            });
+        }
+
+        // 密码输入对话框
+        function showPasswordDialog(callback) {
+            var existing = document.getElementById('auth-dialog');
+            if (existing) existing.remove();
+            
+            var overlay = document.createElement('div');
+            overlay.id = 'auth-dialog';
+            overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
+            overlay.innerHTML = '<div style="background:#FAF8F0;border-radius:16px;padding:24px;max-width:360px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.3);">' +
+                '<h3 style="margin:0 0 12px;color:#3a2a1a;font-size:16px;">🔑 请输入访问密码</h3>' +
+                '<p style="font-size:12px;color:#7a6a56;line-height:1.6;margin-bottom:12px;">向老师获取密码后输入，验证后即可使用AI功能。</p>' +
+                '<input id="auth-password-input" type="password" placeholder="输入访问密码" style="width:100%;padding:10px 12px;border:1.5px solid #e8dcc4;border-radius:8px;font-size:14px;outline:none;margin-bottom:8px;box-sizing:border-box;" />' +
+                '<div id="auth-error-msg" style="color:#c04830;font-size:12px;display:none;margin-bottom:8px;"></div>' +
+                '<div style="display:flex;gap:10px;">' +
+                '<button id="auth-cancel-btn" style="flex:1;padding:10px;border:1.5px solid #e8dcc4;background:white;border-radius:8px;font-size:14px;cursor:pointer;">取消</button>' +
+                '<button id="auth-submit-btn" style="flex:1;padding:10px;border:none;background:#c04830;color:white;border-radius:8px;font-size:14px;cursor:pointer;font-weight:bold;">验证</button>' +
+                '</div></div>';
+            document.body.appendChild(overlay);
+            
+            var input = document.getElementById('auth-password-input');
+            input.focus();
+            
+            document.getElementById('auth-cancel-btn').onclick = function() {
+                overlay.remove();
+                callback(false);
+            };
+            
+            function doSubmit() {
+                var pwd = input.value.trim();
+                if (!pwd) return;
+                var proxyUrl = MESHY_CONFIG.proxyUrl || 'https://api.mindbubble.cloud';
+                var btn = document.getElementById('auth-submit-btn');
+                btn.disabled = true;
+                btn.textContent = '验证中...';
+                
+                fetch(proxyUrl + '/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pwd })
+                }).then(function(resp) {
+                    return resp.json().then(function(data) {
+                        if (resp.ok && data.token) {
+                            state._authToken = data.token;
+                            storeToken(data.token, data.exp);
+                            overlay.remove();
+                            callback(true);
+                        } else {
+                            var errMsg = document.getElementById('auth-error-msg');
+                            errMsg.textContent = data.error || '验证失败';
+                            errMsg.style.display = 'block';
+                            btn.disabled = false;
+                            btn.textContent = '验证';
+                            input.value = '';
+                            input.focus();
+                        }
+                    });
+                }).catch(function(e) {
+                    var errMsg = document.getElementById('auth-error-msg');
+                    errMsg.textContent = '网络错误，请重试';
+                    errMsg.style.display = 'block';
+                    btn.disabled = false;
+                    btn.textContent = '验证';
+                });
+            }
+            
+            document.getElementById('auth-submit-btn').onclick = doSubmit;
+            input.onkeydown = function(e) {
+                if (e.key === 'Enter') doSubmit();
+            };
+        }
         var creatures = [
             { id: 'gongfu', name: '镇水兽', desc: '龙生九子·趴伏镇守', pose: '敦厚壮实，四爪紧扣岸边岩石，趴伏镇守姿态', location: '正阳桥·正阳门箭楼南侧护城河', color: '#4A7FB5', image: 'https://zhongzhouxian-1413555799.cos.ap-guangzhou.myqcloud.com/assets/zhenshui_shou.png' },
             { id: 'xishui', name: '吸水兽', desc: '好吞吐·探身吸水', pose: '修长灵巧，悬挂在桥洞顶部，前身探向水面做吸水状', location: '正阳桥·桥洞券脸顶部', color: '#5B8C6B', image: 'https://zhongzhouxian-1413555799.cos.ap-guangzhou.myqcloud.com/assets/xishui_shou.png' },

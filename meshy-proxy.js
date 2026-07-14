@@ -14,12 +14,14 @@
  *   3. 设置密钥: 
  *      wrangler secret put MESHY_API_KEY
  *      wrangler secret put VOLCENGINE_API_KEY
+ *      wrangler secret put ACCESS_PASSWORD
  *   4. 部署: wrangler deploy
  * 
  * 安全说明：
  *   - API Key 存储在 Worker Secrets，前端不接触密钥
  *   - CORS 限制为 mindbubble.cloud 和 pages.dev
  *   - 基础限流防止滥用
+ *   - 访问密码验证（ACCESS_PASSWORD），前端需先验证获取 token
  */
 
 // 允许的域名列表
@@ -78,6 +80,41 @@ function isAllowedOrigin(request) {
   return ALLOWED_ORIGINS.includes(origin);
 }
 
+// Token 有效期：30天（适合"输入一次一直用"的场景）
+const TOKEN_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000;
+
+// 生成 HMAC token
+async function generateToken(password) {
+  const encoder = new TextEncoder();
+  const payload = { exp: Date.now() + TOKEN_EXPIRY_MS };
+  const payloadB64 = btoa(JSON.stringify(payload));
+  const key = await crypto.subtle.importKey(
+    'raw', encoder.encode(password), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(payloadB64));
+  const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig)));
+  return payloadB64 + '.' + sigB64;
+}
+
+// 验证 token
+async function verifyToken(token, password) {
+  try {
+    const [payloadB64, sigB64] = token.split('.');
+    if (!payloadB64 || !sigB64) return false;
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw', encoder.encode(password), { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']
+    );
+    const sig = Uint8Array.from(atob(sigB64), c => c.charCodeAt(0));
+    const valid = await crypto.subtle.verify('HMAC', key, sig, encoder.encode(payloadB64));
+    if (!valid) return false;
+    const payload = JSON.parse(atob(payloadB64));
+    return payload.exp > Date.now();
+  } catch (e) {
+    return false;
+  }
+}
+
 export default {
   async fetch(request, env) {
     const corsHeaders = getCorsHeaders(request);
@@ -100,6 +137,45 @@ export default {
     const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
     
     try {
+      // ========== 密码认证 ==========
+      if (path === '/api/auth' && request.method === 'POST') {
+        const password = env.ACCESS_PASSWORD;
+        if (!password) {
+          return new Response(JSON.stringify({ error: '服务端未配置访问密码' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+          });
+        }
+        const body = await request.json();
+        if (body.password !== password) {
+          return new Response(JSON.stringify({ error: '密码错误' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+          });
+        }
+        const token = await generateToken(password);
+        return new Response(JSON.stringify({ token, exp: Date.now() + TOKEN_EXPIRY_MS }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        });
+      }
+
+      // ========== Token 验证（2D/3D 接口需要） ==========
+      const protectedPaths = ['/api/2d/generate', '/api/image-to-3d'];
+      if (protectedPaths.some(p => path === p || path.startsWith(p + '/'))) {
+        const password = env.ACCESS_PASSWORD;
+        if (password) {
+          const authHeader = request.headers.get('Authorization') || '';
+          const token = authHeader.replace('Bearer ', '');
+          if (!token || !(await verifyToken(token, password))) {
+            return new Response(JSON.stringify({ error: '未授权，请先输入访问密码', code: 'AUTH_REQUIRED' }), {
+              status: 401,
+              headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+          }
+        }
+      }
+
       // ========== 2D 图片生成（火山引擎 Seedream）==========
       if (path === '/api/2d/generate' && request.method === 'POST') {
         if (!checkRateLimit(clientIp, '2d')) {

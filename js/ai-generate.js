@@ -6,6 +6,10 @@
         
         // 调用火山引擎 Seedream 4.5 API 生成单张图片（通过 Worker 代理）
         async function callSeedreamAPI(prompt, options) {
+            // 先确保已认证
+            var authed = await ensureAuthenticated();
+            if (!authed) throw new Error('需要输入访问密码才能使用AI功能');
+            
             // 通过 Worker 代理调用，API Key 由服务端管理
             options = options || {};
             var proxyUrl = MESHY_CONFIG.proxyUrl || 'https://api.mindbubble.cloud';
@@ -20,20 +24,42 @@
             if (options.refImages && options.refImages.length > 0) {
                 requestBody.image = options.refImages;
             }
+            var headers = { 'Content-Type': 'application/json' };
+            var authHeader = getAuthHeader();
+            if (authHeader) headers['Authorization'] = authHeader;
+            
             var response = await fetch(proxyUrl + '/api/2d/generate', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: headers,
                 body: JSON.stringify(requestBody)
             });
             if (!response.ok) {
                 var errText = '';
+                var errCode = '';
                 try { 
                     var errData = await response.json(); 
-                    errText = (errData.error && errData.error.message) ? errData.error.message : (errData.error || JSON.stringify(errData)); 
+                    errText = (errData.error && errData.error.message) ? errData.error.message : (errData.error || JSON.stringify(errData));
+                    errCode = errData.code || '';
                 } catch(e) { errText = response.statusText; }
                 
+                // Token 失效，清除后重试一次
+                if (response.status === 401 && errCode === 'AUTH_REQUIRED') {
+                    clearToken();
+                    var retryAuthed = await ensureAuthenticated();
+                    if (retryAuthed) {
+                        headers['Authorization'] = getAuthHeader();
+                        response = await fetch(proxyUrl + '/api/2d/generate', {
+                            method: 'POST',
+                            headers: headers,
+                            body: JSON.stringify(requestBody)
+                        });
+                        if (response.ok) {
+                            // 重试成功，继续处理
+                            return await handleSeedreamResponse(response);
+                        }
+                    }
+                    throw new Error('访问密码验证失败');
+                }
                 // 检测服务端配置错误
                 if (response.status === 500 && /未配置/.test(errText)) {
                     throw new Error('服务端未配置API Key，请联系管理员');
@@ -44,6 +70,10 @@
                 }
                 throw new Error('API错误(' + response.status + '): ' + errText);
             }
+            return await handleSeedreamResponse(response);
+        }
+        
+        async function handleSeedreamResponse(response) {
             var data = await response.json();
             if (data.data && data.data.length > 0 && data.data[0].url) {
                 var url = data.data[0].url;
