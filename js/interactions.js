@@ -1044,6 +1044,10 @@
         function hideOracleScreen() {
             document.getElementById('oracle-screen').style.display = 'none';
         }
+        
+        // 暴露到全局供inline onclick使用
+        window.showOracleScreen = showOracleScreen;
+        window.hideOracleScreen = hideOracleScreen;
 
         
         // ===== Oracle Event Handlers =====
