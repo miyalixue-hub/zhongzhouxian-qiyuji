@@ -3761,11 +3761,12 @@
             width: 200px;
             height: 260px;
             margin: 0 auto;
-            background: url('https://zhongzhouxian-1413555799.cos.ap-guangzhou.myqcloud.com/assets/css_bg_2.jpeg?v=20260705') center/cover no-repeat;
-            background-color: transparent;
-            border-radius: 0;
+            background: url('https://zhongzhouxian-1413555799.cos.ap-guangzhou.myqcloud.com/assets/css_bg_2.jpeg?v=20260705') center/cover no-repeat, linear-gradient(135deg, #8B6914, #6B4F12);
+            background-color: #7B5B14;
+            border-radius: 12px;
+            border: 3px solid #d4b060;
             position: relative;
-            box-shadow: none;
+            box-shadow: 0 8px 32px rgba(212,176,96,0.4);
             transition: transform 0.3s;
         }
         .oracle-tube:hover {
