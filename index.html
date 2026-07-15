@@ -1518,9 +1518,32 @@ if (typeof goToStation === 'function') {
         <div class="oracle-container">
             <h2 class="oracle-title">✨ 请为你的神兽抽取天赋签</h2>
             <p class="oracle-subtitle">点击宝箱，看看你的神兽天赋是什么！</p>
-            
+
             <div class="oracle-tube-wrapper" id="oracle-tube-wrapper">
                 <div class="oracle-tube" id="oracle-tube">
                     <div class="oracle-stick"></div>
+                    <div class="oracle-stick"></div>
+                    <div class="oracle-stick"></div>
+                </div>
+            </div>
+
+            <div class="oracle-result" id="oracle-result" style="display:none;">
+                <div class="oracle-card">
+                    <div class="oracle-dimension" id="oracle-nature"></div>
+                    <div class="oracle-dimension" id="oracle-power"></div>
+                    <div class="oracle-dimension" id="oracle-hobby"></div>
+                    <div class="oracle-dimension" id="oracle-origin"></div>
+                    <div class="oracle-story" id="oracle-story"></div>
+                </div>
+                <button class="btn-primary" id="btn-view-prompt">查看提示词 →</button>
+            </div>
+        </div>
+    </div>
+
+        <!-- 首页启动页 -->
+    <div id="splash-screen" style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; padding-bottom:40px;">
+        <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:url('https://zhongzhouxian-1413555799.cos.ap-guangzhou.myqcloud.com/assets/css_bg_5.png') center/cover no-repeat;"></div>
+        <button onclick="document.getElementById('splash-screen').style.display='none'; if(typeof showView==='function') showView('home');" style="position:relative; z-index:2; padding:20px 60px; font-size:1.4em; background:linear-gradient(135deg,#d4b060,#c09840); color:#fff; border:none; border-radius:30px; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.3); font-family:'KaiTi','STKaiti',serif; letter-spacing:2px;">点击进入中轴奇游记</button>
+    </div>
 </body>
 </html>
