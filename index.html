@@ -22,7 +22,7 @@
         return false;
     };
     </script>
-    <link rel="stylesheet" href="styles/main.css?v=20260715b">
+    <link rel="stylesheet" href="styles/main.css?v=20260715c">
     <link rel="stylesheet" href="styles/home-story.css?v=20260715a">
     <!-- Google model-viewer: 3D模型展示组件（使用 jsdelivr CDN 国内可访问） -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js?v=20260706b"></script>
@@ -224,7 +224,7 @@
             </div>
             <div class="route-end-flag">🏁 中轴线起点</div>
             <!-- 铛铛车旅程对话区域 -->
-            <div class="journey-dialogue-area" id="journey-dialogue-area" style="display:block!important;background:#ff0!important;border:4px solid #f00!important;z-index:999999!important;position:fixed!important;top:200px!important;left:50px!important;width:220px!important;">
+            <div class="journey-dialogue-area" id="journey-dialogue-area" style="display:none;">
                 <div class="journey-station-name" id="journey-station-name">永定门</div>
                 <div class="journey-dialogue" id="journey-dialogue">测试文字：气泡应该显示在这里</div>
                 <div class="journey-progress" id="journey-progress">1 / 9</div>
@@ -1387,8 +1387,9 @@ if (typeof goToStation === 'function') {
             tramEl.style.left = targetLeft + 'px';
             tramEl.style.top = targetTop + 'px';
             
-            // 气泡用 fixed 定位，动态计算在铁轨右边（视口内）
+            // 气泡用 fixed 定位，确保始终在视口内
             var vw = window.innerWidth;
+            var vh = window.innerHeight;
             var routeRect = dialogueArea.parentElement.getBoundingClientRect();
             var routeRight = routeRect.right;
             // 优先放在铁轨右侧，如果右边空间不够就放左侧
@@ -1400,17 +1401,22 @@ if (typeof goToStation === 'function') {
                 // 屏幕太窄，放右下角
                 dialogueArea.style.left = (vw - 236) + 'px';
             }
-            dialogueArea.style.top = (stopRect.top - 10) + 'px';
             
-            // ===== DEBUG: 弹出计算结果 =====
-            alert('【调试信息-请截图】\n' +
-                '视口宽vw=' + vw + '\n' +
-                'trackRect: L=' + trackRect.left.toFixed(0) + ' T=' + trackRect.top.toFixed(0) + ' R=' + trackRect.right.toFixed(0) + '\n' +
-                'stopRect[0]: L=' + stopRect.left.toFixed(0) + ' T=' + stopRect.top.toFixed(0) + ' R=' + stopRect.right.toFixed(0) + '\n' +
-                'routeRect: L=' + routeRect.left.toFixed(0) + ' R=' + routeRect.right.toFixed(0) + '\n' +
-                '气泡最终left=' + dialogueArea.style.left + '\n' +
-                '气泡最终top=' + dialogueArea.style.top);
-            // ===== END DEBUG =====
+            // 计算气泡top：以站点为锚点，但限制在视口范围内
+            var bubbleH = 220; // 气泡预估高度
+            var idealTop = stopRect.top - 10;
+            // 如果站点在视口上方（负值），放视口顶部附近
+            if (idealTop < 10) {
+                dialogueArea.style.top = '10px';
+            }
+            // 如果站点在视口下方（超出视口高度），放视口中间
+            else if (idealTop + bubbleH > vh - 10) {
+                dialogueArea.style.top = Math.max(10, vh / 2 - bubbleH / 2) + 'px';
+            }
+            // 正常情况：气泡顶部对齐站点
+            else {
+                dialogueArea.style.top = idealTop + 'px';
+            }
             
             // 首次显示：强制回流后再恢复 transition（避免 Chrome 从默认位置动画过渡）
             if (isFirstShow) {
@@ -1464,16 +1470,17 @@ if (typeof goToStation === 'function') {
             wrapper.style.display = 'block';
             void wrapper.offsetHeight;
         }
+        // 滚动到旅程区域，确保站点在视口内
+        if (wrapper) {
+            wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
         setTimeout(function() {
             try {
                 showStation(0);
-                var area = document.getElementById('journey-dialogue-area');
-                if (area) {
-                    var cs = window.getComputedStyle(area);
-                }
             } catch(e) {
+                console.error('[startJourney] showStation error:', e);
             }
-        }, 100);
+        }, 300);
     };
 
     // 解锁所有站点（已看过旅程时调用）
