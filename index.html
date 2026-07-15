@@ -1188,7 +1188,7 @@ if (typeof goToStation === 'function') {
             
             <div class="bottom-buttons">
                 <button class="btn-back" id="btn-back-6">← 返回</button>
-                <button class="btn-next" id="btn-next-6" onclick="var os=document.getElementById('oracle-screen'); alert('调用前display:'+os.style.display); window.showOracleScreen(); alert('调用后display:'+os.style.display+', visibility:'+os.style.visibility+', opacity:'+os.style.opacity);">抽取天赋签 →</button>
+                <button class="btn-next" id="btn-next-6" onclick="var os=document.getElementById('oracle-screen'); os.style.display='flex'; os.style.position='fixed'; os.style.top='0'; os.style.left='0'; os.style.width='100%'; os.style.height='100%'; os.style.background='rgba(0,0,0,0.95)'; os.style.zIndex='100000'; os.style.justifyContent='center'; os.style.alignItems='center'; os.style.flexDirection='column'; var ow=os.offsetWidth; var oh=os.offsetHeight; alert('宽:'+ow+' 高:'+oh); document.getElementById('oracle-tube-wrapper').style.display='block'; document.getElementById('oracle-result').style.display='none';">抽取天赋签 →</button>
             </div>
             
             <!-- 配方卡 -->
