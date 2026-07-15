@@ -1079,19 +1079,14 @@
                 });
             }
             
-            // View prompt button - go to P7
+            // View prompt button - go to P9
             var viewPromptBtn = document.getElementById('btn-view-prompt');
             if (viewPromptBtn) {
-                console.log('[DEBUG] btn-view-prompt found, binding click event');
                 viewPromptBtn.addEventListener('click', function() {
-                    console.log('[DEBUG] btn-view-prompt clicked!');
-                    alert('按钮被点击了！');
                     hideOracleScreen();
                     showPage(9);
                     generatePromptSummary();
                 });
-            } else {
-                console.error('[DEBUG] btn-view-prompt NOT FOUND!');
             }
 
             // ===== 铛铛车提示词页 =====
