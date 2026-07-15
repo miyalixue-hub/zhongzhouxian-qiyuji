@@ -22,7 +22,7 @@
         return false;
     };
     </script>
-    <link rel="stylesheet" href="styles/main.css?v=20260715d">
+    <link rel="stylesheet" href="styles/main.css?v=20260715e">
     <link rel="stylesheet" href="styles/home-story.css?v=20260715a">
     <!-- Google model-viewer: 3D模型展示组件（使用 jsdelivr CDN 国内可访问） -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js?v=20260706b"></script>
@@ -1188,7 +1188,7 @@ if (typeof goToStation === 'function') {
             
             <div class="bottom-buttons">
                 <button class="btn-back" id="btn-back-6">← 返回</button>
-                <button class="btn-next" id="btn-next-6" onclick="try{var e=document.getElementById('oracle-screen');if(e){var info='tag:'+e.tagName+' parent:'+e.parentNode.tagName+' parentDisplay:'+getComputedStyle(e.parentNode).display+' ownDisplay:'+getComputedStyle(e).display;e.className='showing';setTimeout(function(){alert(info+' | 宽:'+e.offsetWidth+' 高:'+e.offsetHeight+' newDisplay:'+getComputedStyle(e).display);},200);var tw=document.getElementById('oracle-tube-wrapper');if(tw)tw.style.display='block';var r=document.getElementById('oracle-result');if(r)r.style.display='none';}}catch(err){alert('错误:'+err.message);}" style="z-index:10002; position:relative;">抽取天赋签 →</button>
+                <button class="btn-next" id="btn-next-6" onclick="try{var e=document.getElementById('oracle-screen');if(e){e.className='showing';var tw=document.getElementById('oracle-tube-wrapper');if(tw)tw.style.display='block';var r=document.getElementById('oracle-result');if(r)r.style.display='none';setTimeout(function(){alert('宽:'+e.offsetWidth+' 高:'+e.offsetHeight);},300);}}catch(err){alert('错误:'+err.message);}" style="z-index:10002; position:relative;">抽取天赋签 →</button>
             </div>
             
             <!-- 配方卡 -->
@@ -1303,18 +1303,7 @@ if (typeof goToStation === 'function') {
     <script src="js/interactions.js?v=20260714a"></script>
     <script src="js/patrol-game.js?v=20260713b"></script>
     <script src="js/home-story-config.js?v=20260714b"></script>
-    <script src="js/home-story.js?v=20260714d"></script>
-
-        <!-- 天赋签抽签屏 -->
-    <div id="oracle-screen" style="display:none;">
-        <div class="oracle-container">
-            <h2 class="oracle-title">✨ 请为你的神兽抽取天赋签</h2>
-            <p class="oracle-subtitle">点击宝箱，看看你的神兽天赋是什么！</p>
-            
-            <div class="oracle-tube-wrapper" id="oracle-tube-wrapper">
-                <div class="oracle-tube" id="oracle-tube">
-                    <div class="oracle-stick"></div>
-                    <div class="oracle-stick"></div>
+    <script src="js/home-story.js?v=20260714d"></script>                    <div class="oracle-stick"></div>
                     <div class="oracle-stick"></div>
                 </div>
             </div>
@@ -1521,5 +1510,17 @@ if (typeof goToStation === 'function') {
 
 
 
+
+
+
+        <!-- 天赋签抽签屏 -->
+    <div id="oracle-screen" style="display:none;">
+        <div class="oracle-container">
+            <h2 class="oracle-title">✨ 请为你的神兽抽取天赋签</h2>
+            <p class="oracle-subtitle">点击宝箱，看看你的神兽天赋是什么！</p>
+            
+            <div class="oracle-tube-wrapper" id="oracle-tube-wrapper">
+                <div class="oracle-tube" id="oracle-tube">
+                    <div class="oracle-stick"></div>
 </body>
 </html>
