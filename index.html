@@ -1402,7 +1402,15 @@ if (typeof goToStation === 'function') {
             }
             dialogueArea.style.top = (stopRect.top - 10) + 'px';
             
-            
+            // ===== DEBUG: 弹出计算结果 =====
+            alert('【调试信息-请截图】\n' +
+                '视口宽vw=' + vw + '\n' +
+                'trackRect: L=' + trackRect.left.toFixed(0) + ' T=' + trackRect.top.toFixed(0) + ' R=' + trackRect.right.toFixed(0) + '\n' +
+                'stopRect[0]: L=' + stopRect.left.toFixed(0) + ' T=' + stopRect.top.toFixed(0) + ' R=' + stopRect.right.toFixed(0) + '\n' +
+                'routeRect: L=' + routeRect.left.toFixed(0) + ' R=' + routeRect.right.toFixed(0) + '\n' +
+                '气泡最终left=' + dialogueArea.style.left + '\n' +
+                '气泡最终top=' + dialogueArea.style.top);
+            // ===== END DEBUG =====
             
             // 首次显示：强制回流后再恢复 transition（避免 Chrome 从默认位置动画过渡）
             if (isFirstShow) {
