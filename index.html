@@ -1188,7 +1188,7 @@ if (typeof goToStation === 'function') {
             
             <div class="bottom-buttons">
                 <button class="btn-back" id="btn-back-6">← 返回</button>
-                <button class="btn-next" id="btn-next-6" onclick="var os=document.getElementById('oracle-screen'); os.style.display='flex'; os.style.position='fixed'; os.style.top='0'; os.style.left='0'; os.style.width='100%'; os.style.height='100%'; os.style.background='rgba(0,0,0,0.95)'; os.style.zIndex='100000'; os.style.justifyContent='center'; os.style.alignItems='center'; os.style.flexDirection='column'; var ow=os.offsetWidth; var oh=os.offsetHeight; alert('宽:'+ow+' 高:'+oh); document.getElementById('oracle-tube-wrapper').style.display='block'; document.getElementById('oracle-result').style.display='none';">抽取天赋签 →</button>
+                <button class="btn-next" id="btn-next-6" onclick="document.getElementById('oracle-screen').style.display='flex'; document.getElementById('oracle-tube-wrapper').style.display='block'; document.getElementById('oracle-result').style.display='none';">抽取天赋签 →</button>
             </div>
             
             <!-- 配方卡 -->
@@ -1301,7 +1301,7 @@ if (typeof goToStation === 'function') {
     <script src="js/home-story-config.js?v=20260714b"></script>
     <script src="js/home-story.js?v=20260714d"></script>
 
-    <!-- 天赋签抽签屏 -->
+        <!-- 天赋签抽签屏 -->
     <div id="oracle-screen" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.9); z-index:100000; justify-content:center; align-items:center; flex-direction:column;">
         <div class="oracle-container">
             <h2 class="oracle-title">✨ 请为你的神兽抽取天赋签</h2>
@@ -1328,7 +1328,7 @@ if (typeof goToStation === 'function') {
         </div>
     </div>
 
-        <!-- 首页启动页 -->
+    <!-- 首页启动页 -->
     <div id="splash-screen" style="position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; padding-bottom:40px;">
         <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:url('https://zhongzhouxian-1413555799.cos.ap-guangzhou.myqcloud.com/assets/css_bg_5.png') center/cover no-repeat;"></div>
         <button onclick="document.getElementById('splash-screen').style.display='none'; if(typeof showView==='function') showView('home');" style="position:relative; z-index:2; padding:20px 60px; font-size:1.4em; background:linear-gradient(135deg,#d4b060,#c09840); color:#fff; border:none; border-radius:30px; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.3); font-family:'KaiTi','STKaiti',serif; letter-spacing:2px;">点击进入中轴奇游记</button>
