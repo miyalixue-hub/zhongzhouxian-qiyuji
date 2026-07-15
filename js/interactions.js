@@ -1042,7 +1042,9 @@
         }
         
         function hideOracleScreen() {
-            document.getElementById('oracle-screen').style.display = 'none';
+            var screen = document.getElementById('oracle-screen');
+            screen.classList.remove('showing');
+            screen.style.display = 'none';
         }
         
         // 暴露到全局供inline onclick使用
