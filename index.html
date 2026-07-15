@@ -1188,7 +1188,7 @@ if (typeof goToStation === 'function') {
             
             <div class="bottom-buttons">
                 <button class="btn-back" id="btn-back-6">← 返回</button>
-                <button class="btn-next" id="btn-next-6" onclick="showOracleScreen()" style="z-index:10002; position:relative;">抽取天赋签 →</button>
+                <button class="btn-next" id="btn-next-6" onclick="document.getElementById('oracle-screen').classList.add('showing');showOracleScreen();" style="z-index:10002; position:relative;">抽取天赋签 →</button>
             </div>
             
             <!-- 配方卡 -->
