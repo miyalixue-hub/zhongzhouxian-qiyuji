@@ -1186,9 +1186,9 @@ if (typeof goToStation === 'function') {
                 </div>
             </div>
             
-            <div class="bottom-buttons" style="position:relative !important; z-index:10001 !important;">
+            <div class="bottom-buttons">
                 <button class="btn-back" id="btn-back-6">← 返回</button>
-                <button class="btn-next" id="btn-next-6" style="position:relative !important; z-index:10002 !important;" onclick="try{var os=document.getElementById('oracle-screen');var tw=document.getElementById('oracle-tube-wrapper');var or2=document.getElementById('oracle-result');alert('oracle-screen存在:'+!!os+', oracle-tube-wrapper存在:'+!!tw+', oracle-result存在:'+!!or2);if(os)os.style.display='flex';if(tw)tw.style.display='block';if(or2)or2.style.display='none';alert('设置完成！oracle-screen display:'+os.style.display);}catch(e){alert('错误：'+e.message);}">抽取天赋签 →</button>
+                <button class="btn-next" id="btn-next-6">抽取天赋签 →</button>
             </div>
             
             <!-- 配方卡 -->
@@ -1302,7 +1302,7 @@ if (typeof goToStation === 'function') {
     <script src="js/home-story.js?v=20260714d"></script>
 
     <!-- 天赋签抽签屏 -->
-    <div id="oracle-screen" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.9); z-index:10000; justify-content:center; align-items:center; flex-direction:column;">
+    <div id="oracle-screen" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.9); z-index:100000; justify-content:center; align-items:center; flex-direction:column;">
         <div class="oracle-container">
             <h2 class="oracle-title">✨ 请为你的神兽抽取天赋签</h2>
             <p class="oracle-subtitle">点击宝箱，看看你的神兽天赋是什么！</p>
