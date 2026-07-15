@@ -7,6 +7,13 @@
         function showView(viewName) {
             document.getElementById('view-home').style.display = viewName === 'home' ? 'block' : 'none';
             document.getElementById('view-zhengyangmen').style.display = viewName === 'zhengyangmen' ? 'block' : 'none';
+            // 切换到正阳门时隐藏旅程区域
+            if (viewName === 'zhengyangmen') {
+                var jw = document.getElementById('journey-wrapper');
+                if (jw) jw.style.display = 'none';
+                var da = document.getElementById('journey-dialogue-area');
+                if (da) da.style.display = 'none';
+            }
             window.scrollTo(0, 0);
             if (viewName === 'home') {
                 // 恢复home-story显示，隐藏旅程区域
