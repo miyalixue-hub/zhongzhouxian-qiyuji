@@ -142,6 +142,17 @@
                 var fullPrompt = basePrompt + style.suffix;
                 return callSeedreamAPI(fullPrompt, { refImages: refImages }).then(function(url) {
                     state._generatedImageUrls[i] = url;
+                    // 缓存成功的AI图片URL到localStorage，供限流时作为示例图使用
+                    try {
+                        var cached = JSON.parse(localStorage.getItem('cached_ai_images') || '[]');
+                        // 去重：如果已存在相同URL则不重复添加
+                        if (cached.indexOf(url) === -1) {
+                            cached.push(url);
+                            // 最多保留8张缓存
+                            if (cached.length > 8) cached = cached.slice(cached.length - 8);
+                            localStorage.setItem('cached_ai_images', JSON.stringify(cached));
+                        }
+                    } catch(e) { console.warn('[Cache] 缓存图片失败:', e); }
                     return { index: i, url: url, style: style, success: true };
                 }).catch(function(err) {
                     console.error('候选' + (i+1) + '生成失败:', err);
@@ -222,11 +233,60 @@
             return successCount;
         }
         
-        // SVG占位图降级方案
+        // SVG占位图降级方案（优先使用缓存的AI图片）
         function generateSVGFallback() {
             var grid = document.getElementById('candidate-grid');
             if (!grid) return;
             grid.innerHTML = '';
+            
+            // 优先从localStorage获取缓存的AI生成图片
+            var cachedUrls = [];
+            try {
+                cachedUrls = JSON.parse(localStorage.getItem('cached_ai_images') || '[]');
+            } catch(e) { cachedUrls = []; }
+            
+            if (cachedUrls.length > 0) {
+                // 使用缓存的AI图片作为示例图
+                state._generatedImageUrls = [];
+                var styleNames = ['经典风格', '水墨风格', '华丽风格', '清新风格', '古朴风格', '彩绘风格', '梦幻风格', '写实风格'];
+                var showCount = Math.min(cachedUrls.length, 4); // 最多显示4张
+                
+                for (var i = 0; i < showCount; i++) {
+                    (function(idx) {
+                        var url = cachedUrls[cachedUrls.length - showCount + idx];
+                        state._generatedImageUrls[idx] = url;
+                        var styleName = styleNames[idx] || '方案' + (idx + 1);
+                        var card = document.createElement('div');
+                        card.className = 'candidate-card';
+                        card.dataset.index = idx;
+                        card.innerHTML = '<div class="candidate-image" style="background:#f5f0e8;">' +
+                            '<img src="' + url + '" alt="' + styleName + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:4px;" />' +
+                            '</div>' +
+                            '<div class="candidate-info"><div class="candidate-name">方案' + (idx+1) + ' · 历史作品</div>' +
+                            '<div class="candidate-style">之前生成的AI图片</div></div>';
+                        card.addEventListener('click', function() {
+                            var all = grid.querySelectorAll('.candidate-card');
+                            for (var j = 0; j < all.length; j++) all[j].classList.remove('selected');
+                            this.classList.add('selected');
+                            state.selectedCandidate = idx;
+                            var btn = document.getElementById('btn-confirm-image');
+                            if (btn) btn.disabled = false;
+                            var hint = document.getElementById('preview-hint-8');
+                            if (hint) hint.textContent = '已选: 方案' + (idx+1) + ' · 历史作品';
+                        });
+                        grid.appendChild(card);
+                    })(i);
+                }
+                
+                // 显示提示
+                var notice = document.createElement('div');
+                notice.style.cssText = 'grid-column:1/-1;text-align:center;padding:10px;font-size:12px;color:#7a6a56;background:#FFF8E1;border-radius:8px;margin-top:8px;';
+                notice.innerHTML = '💡 以上为之前成功生成的AI图片，可直接用于3D建模';
+                grid.appendChild(notice);
+                return;
+            }
+            
+            // 没有缓存图片时，使用SVG占位图
             if (state.isTramMode) {
                 generateTramCandidatesSVG(grid);
             } else {
