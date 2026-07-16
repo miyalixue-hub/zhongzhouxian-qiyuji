@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AI 魔法师训练营 · 中轴奇游记</title>
+
+  <!-- 微信分享卡片 Open Graph -->
+  <meta property="og:title" content="快来看看我创造的 3D 神兽！">
+  <meta property="og:description" content="AI 魔法师训练营 · 中轴奇游记 — 每个孩子都是小小造物师">
+  <meta property="og:image" content="share-cover.png">
+  <meta property="og:url" content="">
+  <meta name="description" content="AI 魔法师训练营 · 中轴奇游记 — 看看我用 AI 创造的 3D 守护神兽">
+
+  <!-- Three.js -->
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://unpkg.com/three@0.160.0/examples/js/loaders/STLLoader.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ========== 顶部信息区 ========== -->
+  <header class="top-bar">
+    <div class="avatar-ring">
+      <div class="avatar" id="avatar">小</div>
+    </div>
+    <div class="title-group">
+      <h1 id="work-title">我的守护神兽</h1>
+      <p class="subtitle" id="work_subtitle">这是小明创造的守护神兽</p>
+    </div>
+  </header>
+
+  <!-- ========== 2D 作品图片 ========== -->
+  <section class="card image-card">
+    <div class="card-label">✏️ 手绘原稿</div>
+    <div class="image-wrapper">
+      <img id="artwork_2d" src="" alt="作品 2D 图片">
+    </div>
+    <p class="image-caption" id="image_caption">用画笔赋予神兽灵魂</p>
+  </section>
+
+  <!-- ========== 3D 模型预览 ========== -->
+  <section class="card model-card">
+    <div class="card-label">🐉 3D 神兽 · 可拖拽旋转</div>
+    <div class="model-wrapper" id="model_wrapper">
+      <canvas id="model_canvas"></canvas>
+      <!-- 加载遮罩 -->
+      <div class="model-loading" id="model_loading">
+        <div class="spinner"></div>
+        <span>神兽加载中…</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 底部操作区 ========== -->
+  <footer class="bottom-bar">
+    <div class="download-group">
+      <button class="btn-download active" id="btn_download_stl" data-format="stl">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        下载 STL
+      </button>
+      <button class="btn-download" id="btn_download_3mf" data-format="3mf">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        下载 3MF
+      </button>
+    </div>
+    <p class="format-hint">💡 拓竹用户推荐 3MF 格式</p>
+    <div class="brand">
+      <span class="brand-icon">🪄</span>
+      AI 魔法师训练营 · 中轴奇游记
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

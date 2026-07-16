@@ -18,7 +18,7 @@
   'use strict';
 
   // 后端地址（生产环境用域名，开发环境用 IP）
-  var SHARE_API = 'https://share.mindbubble.cloud';
+  var SHARE_API = 'http://81.70.177.110';
 
   // 是否已注入分享按钮
   var injected = false;
@@ -56,9 +56,6 @@
 
   /**
    * 上传 STL 到后端并生成分享链接
-   * 支持两种方式：
-   *   1. 直接下载 STL Blob 上传（适用于同域或无CORS限制）
-   *   2. 发送 Meshy URL 给后端下载（绕过浏览器 CORS 限制）
    */
   async function uploadAndShare() {
     var urls = state.meshyAllUrls || {};
@@ -74,31 +71,37 @@
     var origHtml = shareBtn ? shareBtn.innerHTML : '';
     if (shareBtn) {
       shareBtn.disabled = true;
-      shareBtn.innerHTML = ' 正在上传...';
+      shareBtn.innerHTML = '⏳ 正在上传...';
       shareBtn.style.opacity = '0.7';
     }
 
     try {
-      // 收集元数据
+      // 1. 下载 STL 文件为 Blob
+      showToastMessage('📥 正在下载模型文件...');
+      var resp = await fetch(stlUrl);
+      if (!resp.ok) throw new Error('下载模型失败: HTTP ' + resp.status);
+      var blob = await resp.blob();
+      
+      // 确定文件扩展名
+      var ext = stlUrl.toLowerCase().includes('.3mf') ? '3mf' : 'stl';
+      var fileName = 'creature.' + ext;
+
+      // 2. 收集元数据
       var creatureName = state.currentCreatureName || '我的守护神兽';
       var studentName = getStudentName();
       var artworkImageUrl = getArtworkImageUrl();
 
-      // 确定文件扩展名
-      var ext = stlUrl.toLowerCase().includes('.3mf') ? '3mf' : 'stl';
-
-      // 构建 FormData，发送 URL 让后端自己下载（绕过浏览器 CORS）
+      // 3. 构建 FormData
       var formData = new FormData();
+      formData.append('stl_file', blob, fileName);
       formData.append('student_name', studentName);
       formData.append('work_title', creatureName);
       formData.append('artwork_image_url', artworkImageUrl || '');
-      formData.append('model_url', stlUrl);
 
-      // 上传到后端（后端从URL下载文件）
+      // 4. 上传到后端
       showToastMessage('📤 正在上传并修复模型...');
       var uploadResp = await fetch(SHARE_API + '/api/work/upload', {
         method: 'POST',
-        mode: 'cors',
         body: formData
       });
 
@@ -113,13 +116,13 @@
         throw new Error(result.message || '上传失败');
       }
 
-      // 构建分享链接
+      // 5. 构建分享链接
       var shareUrl = SHARE_API + result.shareUrl;
       
       console.log('[Share] 上传成功:', result);
       console.log('[Share] 分享链接:', shareUrl);
 
-      // 显示分享弹窗
+      // 6. 显示分享弹窗
       showShareResult(shareUrl, creatureName, studentName);
 
     } catch (err) {
