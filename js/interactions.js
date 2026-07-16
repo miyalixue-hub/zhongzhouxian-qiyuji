@@ -148,6 +148,66 @@
             // P9生成按钮
             var genBtn = $('#page-9 .btn-generate');
             if (genBtn) genBtn.addEventListener('click', function() { generatePromptSummary(); showPage(10); setTimeout(generateCandidates, 300); });
+            
+            // P9"使用预存图片"按钮 — 跳过AI生成，直接用预存的AI图片
+            var usePrestoredBtn = document.createElement('button');
+            usePrestoredBtn.className = 'btn-next';
+            usePrestoredBtn.style.cssText = 'margin-top:12px;padding:14px 28px;background:white;color:#3a2a1a;border:1.5px solid #e8dcc4;border-radius:12px;font-size:15px;cursor:pointer;display:block;width:100%;';
+            usePrestoredBtn.innerHTML = '🖼️ 使用预存AI图片（跳过生成）';
+            usePrestoredBtn.addEventListener('click', function() {
+                // 直接用预存的4张AI图片作为候选
+                var FALLBACK_IMAGES = [
+                    'assets/fallback-beast-1.jpg',
+                    'assets/fallback-beast-2.jpg',
+                    'assets/fallback-beast-3.jpg',
+                    'assets/fallback-beast-4.jpg'
+                ];
+                var styleNames = ['古石刻韵', '琉璃焕彩', '青铜古韵', '水墨丹青'];
+                var styleDescs = ['石雕斑驳质感', '宫城琉璃光泽', '青铜器古朴感', '传统国画风'];
+                var styleBgs = ['linear-gradient(135deg, #e8e4dc, #d4cfc5)', 'linear-gradient(135deg, #fef9e7, #f5e6a3)', 'linear-gradient(135deg, #e8efe8, #b8c9b8)', 'linear-gradient(135deg, #f5f0e8, #e8dcc8)'];
+                
+                state._generatedImageUrls = FALLBACK_IMAGES.slice();
+                state.selectedCandidate = null;
+                
+                var grid = document.getElementById('candidate-grid');
+                if (grid) {
+                    grid.innerHTML = '';
+                    FALLBACK_IMAGES.forEach(function(url, i) {
+                        var card = document.createElement('div');
+                        card.className = 'candidate-card';
+                        card.dataset.index = i;
+                        card.innerHTML = '<div class="candidate-image" style="background:' + styleBgs[i] + '">' +
+                            '<img src="' + url + '" alt="' + styleNames[i] + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:4px;" />' +
+                            '</div>' +
+                            '<div class="candidate-info"><div class="candidate-name">方案' + (i+1) + ' · ' + styleNames[i] + '</div>' +
+                            '<div class="candidate-style">' + styleDescs[i] + '</div></div>';
+                        card.addEventListener('click', (function(idx, stName) {
+                            return function() {
+                                var all = grid.querySelectorAll('.candidate-card');
+                                for (var j = 0; j < all.length; j++) all[j].classList.remove('selected');
+                                this.classList.add('selected');
+                                state.selectedCandidate = idx;
+                                var btn = document.getElementById('btn-confirm-image');
+                                if (btn) btn.disabled = false;
+                                var hint = document.getElementById('preview-hint-8');
+                                if (hint) hint.textContent = '已选: 方案' + (idx+1) + ' · ' + stName;
+                            };
+                        })(i, styleNames[i]));
+                        grid.appendChild(card);
+                    });
+                }
+                
+                // 确保确认按钮可用状态正确
+                var confirmBtn = document.getElementById('btn-confirm-image');
+                if (confirmBtn) confirmBtn.disabled = true;
+                
+                showPage(10);
+            });
+            
+            // 把按钮插入到page-9的生成按钮后面
+            if (genBtn && genBtn.parentNode) {
+                genBtn.parentNode.insertBefore(usePrestoredBtn, genBtn.nextSibling);
+            }
             // P8 confirm button
             var confirmBtn = $('#btn-confirm-image');
             if (confirmBtn) confirmBtn.addEventListener('click', function() {
