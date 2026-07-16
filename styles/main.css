@@ -1768,6 +1768,11 @@
         .color-card.selected .color-swatch-wrap {
             transform: none;
         }
+        .color-card[data-id="zhusha"] .color-swatch-wrap,
+        .color-card[data-id="zhusha"]:hover .color-swatch-wrap,
+        .color-card[data-id="zhusha"].selected .color-swatch-wrap {
+            transform: translateY(12px);
+        }
         @media (max-width: 480px) {
             .color-grid {
                 gap: 12px;
@@ -4766,6 +4771,15 @@
 @keyframes pulse-glow {
     0%, 100% { box-shadow: 0 0 0 0 rgba(196,92,92,0.3); }
     50% { box-shadow: 0 0 12px 4px rgba(196,92,92,0.15); }
+}
+
+/* 择定中轴灵物：暖色宣纸纹理背景 */
+#page-4 {
+    background-color: #f5dfad;
+    background-image: url('../assets/object-choice-paper-bg.png');
+    background-position: center top;
+    background-size: cover;
+    background-repeat: no-repeat;
 }
 
 /* 站点激活状态 */

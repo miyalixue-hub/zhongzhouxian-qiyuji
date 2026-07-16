@@ -1,0 +1,11 @@
+Use case: illustration-story
+Asset type: production-ready single-column base map for a responsive interactive website homepage.
+Input image: use the supplied two-panel image only as a composition, perspective, and style reference.
+
+Create ONE clean portrait hand-drawn map of Beijing's complete Central Axis, closely matching the coherent vertical geographic layout and antique Chinese storybook illustration style of the reference. Include, from north/top to south/bottom: Bell and Drum Towers, Wanning Bridge, Jingshan, the Forbidden City, Tiananmen, Zhengyangmen, Xiannongtan and Temple of Heaven, and Yongdingmen. Preserve continuous rivers, roads, city walls, hutong street fabric, trees, and the unified hand-drawn perspective. The city and landmarks must read as one continuous illustrated map, not separate floating building icons.
+
+Render the ENTIRE map in the before-click lost-color state: muted gray-blue, low saturation, soft warm antique-paper texture. Zhengyangmen remains mostly gray like the other buildings, with no red restoration and no glow. Keep the central route visually traceable and geometrically aligned so a later web overlay can animate a signal from the south toward Zhengyangmen.
+
+Composition: portrait 2:3. Show the complete map from Bell and Drum Towers through Yongdingmen. Do not crop the northern tower, Yongdingmen, river branches, or southern road. Leave a modest consistent paper margin.
+
+Remove all interface content found in the reference: no page title, no subtitle, no story text box, no buttons, no dialogue bubble, no tram, no bell icon, no comparison arrow, no center divider, no gold signal beam, no glow, no red or colored highlight. No labels, no Chinese characters, no lettering anywhere. No watermark.

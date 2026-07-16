@@ -7,6 +7,9 @@
         function showView(viewName) {
             document.getElementById('view-home').style.display = viewName === 'home' ? 'block' : 'none';
             document.getElementById('view-zhengyangmen').style.display = viewName === 'zhengyangmen' ? 'block' : 'none';
+            if (viewName === 'home' && window.homeStoryController) {
+                window.homeStoryController.showHome();
+            }
             window.scrollTo(0, 0);
         }
 
@@ -23,65 +26,9 @@
                 console.error('[ERROR] showPage 不可用');
             }
         }
+        window.showView = showView;
+        window.goBackToMap = goBackToMap;
         window.goToStation = goToStation;
-
-
-/**
-         * 显示"即将开放"提示
-         */
-        function showToast() {
-            var toast = document.getElementById('toast');
-            toast.classList.add('show');
-            setTimeout(function() {
-                toast.classList.remove('show');
-            }, 2000);
-        }
-
-        /**
-         * NPC铛铛车对话轮播
-         */
-        var npcDialogues = [
-            '小探险家，点正阳门开始冒险吧！',
-            '正阳门下藏着两只镇水神兽，你找到了吗？',
-            '集齐9站印章，你就是中轴小卫士！',
-            '你知道吗？北京城的中轴线长达7.8公里！',
-            '万宁桥下700岁的石狮子，在等你去发现哦！',
-            '每座古迹都有一个故事，等你来解锁～'
-        ];
-        var npcIndex = 0;
-        function cycleNpcDialogue() {
-            npcIndex = (npcIndex + 1) % npcDialogues.length;
-            var el = document.getElementById('npc-text');
-            if (!el) return;
-            el.classList.add('npc-text-changing');
-            el.textContent = npcDialogues[npcIndex];
-            setTimeout(function() {
-                el.classList.remove('npc-text-changing');
-            }, 300);
-        }
-        
-        /**
-         * 正阳门 - 跳转至神兽工坊
-         */
-        function goToStation() {
-showView('zhengyangmen');
-            // Start the creation flow from page-3 (story intro)
-            if (typeof showPage === 'function') {
-showPage(2);
-            } else {
-}
-        }
-        
-        /**
-         * 页面加载动画 - 进度条动画
-         */
-        window.addEventListener('load', function() {
-            var fill = document.querySelector('.progress-fill');
-            fill.style.width = '0%';
-            setTimeout(function() {
-                fill.style.width = '11.11%';
-            }, 500);
-        });
 
 // ============ 工具函数 ============
         var $ = function(s) { return document.querySelector(s); };
