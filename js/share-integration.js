@@ -18,7 +18,7 @@
   'use strict';
 
   // 后端地址（生产环境用域名，开发环境用 IP）
-  var SHARE_API = 'http://share.mindbubble.cloud';
+  var SHARE_API = 'https://share.mindbubble.cloud';
 
   // 是否已注入分享按钮
   var injected = false;
