@@ -64,10 +64,11 @@
    *   2. 发送 Meshy URL 给后端下载（绕过浏览器 CORS 限制）
    */
   async function uploadAndShare() {
+    alert('[DEBUG 1/4] uploadAndShare 被调用');
     var urls = state.meshyAllUrls || {};
     var stlUrl = urls.stl || urls['3mf']; // 优先 STL，没有则用 3MF
     
-    alert('[DEBUG 1/4] 函数已执行\nstate.meshyAllUrls = ' + JSON.stringify(urls) + '\nstlUrl = ' + (stlUrl || 'NULL'));
+    alert('[DEBUG 2/4] meshyAllUrls = ' + JSON.stringify(urls) + '\nstlUrl = ' + (stlUrl || 'NULL'));
 
     if (!stlUrl) {
       showToastMessage('❌ 没有找到可上传的模型文件');
@@ -100,8 +101,8 @@
       formData.append('model_url', stlUrl);
 
       // 上传到后端（后端从URL下载文件）
-      alert('[DEBUG 2/4] 准备发送请求\nURL: ' + SHARE_API + '/api/work/upload\nmodel_url: ' + stlUrl.substring(0, 80) + '...');
-      showToastMessage('📤 正在上传并修复模型...');
+      alert('[DEBUG 3/4] 准备发送请求到: ' + SHARE_API + '/api/work/upload');
+      showToastMessage(' 正在上传并修复模型...');
       var uploadResp = await fetch(SHARE_API + '/api/work/upload', {
         method: 'POST',
         mode: 'cors',
@@ -129,7 +130,7 @@
       showShareResult(shareUrl, creatureName, studentName);
 
     } catch (err) {
-      alert('[DEBUG 3/4] 捕获到错误\n错误信息: ' + err.message + '\n错误类型: ' + err.name);
+      alert('[DEBUG 4/4] 错误: ' + err.message + ' (' + err.name + ')');
       console.error('[Share] 上传失败:', err);
       showToastMessage('❌ 分享失败: ' + err.message);
       
