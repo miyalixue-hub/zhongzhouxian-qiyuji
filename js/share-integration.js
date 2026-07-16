@@ -2,76 +2,31 @@
  * share-integration.js - 3D模型分享系统集成
  * 
  * 功能：
- *   1. 在打印体检报告完成后，在下载面板中添加"分享给朋友看"按钮
- *   2. 点击后自动下载 STL → 上传到后端修复 → 返回分享链接
+ *   1. 绑定 download-panel 中静态的 "分享给朋友看" 按钮
+ *   2. 点击后自动上传 STL 到后端 → 返回分享链接
  *   3. 展示分享链接供学生复制/分享
  * 
  * 依赖：
  *   - meshy-3d.js（state.meshyAllUrls, state.currentCreatureName 等）
- *   - 后端 API: http://81.70.177.110/api/work/upload
- * 
- * 使用方式：
- *   在研学网站 HTML 中，meshy-3d.js 之后加载本文件即可
+ *   - 后端 API: https://share.mindbubble.cloud/api/work/upload
  */
 
 (function() {
   'use strict';
 
-  // ⚡ 调试：确认文件已加载
-  alert('[DEBUG] share-integration.js 文件已加载!');
-
-  // 后端地址（生产环境用域名，开发环境用 IP）
+  // 后端地址
   var SHARE_API = 'https://share.mindbubble.cloud';
-
-  // 是否已注入分享按钮
-  var injected = false;
-
-  /**
-   * 注入分享按钮到下载面板
-   * 在 downloadModelFile 函数执行后调用，或者在 showDownloadPanel 后调用
-   */
-  function injectShareButton() {
-    if (injected) return;
-    
-    var dlPanel = document.getElementById('download-panel');
-    if (!dlPanel) {
-      console.warn('[Share] 找不到 download-panel');
-      return;
-    }
-
-    // 检查是否已有分享按钮
-    if (document.getElementById('btn-share-creature')) return;
-
-    // 创建分享按钮
-    var shareBtn = document.createElement('button');
-    shareBtn.id = 'btn-share-creature';
-    shareBtn.style.cssText = 'width:100%;margin-top:12px;padding:14px;background:linear-gradient(135deg,#4FC3F7,#29B6F6);color:white;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(79,195,247,0.3);transition:transform 0.2s;';
-    shareBtn.innerHTML = '🔗 分享给朋友看';
-    shareBtn.onclick = function() { uploadAndShare(); };
-    shareBtn.onmouseenter = function() { this.style.transform = 'scale(1.02)'; };
-    shareBtn.onmouseleave = function() { this.style.transform = 'scale(1)'; };
-
-    // 插入到下载面板底部
-    dlPanel.appendChild(shareBtn);
-    injected = true;
-    console.log('[Share] 分享按钮已注入');
-  }
 
   /**
    * 上传 STL 到后端并生成分享链接
-   * 支持两种方式：
-   *   1. 直接下载 STL Blob 上传（适用于同域或无CORS限制）
-   *   2. 发送 Meshy URL 给后端下载（绕过浏览器 CORS 限制）
+   * 发送 Meshy URL 给后端下载（绕过浏览器 CORS 限制）
    */
   async function uploadAndShare() {
-    alert('[DEBUG 1/4] uploadAndShare 被调用');
     var urls = state.meshyAllUrls || {};
     var stlUrl = urls.stl || urls['3mf']; // 优先 STL，没有则用 3MF
     
-    alert('[DEBUG 2/4] meshyAllUrls = ' + JSON.stringify(urls) + '\nstlUrl = ' + (stlUrl || 'NULL'));
-
     if (!stlUrl) {
-      showToastMessage('❌ 没有找到可上传的模型文件');
+      showToastMessage('❌ 没有找到可上传的模型文件，请先生成3D模型');
       return;
     }
 
@@ -80,7 +35,7 @@
     var origHtml = shareBtn ? shareBtn.innerHTML : '';
     if (shareBtn) {
       shareBtn.disabled = true;
-      shareBtn.innerHTML = ' 正在上传...';
+      shareBtn.innerHTML = '⏳ 正在上传...';
       shareBtn.style.opacity = '0.7';
     }
 
@@ -101,8 +56,7 @@
       formData.append('model_url', stlUrl);
 
       // 上传到后端（后端从URL下载文件）
-      alert('[DEBUG 3/4] 准备发送请求到: ' + SHARE_API + '/api/work/upload');
-      showToastMessage(' 正在上传并修复模型...');
+      showToastMessage('⏳ 正在上传并修复模型...');
       var uploadResp = await fetch(SHARE_API + '/api/work/upload', {
         method: 'POST',
         mode: 'cors',
@@ -126,11 +80,10 @@
       console.log('[Share] 上传成功:', result);
       console.log('[Share] 分享链接:', shareUrl);
 
-      // 显示分享弹窗
+      // 显示分享成功弹窗
       showShareResult(shareUrl, creatureName, studentName);
 
     } catch (err) {
-      alert('[DEBUG 4/4] 错误: ' + err.message + ' (' + err.name + ')');
       console.error('[Share] 上传失败:', err);
       showToastMessage('❌ 分享失败: ' + err.message);
       
@@ -208,7 +161,7 @@
       }
     };
 
-    // 恢复原按钮
+    // 更新原按钮状态
     var shareBtn = document.getElementById('btn-share-creature');
     if (shareBtn) {
       shareBtn.disabled = false;
@@ -252,37 +205,29 @@
     return '';
   }
 
-  // ========== 自动注入逻辑 ==========
+  // ========== 绑定按钮 ==========
   
-  // 方案1：监听 showDownloadPanel 函数，在其执行后注入按钮
-  var origShowDownloadPanel = window.showDownloadPanel;
-  if (origShowDownloadPanel) {
-    window.showDownloadPanel = function() {
-      origShowDownloadPanel.apply(this, arguments);
-      setTimeout(injectShareButton, 300);
-    };
-  }
-  
-  // 方案2：监听 DOM 变化，当 download-panel 显示时注入
-  var observer = new MutationObserver(function(mutations) {
-    var dlPanel = document.getElementById('download-panel');
-    if (dlPanel && dlPanel.style.display !== 'none') {
-      injectShareButton();
+  function bindShareButton() {
+    var shareBtn = document.getElementById('btn-share-creature');
+    if (shareBtn) {
+      shareBtn.onclick = function() { uploadAndShare(); };
+      shareBtn.onmouseenter = function() { if (!this.disabled) this.style.transform = 'scale(1.02)'; };
+      shareBtn.onmouseleave = function() { this.style.transform = 'scale(1)'; };
+      console.log('[Share] 分享按钮已绑定');
+    } else {
+      console.warn('[Share] 找不到 btn-share-creature 按钮');
     }
-  });
-  
-  // 开始观察
-  if (document.body) {
-    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+  }
+
+  // DOM 加载完成后绑定
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindShareButton);
   } else {
-    document.addEventListener('DOMContentLoaded', function() {
-      observer.observe(document.body, { childList: true, subtree: true, attributes: true });
-    });
+    bindShareButton();
   }
 
   // 导出到全局（供调试）
   window.ShareIntegration = {
-    injectShareButton: injectShareButton,
     uploadAndShare: uploadAndShare,
     SHARE_API: SHARE_API
   };
