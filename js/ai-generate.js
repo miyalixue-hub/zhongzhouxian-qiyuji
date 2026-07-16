@@ -245,6 +245,19 @@
                 cachedUrls = JSON.parse(localStorage.getItem('cached_ai_images') || '[]');
             } catch(e) { cachedUrls = []; }
             
+            // 兜底：内置真实AI图片，确保限流时也有图可用
+            var FALLBACK_IMAGES = [
+                'https://ark-code-project.tos-cn-beijing.volces.com/seedream/4_20250716_165221_cute%20Chinese%20mythological%20little%20divine%20beast%2C%20traditional%20Chinese%20style%2C%203D%20rendering%2C%20clean%20background%2C%20children%27s%20illustration%20style%2C%20high%20quality%2C%20%E5%8F%A4%E7%9F%B3%E5%88%BB%E9%9F%B5%EF%BC%8C%E4%B8%AD%E5%9B%BD%E5%8F%A4%E4%BB%A3%E7%9F%B3%E9%9B%95%E8%B4%A8%E6%84%9F%EF%BC%8C%E9%9D%92%E7%9F%B3%E6%9D%90%E8%B4%A8%EF%BC%8C%E8%A1%A8%E9%9D%A2%E6%9C%89%E5%B2%81%E6%9C%88%E6%96%91%E9%A9%B3%E7%9A%84%E7%97%95%E8%BF%B9%EF%BC%8C%E7%9F%B3%E5%88%BB%E7%BA%BF%E6%9D%A1%E6%B5%81%E7%95%85%EF%BC%8C%E5%8D%9A%E7%89%A9%E9%A6%86%E6%96%87%E7%89%A9%E6%91%84%E5%BD%B1%E9%A3%8E%E6%A0%BC%EF%BC%8C%E6%9F%94%E5%92%8C%E7%81%AF%E5%85%89_0.png',
+                'https://ark-code-project.tos-cn-beijing.volces.com/seedream/4_20250716_165221_cute%20Chinese%20mythological%20little%20divine%20beast%2C%20traditional%20Chinese%20style%2C%203D%20rendering%2C%20clean%20background%2C%20children%27s%20illustration%20style%2C%20high%20quality%2C%20%E7%90%89%E7%92%83%E7%84%95%E5%BD%A9%EF%BC%8C%E4%B8%AD%E5%9B%BD%E4%BC%A0%E7%BB%9F%E7%90%89%E7%92%83%E9%87%89%E5%BD%A9%E9%A3%8E%E6%A0%BC%EF%BC%8C%E8%A1%A8%E9%9D%A2%E6%9C%89%E5%85%89%E6%B3%BD%E8%B4%A8%E6%84%9F%EF%BC%8C%E8%89%B2%E5%BD%A9%E6%98%8E%E4%BA%AE%E9%A5%B1%E6%BB%A1%EF%BC%8C%E6%95%85%E5%AE%AB%E7%90%89%E7%92%83%E7%93%A6%E8%B4%A8%E6%84%9F%EF%BC%8C%E5%85%89%E7%BA%BF%E6%8A%98%E5%B0%84%E5%BE%AE%E5%85%89_0.png',
+                'https://ark-code-project.tos-cn-beijing.volces.com/seedream/4_20250716_165221_cute%20Chinese%20mythological%20little%20divine%20beast%2C%20traditional%20Chinese%20style%2C%203D%20rendering%2C%20clean%20background%2C%20children%27s%20illustration%20style%2C%20high%20quality%2C%20%E9%9D%92%E9%93%9C%E5%8F%A4%E9%9F%B5%EF%BC%8C%E4%B8%AD%E5%9B%BD%E5%8F%A4%E4%BB%A3%E9%9D%92%E9%93%9C%E5%99%A8%E8%B4%A8%E6%84%9F%EF%BC%8C%E9%93%9C%E7%BB%BF%E8%89%B2%E9%94%88%E8%BF%B9%E6%96%91%E9%A9%B3%EF%BC%8C%E9%87%91%E5%B1%9E%E5%85%89%E6%B3%BD%EF%BC%8C%E9%A5%95%E9%A4%AE%E7%BA%B9%E9%A5%B0%E9%A3%8E%E6%A0%BC%EF%BC%8C%E5%8D%9A%E7%89%A9%E9%A6%86%E5%B1%95%E6%9F%9C%E7%81%AF%E5%85%89_0.png',
+                'https://ark-code-project.tos-cn-beijing.volces.com/seedream/4_20250716_165221_cute%20Chinese%20mythological%20little%20divine%20beast%2C%20traditional%20Chinese%20style%2C%203D%20rendering%2C%20clean%20background%2C%20children%27s%20illustration%20style%2C%20high%20quality%2C%20%E6%B0%B4%E5%A2%A8%E4%B8%B9%E9%9D%92%EF%BC%8C%E4%B8%AD%E5%9B%BD%E4%BC%A0%E7%BB%9F%E6%B0%B4%E5%A2%A8%E7%94%BB%E9%A3%8E%E6%A0%BC%EF%BC%8C%E6%AF%9B%E7%AC%94%E7%AC%94%E8%A7%A6%EF%BC%8C%E5%AE%A3%E7%BA%B8%E8%B4%A8%E6%84%9F%EF%BC%8C%E6%B7%A1%E9%9B%85%E8%89%B2%E8%B0%83%EF%BC%8C%E7%95%99%E7%99%BD%E6%84%8F%E5%A2%83_0.png'
+            ];
+            
+            // 合并：缓存 + 兜底
+            if (cachedUrls.length === 0) {
+                cachedUrls = FALLBACK_IMAGES.slice();
+            }
+            
             if (cachedUrls.length > 0) {
                 // 使用缓存的AI图片作为示例图
                 state._generatedImageUrls = [];
