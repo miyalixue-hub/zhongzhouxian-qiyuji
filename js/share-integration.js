@@ -102,6 +102,7 @@
       showToastMessage('📤 正在上传并修复模型...');
       var uploadResp = await fetch(SHARE_API + '/api/work/upload', {
         method: 'POST',
+        mode: 'cors',
         body: formData
       });
 
