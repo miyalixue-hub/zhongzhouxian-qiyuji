@@ -17,6 +17,9 @@
 (function() {
   'use strict';
 
+  // ⚡ 调试：确认文件已加载
+  alert('[DEBUG] share-integration.js 文件已加载!');
+
   // 后端地址（生产环境用域名，开发环境用 IP）
   var SHARE_API = 'https://share.mindbubble.cloud';
 
