@@ -7,10 +7,13 @@
     var scoreEl, timeEl, heartsEl, titleEl, copyEl;
     var startBtn, pauseBtn, restartBtn;
     var W = 320, H = 360;
-    var player = { x: W / 2, y: H - 48, r: 14, targetX: W / 2 };
+    var player = { x: W / 2, y: H - 48, r: 14, targetX: W / 2, vy: 0, onGround: true };
     var items = [];
     var effects = [];
-    var keys = { left: false, right: false };
+    var keys = { left: false, right: false, jump: false };
+    var GRAVITY = 1800;
+    var JUMP_FORCE = -620;
+    var GROUND_Y = H - 48;
     var score = 0;
     var hearts = 3;
     var timeLeft = 30;
@@ -64,15 +67,26 @@
         window.addEventListener('keydown', function(event) {
             if (event.key === 'ArrowLeft' || event.key === 'a') keys.left = true;
             if (event.key === 'ArrowRight' || event.key === 'd') keys.right = true;
+            if (event.key === ' ' || event.key === 'ArrowUp' || event.key === 'w' || event.key === 'W') {
+                if (!keys.jump) tryJump();
+                keys.jump = true;
+            }
         });
         window.addEventListener('keyup', function(event) {
             if (event.key === 'ArrowLeft' || event.key === 'a') keys.left = false;
             if (event.key === 'ArrowRight' || event.key === 'd') keys.right = false;
+            if (event.key === ' ' || event.key === 'ArrowUp' || event.key === 'w' || event.key === 'W') keys.jump = false;
         });
 
         wrap.addEventListener('pointerdown', function(event) {
             if (!running) return;
             wrap.setPointerCapture(event.pointerId);
+            var rect = canvas.getBoundingClientRect();
+            var tapY = ((event.clientY - rect.top) / rect.height) * H;
+            // 点上半屏跳跃，下半屏控制左右
+            if (tapY < H * 0.45) {
+                tryJump();
+            }
             player.targetX = pointerToCanvasX(event);
         });
         wrap.addEventListener('pointermove', function(event) {
@@ -130,7 +144,10 @@
         items.length = 0;
         effects.length = 0;
         player.x = W / 2;
+        player.y = GROUND_Y;
         player.targetX = W / 2;
+        player.vy = 0;
+        player.onGround = true;
         running = true;
         paused = false;
         if (pauseBtn) pauseBtn.textContent = '暂停';
@@ -201,11 +218,30 @@
         requestAnimationFrame(loop);
     }
 
+    function tryJump() {
+        if (!running || paused || !visible) return;
+        if (player.onGround) {
+            player.vy = JUMP_FORCE;
+            player.onGround = false;
+        }
+    }
+
     function update(dt) {
         if (keys.left) player.targetX -= 320 * dt;
         if (keys.right) player.targetX += 320 * dt;
         player.targetX = Math.max(18, Math.min(W - 18, player.targetX));
         player.x += (player.targetX - player.x) * Math.min(1, 15 * dt);
+
+        // 跳跃物理
+        if (!player.onGround) {
+            player.vy += GRAVITY * dt;
+            player.y += player.vy * dt;
+            if (player.y >= GROUND_Y) {
+                player.y = GROUND_Y;
+                player.vy = 0;
+                player.onGround = true;
+            }
+        }
 
         for (var i = items.length - 1; i >= 0; i--) {
             var item = items[i];
@@ -293,7 +329,13 @@
     function drawPlayer() {
         ctx.save();
         ctx.translate(player.x, player.y);
-        ctx.scale(0.56, 0.56);
+        // 跳跃挤压动画：上升时拉长，下落时压扁
+        var squash = 1;
+        if (!player.onGround) {
+            if (player.vy < -100) squash = 1.08;      // 上升拉长
+            else if (player.vy > 200) squash = 0.94;  // 下落微扁
+        }
+        ctx.scale(0.56 * (2 - squash), 0.56 * squash);
         ctx.shadowColor = 'rgba(54,38,20,0.28)';
         ctx.shadowBlur = 14;
         ctx.shadowOffsetY = 6;
