@@ -85,6 +85,8 @@
 
     } catch (err) {
       console.error('[Share] 上传失败:', err);
+      // 弹窗显示详细错误（调试用，定位后移除）
+      alert('[调试] 分享失败详情：\n\n错误类型: ' + err.name + '\n错误信息: ' + err.message + '\n\n请求地址: ' + SHARE_API + '/api/work/upload');
       showToastMessage('❌ 分享失败: ' + err.message);
       
       // 恢复按钮
