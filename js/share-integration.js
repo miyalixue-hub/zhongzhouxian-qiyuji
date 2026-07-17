@@ -14,8 +14,8 @@
 (function() {
   'use strict';
 
-  // 后端地址（IP直连，绕过ICP备案拦截）
-  var SHARE_API = 'https://81.70.177.110';
+  // 后端地址（HTTPS IP:8443，自签名证书，绕过ICP备案拦截）
+  var SHARE_API = 'https://81.70.177.110:8443';
 
   /**
    * 上传 STL 到后端并生成分享链接
