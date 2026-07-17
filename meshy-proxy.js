@@ -36,12 +36,12 @@ const ALLOWED_ORIGINS = [
 
 // 限流配置（每分钟每 IP 最大请求数）
 const RATE_LIMIT = {
-  '2d': 10,      // 2D 图片生成
+  '2d': 20,      // 2D 图片生成（每分钟20次）
   '3d': 5,       // 3D 模型生成
   'default': 30  // 其他接口
 };
 
-// 简单的内存限流（生产环境建议用 KV 存储）
+// 滑动窗口限流（修复：使用数组记录每次请求时间戳，窗口过期自动清理）
 const rateLimitStore = new Map();
 
 function checkRateLimit(ip, type) {
@@ -50,14 +50,27 @@ function checkRateLimit(ip, type) {
   const windowMs = 60 * 1000; // 1分钟窗口
   const limit = RATE_LIMIT[type] || RATE_LIMIT.default;
   
-  let record = rateLimitStore.get(key);
-  if (!record || now - record.start > windowMs) {
-    record = { start: now, count: 0 };
-    rateLimitStore.set(key, record);
+  let timestamps = rateLimitStore.get(key);
+  
+  // 清理过期时间戳（只保留最近1分钟内的）
+  if (timestamps) {
+    timestamps = timestamps.filter(t => now - t < windowMs);
+  } else {
+    timestamps = [];
   }
   
-  record.count++;
-  return record.count <= limit;
+  // 检查是否超过限制
+  if (timestamps.length >= limit) {
+    rateLimitStore.set(key, timestamps);
+    console.log(`[RateLimit] BLOCKED ${key}: ${timestamps.length}/${limit} requests in window`);
+    return false;
+  }
+  
+  // 记录本次请求
+  timestamps.push(now);
+  rateLimitStore.set(key, timestamps);
+  console.log(`[RateLimit] ALLOWED ${key}: ${timestamps.length}/${limit} requests in window`);
+  return true;
 }
 
 function getCorsHeaders(request) {
@@ -178,7 +191,10 @@ export default {
 
       // ========== 2D 图片生成（火山引擎 Seedream）==========
       if (path === '/api/2d/generate' && request.method === 'POST') {
+        console.log(`[2D] Request from ${clientIp}, path: ${path}`);
+        
         if (!checkRateLimit(clientIp, '2d')) {
+          console.log(`[2D] RATE LIMITED ${clientIp}`);
           return new Response(JSON.stringify({ error: '请求太频繁，请稍后再试' }), {
             status: 429,
             headers: { 'Content-Type': 'application/json', ...corsHeaders }
@@ -194,6 +210,7 @@ export default {
         }
         
         const body = await request.json();
+        console.log(`[2D] Calling Seedream API for ${clientIp}`);
         
         const response = await fetch('https://ark.cn-beijing.volces.com/api/v3/images/generations', {
           method: 'POST',
@@ -204,6 +221,7 @@ export default {
           body: JSON.stringify(body)
         });
         
+        console.log(`[2D] Seedream response status: ${response.status}`);
         const responseBody = await response.text();
         return new Response(responseBody, {
           status: response.status,
