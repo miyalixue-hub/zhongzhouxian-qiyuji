@@ -210,23 +210,52 @@ export default {
         }
         
         const body = await request.json();
-        console.log(`[2D] Calling Seedream API for ${clientIp}`);
+        console.log(`[2D] Calling Seedream API for ${clientIp}, model: ${body.model || 'unknown'}`);
         
-        const response = await fetch('https://ark.cn-beijing.volces.com/api/v3/images/generations', {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ' + apiKey,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(body)
-        });
+        // 添加超时控制（60秒）
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
         
-        console.log(`[2D] Seedream response status: ${response.status}`);
-        const responseBody = await response.text();
-        return new Response(responseBody, {
-          status: response.status,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders }
-        });
+        try {
+          const response = await fetch('https://ark.cn-beijing.volces.com/api/v3/images/generations', {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Bearer ' + apiKey,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body),
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeoutId);
+          console.log(`[2D] Seedream response status: ${response.status}`);
+          const responseBody = await response.text();
+          console.log(`[2D] Response body length: ${responseBody.length}`);
+          
+          // 如果不是200，记录详细错误
+          if (!response.ok) {
+            console.error(`[2D] Seedream error: ${responseBody.substring(0, 500)}`);
+          }
+          
+          return new Response(responseBody, {
+            status: response.status,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+          });
+        } catch (err) {
+          clearTimeout(timeoutId);
+          if (err.name === 'AbortError') {
+            console.error(`[2D] Timeout: Seedream API took more than 60s`);
+            return new Response(JSON.stringify({ 
+              error: '生成超时，请稍后重试',
+              code: 'TIMEOUT'
+            }), {
+              status: 504,
+              headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            });
+          }
+          console.error(`[2D] Fetch error: ${err.message}`);
+          throw err;
+        }
       }
       
       // ========== 3D 模型生成（Meshy）==========
