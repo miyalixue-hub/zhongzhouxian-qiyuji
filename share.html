@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>作品分享 - 中轴奇游记</title>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -257,24 +258,88 @@ body {
   }
 
   // ---- Download helpers ----
-  // Download single image by index using data URI
+  // Convert data URI to Blob
+  function dataUriToBlob(dataUri) {
+    var parts = dataUri.split(',');
+    var mime = parts[0].match(/:(.*?);/);
+    mime = mime ? mime[1] : 'image/png';
+    var b64 = parts[1];
+    var raw = atob(b64);
+    var arr = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+    return new Blob([arr], { type: mime });
+  }
+
+  // Download single image by index
   window.dlImage = function(idx) {
     var images = shareData.images || [];
     if (idx < 0 || idx >= images.length) return;
     var img = images[idx];
     var src = img.base64 || '';
     if (src.indexOf('data:') !== 0) src = 'data:image/png;base64,' + src;
-    var fname = (shareMeta.name || 'artwork') + '_' + (idx + 1) + '.png';
-    triggerDownload(src, fname);
+    var fname = (shareMeta.name || 'artwork') + '_' + (img.name || (idx + 1)) + '.png';
+    try {
+      var blob = dataUriToBlob(src);
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = fname;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function() { URL.revokeObjectURL(url); document.body.removeChild(a); }, 1000);
+    } catch(e) {
+      // Fallback: open in new tab
+      window.open(src, '_blank');
+    }
   };
 
-  // Download all images
+  // Download all images as ZIP
   window.dlAllImages = function() {
     var images = shareData.images || [];
-    for (var i = 0; i < images.length; i++) {
-      (function(idx) {
-        setTimeout(function() { window.dlImage(idx); }, idx * 500);
-      })(i);
+    if (images.length === 0) return;
+
+    // Show loading state
+    var btn = event && event.target ? event.target.closest('button') : null;
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ 正在打包...'; }
+
+    if (typeof JSZip !== 'undefined') {
+      var zip = new JSZip();
+      for (var i = 0; i < images.length; i++) {
+        var img = images[i];
+        var src = img.base64 || '';
+        if (src.indexOf('data:') !== 0) src = 'data:image/png;base64,' + src;
+        try {
+          var blob = dataUriToBlob(src);
+          var fname = (img.name || ('方案' + (i + 1))) + '.png';
+          zip.file(fname, blob);
+        } catch(e) {
+          console.error('Image ' + i + ' error:', e);
+        }
+      }
+      zip.generateAsync({ type: 'blob' }).then(function(zipBlob) {
+        var url = URL.createObjectURL(zipBlob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = (shareMeta.name || 'artwork') + '_图片.zip';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() { URL.revokeObjectURL(url); document.body.removeChild(a); }, 2000);
+        if (btn) { btn.disabled = false; btn.textContent = '📥 下载全部图片 (' + images.length + '张)'; }
+      }).catch(function(err) {
+        console.error('ZIP error:', err);
+        alert('打包失败: ' + err.message);
+        if (btn) { btn.disabled = false; btn.textContent = '📥 下载全部图片 (' + images.length + '张)'; }
+      });
+    } else {
+      // Fallback: download one by one with longer delays
+      for (var j = 0; j < images.length; j++) {
+        (function(idx) {
+          setTimeout(function() { window.dlImage(idx); }, idx * 1500);
+        })(j);
+      }
+      if (btn) { btn.disabled = false; btn.textContent = '📥 下载全部图片 (' + images.length + '张)'; }
     }
   };
 
@@ -283,7 +348,6 @@ body {
     var models = shareData.models || [];
     if (idx < 0 || idx >= models.length) return;
     var model = models[idx];
-    var fname = model.filename || ('model.' + model.format);
     // Open URL in new tab for download
     window.open(model.url, '_blank');
   };
@@ -292,17 +356,6 @@ body {
   window.dlLegacy = function() {
     window.open(DL_BASE + shareId + '/download', '_blank');
   };
-
-  // Trigger browser download from data URI
-  function triggerDownload(dataUri, filename) {
-    var a = document.createElement('a');
-    a.href = dataUri;
-    a.download = filename;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(function() { document.body.removeChild(a); }, 200);
-  }
 
   function esc(s) {
     if (!s) return '';
