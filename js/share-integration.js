@@ -42,66 +42,111 @@
     document.head.appendChild(s);
   }
 
+  // ========== Helper: convert any image source to base64 data URI ==========
+  async function imageToBase64(src) {
+    if (!src) return null;
+    // Already a data URI
+    if (src.indexOf('data:') === 0) return src;
+    // HTTP URL → fetch → blob → base64
+    if (src.indexOf('http') === 0 || src.indexOf('https') === 0) {
+      try {
+        var resp = await fetch(src);
+        if (resp.ok) {
+          var blob = await resp.blob();
+          return await new Promise(function(resolve, reject) {
+            var reader = new FileReader();
+            reader.onloadend = function() { resolve(reader.result); };
+            reader.onerror = function() { reject(new Error('base64 failed')); };
+            reader.readAsDataURL(blob);
+          });
+        }
+      } catch(e) { console.warn('[Share] fetch→base64 failed:', src, e.message); }
+    }
+    // Relative or other path → try fetch anyway
+    try {
+      var resp2 = await fetch(src);
+      if (resp2.ok) {
+        var blob2 = await resp2.blob();
+        return await new Promise(function(resolve, reject) {
+          var reader = new FileReader();
+          reader.onloadend = function() { resolve(reader.result); };
+          reader.onerror = function() { reject(new Error('base64 failed')); };
+          reader.readAsDataURL(blob2);
+        });
+      }
+    } catch(e) { console.warn('[Share] relative fetch→base64 failed:', src, e.message); }
+    return null;
+  }
+
   // ========== Collect all content into a package ==========
   async function collectPackage(studentName, creatureName) {
     var images = [];
     var models = [];
     var name = studentName + '的' + creatureName;
+    var styleNames = ['古石刻韵', '琉璃焕彩', '青铜古韵', '水墨丹青', '经典复古', '现代简约', '金色华贵', '传统风格'];
 
-    // Collect 2D images - 3-strategy: state→fetch→DOM→canvas
-    var imgs = state._generatedImageUrls || [];
-    var styleNames = ['经典复古', '现代简约', '金色华贵', '水墨丹青', '古石刻韵', '琉璃焕彩', '青铜古韵', '水墨丹青'];
-    // Get DOM images as fallback
-    var domImgs = document.querySelectorAll('.candidate-card .candidate-image img');
-    var domSrcs = [];
-    for (var d = 0; d < domImgs.length; d++) {
-      var s = domImgs[d].getAttribute('src');
-      if (s) domSrcs.push(s);
-    }
-    // If state empty but DOM has images, use DOM
-    if (imgs.length === 0 && domSrcs.length > 0) {
-      console.log('[Share] state empty, using DOM images (' + domSrcs.length + ')');
-      imgs = domSrcs.slice(0, 4);
-    }
-    for (var i = 0; i < imgs.length; i++) {
-      if (imgs[i]) {
-        var b64 = imgs[i];
-        if (b64.indexOf('http') === 0 || b64.indexOf('https') === 0) {
-          var converted = false;
-          // Strategy 1: fetch + base64
-          try {
-            var imgResp = await fetch(b64);
-            if (imgResp.ok) {
-              var blob = await imgResp.blob();
-              b64 = await new Promise(function(resolve, reject) {
-                var reader = new FileReader();
-                reader.onloadend = function() { resolve(reader.result); };
-                reader.onerror = function() { reject(new Error('base64 failed')); };
-                reader.readAsDataURL(blob);
-              });
-              converted = true;
-            }
-          } catch(e) { console.warn('[Share] img' + i + ' fetch fail:', e.message); }
-          // Strategy 2: DOM src (only if already a data URI)
-          if (!converted && domSrcs[i] && domSrcs[i].indexOf('data:') === 0) {
-            b64 = domSrcs[i]; converted = true;
-            console.log('[Share] img' + i + ' DOM data-URI fallback');
-          }
-          // Strategy 3: canvas extraction (works even for cross-origin loaded images)
-          if (!converted && domImgs[i] && domImgs[i].complete && domImgs[i].naturalWidth > 0) {
-            try {
-              var canvas = document.createElement('canvas');
-              canvas.width = domImgs[i].naturalWidth;
-              canvas.height = domImgs[i].naturalHeight;
-              canvas.getContext('2d').drawImage(domImgs[i], 0, 0);
-              b64 = canvas.toDataURL('image/png');
-              converted = true;
-              console.log('[Share] img' + i + ' canvas extraction OK, len=' + b64.length);
-            } catch(e) { console.warn('[Share] img' + i + ' canvas fail:', e.message); }
-          }
-          if (!converted) { console.error('[Share] img' + i + ' all strategies failed'); continue; }
+    // ============ Collect 2D images with multi-layer fallback ============
+    var rawUrls = [];  // array of {url, source}
+
+    // Layer 1: state._generatedImageUrls (filter truthy)
+    var stateUrls = state._generatedImageUrls || [];
+    var stateTruthy = stateUrls.filter(function(u) { return !!u; });
+    console.log('[Share] Layer1 state._generatedImageUrls: total=' + stateUrls.length + ', truthy=' + stateTruthy.length);
+    stateTruthy.forEach(function(u, i) { rawUrls.push({url: u, source: 'state[' + i + ']'}); });
+
+    // Layer 2: DOM candidate images (only if state was empty)
+    if (rawUrls.length === 0) {
+      var domImgs = document.querySelectorAll('.candidate-card .candidate-image img');
+      console.log('[Share] Layer2 DOM candidate imgs: ' + domImgs.length);
+      for (var d = 0; d < domImgs.length && rawUrls.length < 4; d++) {
+        var src = domImgs[d].getAttribute('src');
+        if (src && src !== '' && src.indexOf('loading') < 0) {
+          rawUrls.push({url: src, source: 'dom[' + d + ']'});
         }
+      }
+    }
+
+    // Layer 3: localStorage cached_ai_images (last resort)
+    if (rawUrls.length === 0) {
+      try {
+        var cached = JSON.parse(localStorage.getItem('cached_ai_images') || '[]');
+        console.log('[Share] Layer3 localStorage cached_ai_images: ' + cached.length);
+        // Take the last 4 (most recent)
+        var start = Math.max(0, cached.length - 4);
+        for (var c = start; c < cached.length; c++) {
+          rawUrls.push({url: cached[c], source: 'cache[' + c + ']'});
+        }
+      } catch(e) { console.warn('[Share] localStorage read failed:', e.message); }
+    }
+
+    // Layer 4: any <img> on page-10 with a real src (very broad fallback)
+    if (rawUrls.length === 0) {
+      var page10 = document.getElementById('page-10');
+      if (page10) {
+        var allImgs = page10.querySelectorAll('img[src]');
+        console.log('[Share] Layer4 page-10 all imgs: ' + allImgs.length);
+        for (var p = 0; p < allImgs.length && rawUrls.length < 4; p++) {
+          var pSrc = allImgs[p].getAttribute('src');
+          if (pSrc && pSrc.length > 20 && (pSrc.indexOf('data:image') === 0 || pSrc.indexOf('http') === 0 || pSrc.indexOf('assets/') === 0)) {
+            rawUrls.push({url: pSrc, source: 'page10-img[' + p + ']'});
+          }
+        }
+      }
+    }
+
+    console.log('[Share] Total rawUrls collected: ' + rawUrls.length);
+    for (var r = 0; r < rawUrls.length; r++) {
+      console.log('[Share]   [' + r + '] source=' + rawUrls[r].source + ', url_len=' + rawUrls[r].url.length + ', preview=' + rawUrls[r].url.substring(0, 60));
+    }
+
+    // Convert all raw URLs to base64
+    for (var i = 0; i < rawUrls.length && images.length < 4; i++) {
+      var b64 = await imageToBase64(rawUrls[i].url);
+      if (b64) {
         images.push({ base64: b64, name: styleNames[i] || ('方案' + (i + 1)), mime: 'image/png' });
+        console.log('[Share] image[' + i + '] OK: len=' + b64.length + ' from ' + rawUrls[i].source);
+      } else {
+        console.error('[Share] image[' + i + '] FAILED to convert from ' + rawUrls[i].source);
       }
     }
 
@@ -129,6 +174,15 @@
         models.push({ url: state.meshyStlUrl, format: fmt, filename: name + '.' + fmt });
       }
     }
+
+    // DEBUG: show what we collected (temporary - remove after testing)
+    var dbgMsg = '[分享调试]\n图片: ' + images.length + '张\n模型: ' + models.length + '个\n';
+    dbgMsg += 'state._generatedImageUrls: ' + (state._generatedImageUrls || []).length + '项, truthy=' + (state._generatedImageUrls || []).filter(function(u){return !!u;}).length + '\n';
+    dbgMsg += 'state.meshyAllUrls: ' + (state.meshyAllUrls ? JSON.stringify(Object.keys(state.meshyAllUrls)) : 'null') + '\n';
+    var cachedCount = 0;
+    try { cachedCount = (JSON.parse(localStorage.getItem('cached_ai_images') || '[]')).length; } catch(e) {}
+    dbgMsg += 'localStorage cached_ai_images: ' + cachedCount + '条';
+    alert(dbgMsg);
 
     return {
       type: 'package',
@@ -348,6 +402,17 @@
 
       // Check if we have any content to share
       var hasImages = (state._generatedImageUrls || []).some(function(u) { return !!u; });
+      // Also check localStorage cache and DOM as potential image sources
+      if (!hasImages) {
+        var domImgsCheck = document.querySelectorAll('.candidate-card .candidate-image img');
+        if (domImgsCheck.length > 0) hasImages = true;
+      }
+      if (!hasImages) {
+        try {
+          var cachedCheck = JSON.parse(localStorage.getItem('cached_ai_images') || '[]');
+          if (cachedCheck.length > 0) hasImages = true;
+        } catch(e) {}
+      }
       var hasModels = !!(state.meshyModelUrl || state.meshyStlUrl || (state.meshyAllUrls && Object.keys(state.meshyAllUrls).length > 0));
 
       if (!hasImages && !hasModels) {
