@@ -43,28 +43,34 @@
   }
 
   // ========== Helper: convert any image source to base64 data URI ==========
-  async function imageToBase64(src) {
-    if (!src) return null;
+  async function imageToBase64(src, label) {
+    if (!src) { console.log('[Share] img2b64 SKIP: empty src, label=' + (label||'')); return null; }
+    console.log('[Share] img2b64 START: label=' + (label||'') + ', type=' + typeof src + ', len=' + src.length + ', preview=' + src.substring(0, 50));
     // Already a data URI
-    if (src.indexOf('data:') === 0) return src;
+    if (src.indexOf('data:') === 0) { console.log('[Share] img2b64 PASS: already data URI'); return src; }
     // HTTP URL → fetch → blob → base64
     if (src.indexOf('http') === 0 || src.indexOf('https') === 0) {
       try {
+        console.log('[Share] img2b64: fetching HTTP URL...');
         var resp = await fetch(src);
+        console.log('[Share] img2b64: fetch done, ok=' + resp.ok + ', status=' + resp.status);
         if (resp.ok) {
           var blob = await resp.blob();
+          console.log('[Share] img2b64: blob ok, size=' + blob.size + ', type=' + blob.type);
           return await new Promise(function(resolve, reject) {
             var reader = new FileReader();
-            reader.onloadend = function() { resolve(reader.result); };
-            reader.onerror = function() { reject(new Error('base64 failed')); };
+            reader.onloadend = function() { console.log('[Share] img2b64: FileReader done, len=' + reader.result.length); resolve(reader.result); };
+            reader.onerror = function() { console.error('[Share] img2b64: FileReader error'); reject(new Error('base64 failed')); };
             reader.readAsDataURL(blob);
           });
         }
-      } catch(e) { console.warn('[Share] fetch→base64 failed:', src, e.message); }
+      } catch(e) { console.error('[Share] img2b64 HTTP fetch failed:', label, e.message); }
     }
     // Relative or other path → try fetch anyway
     try {
+      console.log('[Share] img2b64: trying relative fetch...');
       var resp2 = await fetch(src);
+      console.log('[Share] img2b64: relative fetch done, ok=' + resp2.ok);
       if (resp2.ok) {
         var blob2 = await resp2.blob();
         return await new Promise(function(resolve, reject) {
@@ -74,7 +80,8 @@
           reader.readAsDataURL(blob2);
         });
       }
-    } catch(e) { console.warn('[Share] relative fetch→base64 failed:', src, e.message); }
+    } catch(e) { console.error('[Share] img2b64 relative fetch failed:', label, e.message); }
+    console.log('[Share] img2b64 FAILED: all methods exhausted for label=' + (label||''));
     return null;
   }
 
@@ -141,7 +148,7 @@
 
     // Convert all raw URLs to base64
     for (var i = 0; i < rawUrls.length && images.length < 4; i++) {
-      var b64 = await imageToBase64(rawUrls[i].url);
+      var b64 = await imageToBase64(rawUrls[i].url, rawUrls[i].source);
       if (b64) {
         images.push({ base64: b64, name: styleNames[i] || ('方案' + (i + 1)), mime: 'image/png' });
         console.log('[Share] image[' + i + '] OK: len=' + b64.length + ' from ' + rawUrls[i].source);
@@ -149,6 +156,25 @@
         console.error('[Share] image[' + i + '] FAILED to convert from ' + rawUrls[i].source);
       }
     }
+
+    // === ULTRA DEBUG: show exact details of each item ===
+    var dbgDetail = '[DEBUG DETAIL]\n';
+    for (var j = 0; j < rawUrls.length; j++) {
+      var item = rawUrls[j].url;
+      dbgDetail += '[' + j + '] src=' + rawUrls[j].source + '\n';
+      dbgDetail += '    type=' + typeof item + '\n';
+      dbgDetail += '    len=' + item.length + '\n';
+      dbgDetail += '    starts=' + item.substring(0, 30) + '\n';
+      dbgDetail += '    isDataUri=' + (item.indexOf('data:') === 0) + '\n';
+      dbgDetail += '    isHttp=' + (item.indexOf('http') === 0) + '\n';
+    }
+    dbgDetail += 'converted=' + images.length + '/4\n';
+    dbgDetail += 'localStorage cached: ' + (localStorage.getItem('cached_ai_images') || '[]').substring(0, 100);
+    console.log(dbgDetail);
+
+    // === Show detailed debug to user ===
+    var dbgMsg2 = '[详细调试]\n' + dbgDetail;
+    alert(dbgMsg2);
 
     // Collect 3D models
     var urls = state.meshyAllUrls || {};
