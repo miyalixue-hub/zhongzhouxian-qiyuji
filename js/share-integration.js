@@ -1,11 +1,12 @@
 /**
- * share-integration.js - Package Share System v3.0
+ * share-integration.js - Package Share System v3.1
  * 
  * Features:
  *   - Package upload: 2D images + 3D models bundled together
  *   - QR code in result modal for parents to scan
  *   - Test package: pre-stored data for quick testing
  *   - Inject buttons on page-9 (style select) and page-11 (download panel)
+ *   - Auto-authenticate (no password prompt for students)
  */
 
 (function() {
@@ -13,6 +14,7 @@
 
   var SHARE_API = 'https://api.mindbubble.cloud';
   var SHARE_PAGE_BASE = 'https://zhongzhouxian-qiyuji.pages.dev/share.html';
+  var SHARE_API_PASSWORD = 'zhongzhou2026!!!';
   var TEST_3D_URL = 'https://modelviewer.dev/shared-assets/models/Astronaut.glb';
   var QR_LIB_URL = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js';
 
@@ -383,19 +385,16 @@
   }
 
   async function ensureAuthenticated() {
-    // Reuse existing auth from the page if available
-    if (typeof window._shareAuthPending !== 'undefined') return false;
+    // Check if we already have a valid token
+    var existing = localStorage.getItem('share_auth_token');
+    if (existing) return true;
 
+    // Auto-authenticate using embedded password (no prompt)
     return new Promise(function(resolve) {
-      window._shareAuthPending = true;
-      var pwd = prompt('请输入分享密码：');
-      delete window._shareAuthPending;
-      if (!pwd) { resolve(false); return; }
-
       fetch(SHARE_API + '/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: pwd })
+        body: JSON.stringify({ password: SHARE_API_PASSWORD })
       })
       .then(function(r) { return r.json(); })
       .then(function(result) {
@@ -403,7 +402,7 @@
           localStorage.setItem('share_auth_token', result.token);
           resolve(true);
         } else {
-          showToastMessage('❌ 密码错误');
+          showToastMessage('❌ 认证失败');
           resolve(false);
         }
       })
@@ -485,7 +484,7 @@
     SHARE_API: SHARE_API
   };
 
-  console.log('[Share] 分享模块 v3.0 (package + QR) 已加载');
+  console.log('[Share] 分享模块 v3.1 (auto-auth + package + QR) 已加载');
 
   function esc(s) {
     if (!s) return '';
