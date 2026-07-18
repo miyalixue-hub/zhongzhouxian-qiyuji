@@ -43,7 +43,7 @@
   }
 
   // ========== Collect all content into a package ==========
-  function collectPackage(studentName, creatureName) {
+  async function collectPackage(studentName, creatureName) {
     var images = [];
     var models = [];
     var name = studentName + '的' + creatureName;
@@ -54,13 +54,25 @@
     for (var i = 0; i < imgs.length; i++) {
       if (imgs[i]) {
         var b64 = imgs[i];
-        // Strip data URI prefix if present
-        var raw = b64;
-        if (b64.indexOf(',') >= 0) {
-          raw = b64.split(',')[1];
+        // If it's a URL (not a data URI), fetch and convert to base64
+        if (b64.indexOf('http') === 0 || b64.indexOf('https') === 0) {
+          try {
+            var imgResp = await fetch(b64);
+            var blob = await imgResp.blob();
+            b64 = await new Promise(function(resolve, reject) {
+              var reader = new FileReader();
+              reader.onloadend = function() { resolve(reader.result); };
+              reader.onerror = function() { reject(new Error('base64转换失败')); };
+              reader.readAsDataURL(blob);
+            });
+          } catch(e) {
+            console.warn('[Share] Image ' + i + ' URL→base64 failed:', e);
+            // Skip this image if conversion fails
+            continue;
+          }
         }
         images.push({
-          base64: b64, // keep full data URI for display
+          base64: b64, // full data URI for display
           name: styleNames[i] || ('方案' + (i + 1)),
           mime: 'image/png'
         });
@@ -318,7 +330,7 @@
         return;
       }
 
-      var pkg = collectPackage(studentName, creatureName);
+      var pkg = await collectPackage(studentName, creatureName);
       showToastMessage('⏳ 正在上传 (' + pkg.data.images.length + '张图 + ' + pkg.data.models.length + '个模型)...');
 
       var result = await uploadPackage(pkg);
