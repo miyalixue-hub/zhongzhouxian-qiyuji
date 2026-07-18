@@ -1,9 +1,11 @@
 /**
- * share-integration.js - Cloudflare KV 分享系统 v2.2
+ * share-integration.js - Package Share System v3.0
  * 
- * v2.2 新增：
- *   - 在风格选择页(page-9)也注入测试按钮，不用到下载面板就能测试分享
- *   - 下载面板的测试按钮保留
+ * Features:
+ *   - Package upload: 2D images + 3D models bundled together
+ *   - QR code in result modal for parents to scan
+ *   - Test package: pre-stored data for quick testing
+ *   - Inject buttons on page-9 (style select) and page-11 (download panel)
  */
 
 (function() {
@@ -12,67 +14,317 @@
   var SHARE_API = 'https://api.mindbubble.cloud';
   var SHARE_PAGE_BASE = 'https://zhongzhouxian-qiyuji.pages.dev/share.html';
   var TEST_3D_URL = 'https://modelviewer.dev/shared-assets/models/Astronaut.glb';
+  var QR_LIB_URL = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js';
 
-  // ========== 核心：上传并分享 ==========
+  // ========== Load QR library on demand ==========
+  var qrLibLoaded = false;
+  var qrCallbacks = [];
+
+  function ensureQRLib(callback) {
+    if (qrLibLoaded) { callback(); return; }
+    qrCallbacks.push(callback);
+    if (document.getElementById('qr-lib-script')) return;
+    var s = document.createElement('script');
+    s.id = 'qr-lib-script';
+    s.src = QR_LIB_URL;
+    s.onload = function() {
+      qrLibLoaded = true;
+      qrCallbacks.forEach(function(cb) { cb(); });
+      qrCallbacks = [];
+    };
+    s.onerror = function() {
+      // Fallback: show URL without QR
+      qrCallbacks.forEach(function(cb) { cb(); });
+      qrCallbacks = [];
+    };
+    document.head.appendChild(s);
+  }
+
+  // ========== Collect all content into a package ==========
+  function collectPackage(studentName, creatureName) {
+    var images = [];
+    var models = [];
+    var name = studentName + '的' + creatureName;
+
+    // Collect 2D images
+    var imgs = state._generatedImageUrls || [];
+    var styleNames = ['经典复古', '现代简约', '金色华贵', '水墨丹青', '古石刻韵', '琉璃焕彩', '青铜古韵', '水墨丹青'];
+    for (var i = 0; i < imgs.length; i++) {
+      if (imgs[i]) {
+        var b64 = imgs[i];
+        // Strip data URI prefix if present
+        var raw = b64;
+        if (b64.indexOf(',') >= 0) {
+          raw = b64.split(',')[1];
+        }
+        images.push({
+          base64: b64, // keep full data URI for display
+          name: styleNames[i] || ('方案' + (i + 1)),
+          mime: 'image/png'
+        });
+      }
+    }
+
+    // Collect 3D models
+    var urls = state.meshyAllUrls || {};
+    if (urls.glb) {
+      models.push({ url: urls.glb, format: 'glb', filename: name + '.glb' });
+    }
+    if (urls.stl) {
+      models.push({ url: urls.stl, format: 'stl', filename: name + '.stl' });
+    }
+    if (urls['3mf']) {
+      models.push({ url: urls['3mf'], format: '3mf', filename: name + '.3mf' });
+    }
+
+    // Fallback: use meshyModelUrl / meshyStlUrl if meshyAllUrls is incomplete
+    if (models.length === 0) {
+      if (state.meshyModelUrl) {
+        models.push({ url: state.meshyModelUrl, format: 'glb', filename: name + '.glb' });
+      }
+      if (state.meshyStlUrl) {
+        // Try to detect format from URL
+        var fmt = 'stl';
+        if (state.meshyStlUrl.indexOf('.3mf') >= 0) fmt = '3mf';
+        models.push({ url: state.meshyStlUrl, format: fmt, filename: name + '.' + fmt });
+      }
+    }
+
+    return {
+      type: 'package',
+      name: name,
+      data: {
+        images: images,
+        models: models
+      }
+    };
+  }
+
+  // ========== Build test package ==========
+  function buildTestPackage() {
+    // Generate 4 simple colored test images as data URIs using canvas
+    var colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'];
+    var names = ['经典复古', '现代简约', '金色华贵', '水墨丹青'];
+    var testImages = [];
+
+    // Try to use canvas to generate colored images
+    try {
+      var canvas = document.createElement('canvas');
+      canvas.width = 200;
+      canvas.height = 200;
+      var ctx = canvas.getContext('2d');
+
+      for (var i = 0; i < 4; i++) {
+        ctx.fillStyle = colors[i];
+        ctx.fillRect(0, 0, 200, 200);
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(names[i], 100, 105);
+        testImages.push({
+          base64: canvas.toDataURL('image/png'),
+          name: names[i],
+          mime: 'image/png'
+        });
+      }
+    } catch (e) {
+      // Fallback: tiny placeholder
+      for (var j = 0; j < 4; j++) {
+        testImages.push({
+          base64: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
+          name: names[j],
+          mime: 'image/png'
+        });
+      }
+    }
+
+    var testModels = [
+      { url: TEST_3D_URL, format: 'glb', filename: '测试模型.glb' },
+      { url: TEST_3D_URL, format: 'stl', filename: '测试模型.stl' },
+      { url: TEST_3D_URL, format: '3mf', filename: '测试模型.3mf' }
+    ];
+
+    return {
+      name: '测试神兽作品（预存）',
+      data: {
+        images: testImages,
+        models: testModels
+      }
+    };
+  }
+
+  // ========== Upload to server ==========
+  async function uploadPackage(pkg) {
+    var authHeader = getAuthHeader();
+    if (!authHeader) {
+      showToastMessage('请先验证密码');
+      var authed = await ensureAuthenticated();
+      if (!authed) return null;
+      authHeader = getAuthHeader();
+    }
+
+    var resp = await fetch(SHARE_API + '/api/share/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+      body: JSON.stringify(pkg)
+    });
+
+    if (!resp.ok) {
+      var errText = await resp.text();
+      var errData;
+      try { errData = JSON.parse(errText); } catch (e) { errData = { error: errText }; }
+      throw new Error(errData.error || '上传失败 (HTTP ' + resp.status + ')');
+    }
+
+    var result = await resp.json();
+    if (!result.success) throw new Error(result.error || '上传失败');
+    return result;
+  }
+
+  // ========== Upload test package via test endpoint ==========
+  async function uploadTestPackage() {
+    var authHeader = getAuthHeader();
+    if (!authHeader) {
+      showToastMessage('请先验证密码');
+      var authed = await ensureAuthenticated();
+      if (!authed) return null;
+      authHeader = getAuthHeader();
+    }
+
+    var resp = await fetch(SHARE_API + '/api/test-upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+      body: JSON.stringify({ name: '测试神兽作品（预存）' })
+    });
+
+    if (!resp.ok) throw new Error('测试上传失败: HTTP ' + resp.status);
+    var result = await resp.json();
+    if (!result.success) throw new Error(result.error || '测试上传失败');
+    return result;
+  }
+
+  // ========== Show result with QR code ==========
+  function showShareResult(shareUrl, title, studentName, isTest) {
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;';
+
+    var modal = document.createElement('div');
+    modal.style.cssText = 'background:white;border-radius:20px;padding:24px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;';
+
+    var testBadge = isTest ? '<div style="display:inline-block;background:#FFA726;color:white;padding:2px 10px;border-radius:10px;font-size:11px;margin-bottom:8px;">测试模式</div>' : '';
+
+    modal.innerHTML =
+      testBadge +
+      '<div style="font-size:40px;margin-bottom:6px;">🎉</div>' +
+      '<h3 style="margin:0 0 4px 0;color:#1565C0;font-size:17px;">分享成功！</h3>' +
+      '<p style="margin:0 0 16px 0;color:#78909C;font-size:13px;">' + esc(studentName) + ' 的作品已可分享</p>' +
+      '<div id="qr-container" style="display:flex;justify-content:center;margin-bottom:16px;min-height:180px;align-items:center;">' +
+        '<div style="color:#90A4AE;font-size:13px;">生成二维码中...</div>' +
+      '</div>' +
+      '<div style="background:#F5F5F5;border-radius:8px;padding:10px;margin-bottom:16px;">' +
+        '<input type="text" value="' + shareUrl + '" readonly style="width:100%;padding:8px;border:1px solid #E0E0E0;border-radius:6px;font-size:11px;color:#333;box-sizing:border-box;text-align:center;" id="share-url-input">' +
+      '</div>' +
+      '<div style="display:flex;gap:10px;">' +
+        '<button id="btn-copy-share" style="flex:1;padding:12px;background:#1976D2;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">📋 复制链接</button>' +
+        '<button id="btn-close-share" style="flex:1;padding:12px;background:#E3F2FD;color:#1565C0;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">关闭</button>' +
+      '</div>';
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // Generate QR code
+    ensureQRLib(function() {
+      var qrContainer = document.getElementById('qr-container');
+      if (!qrContainer) return;
+
+      if (typeof qrcode === 'function') {
+        try {
+          var qr = qrcode(0, 'M');
+          qr.addData(shareUrl);
+          qr.make();
+          qrContainer.innerHTML = qr.createImgTag(5, 8);
+        } catch (e) {
+          qrContainer.innerHTML = '<div style="color:#EF5350;font-size:12px;">二维码生成失败</div>';
+        }
+      } else {
+        // Library failed to load, show message
+        qrContainer.innerHTML = '<div style="color:#78909C;font-size:12px;padding:20px;">请复制链接分享给家长</div>';
+      }
+    });
+
+    // Copy button
+    document.getElementById('btn-copy-share').onclick = function() {
+      var input = document.getElementById('share-url-input');
+      input.select();
+      input.setSelectionRange(0, 99999);
+      try {
+        document.execCommand('copy');
+        this.innerHTML = '✅ 已复制';
+        this.style.background = '#4CAF50';
+        showToastMessage('✅ 链接已复制');
+      } catch (e) {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(shareUrl).then(function() {
+            document.getElementById('btn-copy-share').innerHTML = '✅ 已复制';
+            showToastMessage('✅ 链接已复制');
+          });
+        }
+      }
+    };
+
+    // Close button
+    document.getElementById('btn-close-share').onclick = function() {
+      document.body.removeChild(overlay);
+    };
+    overlay.onclick = function(e) {
+      if (e.target === overlay) document.body.removeChild(overlay);
+    };
+
+    // Update main share button if exists
+    var shareBtn = document.getElementById('btn-share-creature');
+    if (shareBtn && !isTest) {
+      shareBtn.disabled = false;
+      shareBtn.innerHTML = '✅ 已分享';
+      shareBtn.style.background = 'linear-gradient(135deg,#4CAF50,#66BB6A)';
+      shareBtn.style.opacity = '1';
+    }
+  }
+
+  // ========== Main: Real share (collect all content) ==========
   async function uploadAndShare() {
     var shareBtn = document.getElementById('btn-share-creature');
     var origHtml = shareBtn ? shareBtn.innerHTML : '';
-    if (shareBtn) { shareBtn.disabled = true; shareBtn.innerHTML = '⏳ 正在准备...'; shareBtn.style.opacity = '0.7'; }
+    if (shareBtn) {
+      shareBtn.disabled = true;
+      shareBtn.innerHTML = '⏳ 准备中...';
+      shareBtn.style.opacity = '0.7';
+    }
 
     try {
-      var creatureName = state.currentCreatureName || '我的守护神兽';
+      var creatureName = state.currentCreatureName || '守护神兽';
       var studentName = getStudentName();
-      var type, data, name;
 
-      var hasImage = state.selectedCandidate !== null && state.selectedCandidate !== undefined &&
-                     state._generatedImageUrls[state.selectedCandidate];
-      var urls = state.meshyAllUrls || {};
-      var glbUrl = state.meshyModelUrl || urls.glb || '';
-      var stlUrl = urls.stl || urls['3mf'] || '';
+      showToastMessage('⏳ 正在打包作品...');
 
-      if (hasImage && !stlUrl) {
-        type = '2d';
-        var imgDataUri = state._generatedImageUrls[state.selectedCandidate];
-        data = imgDataUri.replace(/^data:image\/[a-z]+;base64,/, '');
-        name = studentName + '的' + creatureName;
-      } else if (glbUrl) {
-        type = '3d'; data = glbUrl; name = studentName + '的' + creatureName;
-      } else if (stlUrl) {
-        type = '3d'; data = stlUrl; name = studentName + '的' + creatureName;
-      } else {
+      // Check if we have any content to share
+      var hasImages = (state._generatedImageUrls || []).some(function(u) { return !!u; });
+      var hasModels = !!(state.meshyModelUrl || state.meshyStlUrl || (state.meshyAllUrls && Object.keys(state.meshyAllUrls).length > 0));
+
+      if (!hasImages && !hasModels) {
         showToastMessage('❌ 没有可分享的内容，请先生成图片或3D模型');
-        restoreBtn(shareBtn, origHtml); return;
+        restoreBtn(shareBtn, origHtml);
+        return;
       }
 
-      if (shareBtn) shareBtn.innerHTML = '⏳ 正在上传...';
-      showToastMessage('⏳ 正在上传到分享服务器...');
+      var pkg = collectPackage(studentName, creatureName);
+      showToastMessage('⏳ 正在上传 (' + pkg.data.images.length + '张图 + ' + pkg.data.models.length + '个模型)...');
 
-      var authHeader = getAuthHeader();
-      if (!authHeader) {
-        showToastMessage(' 请先验证密码');
-        var authed = await ensureAuthenticated();
-        if (!authed) { restoreBtn(shareBtn, origHtml); return; }
-        authHeader = getAuthHeader();
-      }
-
-      var resp = await fetch(SHARE_API + '/api/share/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
-        body: JSON.stringify({ type: type, name: name, data: data })
-      });
-
-      if (!resp.ok) {
-        var errText = await resp.text();
-        var errData; try { errData = JSON.parse(errText); } catch(e) { errData = { error: errText }; }
-        throw new Error(errData.error || '上传失败 (HTTP ' + resp.status + ')');
-      }
-
-      var result = await resp.json();
-      if (!result.success) throw new Error(result.error || '上传失败');
+      var result = await uploadPackage(pkg);
+      if (!result) { restoreBtn(shareBtn, origHtml); return; }
 
       var shareUrl = SHARE_PAGE_BASE + '?id=' + result.shareId;
       console.log('[Share] 分享链接:', shareUrl);
-      showShareResult(shareUrl, creatureName, studentName, type);
+      showShareResult(shareUrl, pkg.name, studentName, false);
 
     } catch (err) {
       console.error('[Share] 上传失败:', err);
@@ -81,45 +333,40 @@
     }
   }
 
-  // ========== 预存模型快捷分享 ==========
+  // ========== Test share (pre-stored data) ==========
   async function quickTestShare() {
-    // 找任意可点击的按钮做loading状态
     var btn = document.getElementById('btn-test-share') || document.getElementById('btn-test-share-page9');
     var origHtml = btn ? btn.innerHTML : '';
-    if (btn) { btn.disabled = true; btn.innerHTML = '⏳ 生成中...'; btn.style.opacity = '0.7'; }
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '⏳ 生成中...';
+      btn.style.opacity = '0.7';
+    }
 
     try {
-      var authHeader = getAuthHeader();
-      if (!authHeader) {
-        showToastMessage(' 请先验证密码');
-        var authed = await ensureAuthenticated();
-        if (!authed) { restoreBtn(btn, origHtml); return; }
-        authHeader = getAuthHeader();
-      }
-
-      var resp = await fetch(SHARE_API + '/api/share/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
-        body: JSON.stringify({ type: '3d', name: '测试神兽（预存模型）', data: TEST_3D_URL })
-      });
-
-      if (!resp.ok) throw new Error('上传失败: ' + await resp.text());
-      var result = await resp.json();
-      if (!result.success) throw new Error(result.error || '上传失败');
+      showToastMessage('⏳ 正在创建测试作品包...');
+      var result = await uploadTestPackage();
+      if (!result) { restoreBtn(btn, origHtml); return; }
 
       var shareUrl = SHARE_PAGE_BASE + '?id=' + result.shareId;
-      console.log('[Share] 预存测试分享:', shareUrl);
-      showShareResult(shareUrl, '测试神兽（预存模型）', '测试用户', '3d');
+      console.log('[Share] 测试分享:', shareUrl);
+      showShareResult(shareUrl, '测试神兽作品（预存）', '测试同学', true);
+      restoreBtn(btn, origHtml);
 
     } catch (err) {
-      console.error('[Share] 测试分享失败:', err);
-      alert('[调试] 预存模型分享失败：\n' + err.message);
+      console.error('[Share] 测试失败:', err);
+      showToastMessage('❌ 测试失败: ' + err.message);
       restoreBtn(btn, origHtml);
     }
   }
 
+  // ========== Helper functions ==========
   function restoreBtn(btn, origHtml) {
-    if (btn) { btn.disabled = false; btn.innerHTML = origHtml || '🧪 用预存模型测试'; btn.style.opacity = '1'; }
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origHtml || btn.innerHTML;
+      btn.style.opacity = '1';
+    }
   }
 
   function getStudentName() {
@@ -127,79 +374,70 @@
     if (state.userName) return state.userName;
     var saved = localStorage.getItem('student_name');
     if (saved) return saved;
-    var name = prompt('请输入你的名字（用于分享展示）：', '');
-    if (name && name.trim()) { localStorage.setItem('student_name', name.trim()); return name.trim(); }
     return '小明';
   }
 
-  function showShareResult(shareUrl, title, studentName, type) {
-    var overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-    var modal = document.createElement('div');
-    modal.style.cssText = 'background:white;border-radius:20px;padding:28px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
-    var typeLabel = type === '2d' ? '图片' : '3D模型';
+  function getAuthHeader() {
+    var token = localStorage.getItem('share_auth_token');
+    return token ? 'Bearer ' + token : '';
+  }
 
-    modal.innerHTML =
-      '<div style="text-align:center;margin-bottom:20px;">' +
-        '<div style="font-size:48px;margin-bottom:8px;">🎉</div>' +
-        '<h3 style="margin:0 0 8px 0;color:#c04830;font-size:18px;">分享成功！</h3>' +
-        '<p style="margin:0;color:#7a6a56;font-size:14px;">' + studentName + ' 的' + typeLabel + '已可分享</p>' +
-      '</div>' +
-      '<div style="background:#f9f5ed;border-radius:12px;padding:14px;margin-bottom:16px;">' +
-        '<div style="font-size:12px;color:#7a6a56;margin-bottom:8px;">分享链接（有效期30天）：</div>' +
-        '<input type="text" value="' + shareUrl + '" readonly style="width:100%;padding:10px;border:1px solid #e8dcc4;border-radius:8px;font-size:11px;color:#333;box-sizing:border-box;" id="share-url-input">' +
-      '</div>' +
-      '<div style="display:flex;gap:10px;">' +
-        '<button id="btn-copy-share" style="flex:1;padding:12px;background:#c04830;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">📋 复制链接</button>' +
-        '<button id="btn-close-share" style="flex:1;padding:12px;background:#e8dcc4;color:#7a6a56;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">关闭</button>' +
-      '</div>';
+  async function ensureAuthenticated() {
+    // Reuse existing auth from the page if available
+    if (typeof window._shareAuthPending !== 'undefined') return false;
 
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
+    return new Promise(function(resolve) {
+      window._shareAuthPending = true;
+      var pwd = prompt('请输入分享密码：');
+      delete window._shareAuthPending;
+      if (!pwd) { resolve(false); return; }
 
-    document.getElementById('btn-copy-share').onclick = function() {
-      var input = document.getElementById('share-url-input');
-      input.select(); input.setSelectionRange(0, 99999);
-      try {
-        document.execCommand('copy');
-        this.innerHTML = '✅ 已复制'; this.style.background = '#4CAF50';
-        showToastMessage('✅ 链接已复制！');
-      } catch (e) {
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(shareUrl).then(function() {
-            document.getElementById('btn-copy-share').innerHTML = '✅ 已复制';
-            showToastMessage('✅ 链接已复制');
-          });
+      fetch(SHARE_API + '/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pwd })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(result) {
+        if (result.token) {
+          localStorage.setItem('share_auth_token', result.token);
+          resolve(true);
         } else {
-          showToastMessage('️ 复制失败，请手动选择链接复制');
+          showToastMessage('❌ 密码错误');
+          resolve(false);
         }
-      }
-    };
-    document.getElementById('btn-close-share').onclick = function() { document.body.removeChild(overlay); };
-    overlay.onclick = function(e) { if (e.target === overlay) document.body.removeChild(overlay); };
+      })
+      .catch(function() {
+        showToastMessage('❌ 认证失败');
+        resolve(false);
+      });
+    });
+  }
 
-    var shareBtn = document.getElementById('btn-share-creature');
-    if (shareBtn) {
-      shareBtn.disabled = false; shareBtn.innerHTML = '✅ 已分享';
-      shareBtn.style.background = 'linear-gradient(135deg,#4CAF50,#66BB6A)'; shareBtn.style.opacity = '1';
+  function showToastMessage(msg) {
+    if (typeof window.showToastMessage === 'function') {
+      window.showToastMessage(msg);
+    } else {
+      console.log('[Share]', msg);
     }
   }
 
-  // ========== 注入测试按钮 ==========
+  // ========== Create test button element ==========
   function createTestBtn(id) {
     var btn = document.createElement('button');
     btn.id = id;
-    btn.innerHTML = '🧪 用预存模型测试分享';
+    btn.innerHTML = '🧪 用预存数据测试分享';
     btn.style.cssText = 'width:100%;margin-top:10px;padding:12px;background:linear-gradient(135deg,#FFA726,#FF7043);color:white;border:none;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 12px rgba(255,112,67,0.3);transition:transform 0.2s;';
     btn.onclick = function() { quickTestShare(); };
     btn.onmouseenter = function() { if (!this.disabled) this.style.transform = 'scale(1.02)'; };
     btn.onmouseleave = function() { this.style.transform = 'scale(1)'; };
-    btn.title = '使用预存3D模型快速测试分享，免生成、免费';
+    btn.title = '使用预存的测试数据（4张图+3D模型）快速测试分享功能';
     return btn;
   }
 
+  // ========== Inject buttons ==========
   function injectButtons() {
-    // 1. 下载面板（page-11）
+    // 1. Download panel (page-11)
     var shareBtn = document.getElementById('btn-share-creature');
     if (shareBtn) {
       if (!document.getElementById('btn-test-share')) {
@@ -207,12 +445,13 @@
         shareBtn.parentNode.insertBefore(testBtn, shareBtn.nextSibling);
         console.log('[Share] 下载面板测试按钮已注入');
       }
+      // Override share button to use package upload
       shareBtn.onclick = function() { uploadAndShare(); };
       shareBtn.onmouseenter = function() { if (!this.disabled) this.style.transform = 'scale(1.02)'; };
       shareBtn.onmouseleave = function() { this.style.transform = 'scale(1)'; };
     }
 
-    // 2. 风格选择页（page-9）- 在跳过按钮旁边
+    // 2. Style selection page (page-9)
     var skipBtn = Array.from(document.querySelectorAll('button')).find(function(b) {
       return b.textContent.indexOf('跳过') >= 0 && b.textContent.indexOf('测试用') >= 0;
     });
@@ -223,13 +462,14 @@
     }
   }
 
+  // Init
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', injectButtons);
   } else {
     injectButtons();
   }
 
-  // 页面切换后重新注入（SPA模式）
+  // SPA page navigation
   var origShowPage = window.showPage;
   if (typeof origShowPage === 'function') {
     window.showPage = function(n) {
@@ -238,12 +478,18 @@
     };
   }
 
+  // Expose API
   window.ShareIntegration = {
     uploadAndShare: uploadAndShare,
     quickTestShare: quickTestShare,
     SHARE_API: SHARE_API
   };
 
-  console.log('[Share] 分享模块已加载 v2.2');
+  console.log('[Share] 分享模块 v3.0 (package + QR) 已加载');
+
+  function esc(s) {
+    if (!s) return '';
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,"&#39;");
+  }
 
 })();

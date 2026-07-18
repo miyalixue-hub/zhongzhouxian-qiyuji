@@ -2,41 +2,221 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>作品分享 - 中轴县奇游记</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>作品分享 - 中轴奇游记</title>
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#f5f0e6 0%,#e8dcc4 100%);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
-.loading{text-align:center;padding:60px 20px;}
-.loading .spinner{width:48px;height:48px;border:4px solid #e8dcc4;border-top-color:#c04830;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.loading p{color:#7a6a56;font-size:16px;}
-.error{text-align:center;padding:60px 20px;}
-.error .icon{font-size:64px;margin-bottom:16px;}
-.error h2{color:#c04830;margin-bottom:8px;}
-.error p{color:#7a6a56;font-size:14px;line-height:1.6;}
-.card{background:white;border-radius:24px;box-shadow:0 12px 40px rgba(0,0,0,0.12);max-width:560px;width:100%;overflow:hidden;}
-.card-header{background:linear-gradient(135deg,#c04830,#e8704a);padding:24px;text-align:center;color:white;}
-.card-header .emoji{font-size:48px;margin-bottom:8px;}
-.card-header h1{font-size:20px;font-weight:700;margin-bottom:4px;}
-.card-header .subtitle{font-size:14px;opacity:0.9;}
-.card-body{padding:24px;}
-.preview-area{background:#f9f5ed;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:200px;display:flex;align-items:center;justify-content:center;}
-.preview-area img{max-width:100%;max-height:400px;object-fit:contain;}
-.preview-area model-viewer{width:100%;height:400px;background:#f9f5ed;}
-.info-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f0e8d6;}
-.info-row:last-child{border-bottom:none;}
-.info-label{color:#7a6a56;font-size:13px;}
-.info-value{color:#3a2a1a;font-size:14px;font-weight:600;}
-.expiry{color:#c04830;font-size:12px;text-align:center;margin-top:8px;}
-.btn-row{display:flex;gap:12px;margin-top:20px;}
-.btn{flex:1;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:transform 0.15s;}
-.btn:active{transform:scale(0.97);}
-.btn-primary{background:linear-gradient(135deg,#c04830,#e8704a);color:white;}
-.btn-secondary{background:#f0e8d6;color:#7a6a56;}
-.brand{text-align:center;padding:16px;color:#7a6a56;font-size:12px;}
-.brand a{color:#c04830;text-decoration:none;}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: linear-gradient(160deg, #E3F2FD 0%, #BBDEFB 40%, #E1F5FE 100%);
+  min-height: 100vh;
+  padding: 16px;
+}
+
+/* Loading */
+.loading {
+  text-align: center;
+  padding: 100px 20px;
+  color: #1565C0;
+}
+.spinner {
+  width: 48px; height: 48px;
+  border: 4px solid #BBDEFB;
+  border-top-color: #1976D2;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading p { font-size: 16px; color: #1565C0; }
+
+/* Error */
+.error { text-align: center; padding: 80px 20px; }
+.error .icon { font-size: 64px; margin-bottom: 16px; }
+.error h2 { color: #1565C0; margin-bottom: 8px; font-size: 20px; }
+.error p { color: #546E7A; font-size: 14px; line-height: 1.8; }
+
+/* Card */
+.card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(25, 118, 210, 0.12);
+  max-width: 480px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.card-header {
+  background: linear-gradient(135deg, #1976D2 0%, #42A5F5 100%);
+  padding: 28px 20px;
+  text-align: center;
+  color: white;
+}
+.card-header .emoji { font-size: 48px; margin-bottom: 8px; }
+.card-header h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.card-header .subtitle { font-size: 13px; opacity: 0.9; }
+
+.card-body { padding: 20px; }
+
+/* 2D Image Gallery */
+.image-gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.image-item {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #E3F2FD;
+  aspect-ratio: 1;
+}
+.image-item img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.image-item .img-label {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.5));
+  color: white;
+  font-size: 11px;
+  padding: 16px 8px 6px;
+  text-align: center;
+}
+.image-item .img-dl {
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 28px; height: 28px;
+  background: rgba(255,255,255,0.85);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.image-item:hover .img-dl,
+.image-item:focus .img-dl,
+.image-item:active .img-dl { opacity: 1; }
+
+/* Single image (legacy) */
+.preview-area {
+  background: #E3F2FD;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.preview-area img {
+  max-width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+}
+
+/* 3D Viewer */
+.viewer-section {
+  margin-bottom: 16px;
+}
+.viewer-section model-viewer {
+  width: 100%;
+  height: 300px;
+  background: linear-gradient(180deg, #E3F2FD, #BBDEFB);
+  border-radius: 12px;
+}
+
+/* Section Title */
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1565C0;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Download Buttons */
+.download-section { margin-top: 16px; }
+.download-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #1976D2, #1565C0);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  margin-bottom: 10px;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.download-btn:active { transform: scale(0.97); }
+.download-btn.secondary {
+  background: #E3F2FD;
+  color: #1565C0;
+  border: 1.5px solid #90CAF9;
+}
+.download-btn.secondary:active { background: #BBDEFB; }
+
+.download-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Info Row */
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #E3F2FD;
+  font-size: 13px;
+}
+.info-row:last-child { border-bottom: none; }
+.info-label { color: #78909C; }
+.info-value { color: #37474F; font-weight: 600; }
+
+/* Expiry */
+.expiry {
+  color: #1976D2;
+  font-size: 12px;
+  text-align: center;
+  margin-top: 12px;
+  padding: 8px;
+  background: #E3F2FD;
+  border-radius: 8px;
+}
+
+/* Brand Footer */
+.brand {
+  text-align: center;
+  padding: 20px 16px;
+  color: #90A4AE;
+  font-size: 12px;
+}
+.brand a { color: #1976D2; text-decoration: none; }
+
+/* Mobile touch: always show download icon */
+@media (hover: none) {
+  .image-item .img-dl { opacity: 1; }
+}
 </style>
 </head>
 <body>
@@ -51,22 +231,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <script>
 (function() {
   var API = 'https://api.mindbubble.cloud';
+  var DL_BASE = API + '/api/share/';
   var params = new URLSearchParams(window.location.search);
   var shareId = params.get('id');
   var app = document.getElementById('app');
 
   if (!shareId || !/^[A-Za-z0-9]{8}$/.test(shareId)) {
-    showError('无效的分享链接', '链接格式不正确，请检查是否完整复制。');
+    showError('无效的分享链接', '链接格式不正确，请检查是否完整。');
     return;
   }
 
-  // 加载分享数据
   fetch(API + '/api/share/' + shareId)
     .then(function(r) { return r.json(); })
     .then(function(result) {
       if (!result.success) {
         if (result.code === 'NOT_FOUND') {
-          showError('作品已过期', '这个分享链接已失效或超过30天有效期。\n快去重新创建一个吧！');
+          showError('作品已过期', '这个分享已失效或超过30天有效期。\n请联系创作者重新分享。');
         } else {
           showError('加载失败', result.error || '未知错误');
         }
@@ -75,78 +255,143 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       renderShare(result.metadata, result.data);
     })
     .catch(function(err) {
-      showError('网络错误', '无法连接到服务器，请检查网络后重试。\n错误: ' + err.message);
+      showError('网络错误', '无法连接服务器，请检查网络。\n错误: ' + err.message);
     });
 
   function showError(title, msg) {
-    app.innerHTML = 
+    app.innerHTML =
       '<div class="error">' +
         '<div class="icon">😔</div>' +
-        '<h2>' + title + '</h2>' +
-        '<p>' + msg.replace(/\n/g, '<br>') + '</p>' +
+        '<h2>' + esc(title) + '</h2>' +
+        '<p>' + esc(msg).replace(/\n/g, '<br>') + '</p>' +
       '</div>' +
-      '<div class="brand">来自 <a href="https://zhongzhouxian-qiyuji.pages.dev" target="_blank">中轴县奇游记</a></div>';
+      '<div class="brand">来自 <a href="https://zhongzhouxian-qiyuji.pages.dev" target="_blank">中轴奇游记 · AI魔法师训练营</a></div>';
   }
 
   function renderShare(meta, data) {
+    var isPackage = meta.type === 'package' && typeof data === 'object' && data !== null;
     var is2D = meta.type === '2d';
-    var previewHtml = '';
-    var downloadUrl = API + '/api/share/' + shareId + '/download';
-    
-    if (is2D) {
-      // 2D图片：直接用base64显示
-      var imgSrc = data.startsWith('data:') ? data : 'data:image/png;base64,' + data;
-      previewHtml = '<img src="' + imgSrc + '" alt="作品图片">';
-    } else {
-      // 3D模型：用model-viewer显示GLB
-      previewHtml = '<model-viewer src="' + data + '" alt="3D模型" auto-rotate camera-controls shadow-intensity="1" style="width:100%;height:400px;"></model-viewer>';
+    var is3D = meta.type === '3d';
+
+    var html = '<div class="card">';
+
+    // Header
+    var headerEmoji = isPackage ? '🎁' : (is2D ? '🎨' : '🗿');
+    var headerTitle = esc(meta.name || '我的作品');
+    var headerSub = isPackage ? 'AI生成图片 + 3D打印模型 · 中轴奇游记' :
+                    (is2D ? 'AI生成图片 · 中轴奇游记' : '3D模型 · 中轴奇游记');
+    html += '<div class="card-header">';
+    html += '<div class="emoji">' + headerEmoji + '</div>';
+    html += '<h1>' + headerTitle + '</h1>';
+    html += '<div class="subtitle">' + headerSub + '</div>';
+    html += '</div>';
+
+    html += '<div class="card-body">';
+
+    // ---- Content Preview ----
+    if (isPackage) {
+      // 2D Images
+      var images = data.images || [];
+      if (images.length > 0) {
+        html += '<div class="section-title">🎨 AI生成图片 (' + images.length + '张)</div>';
+        html += '<div class="image-gallery">';
+        for (var i = 0; i < images.length; i++) {
+          var img = images[i];
+          var src = img.base64 || '';
+          if (src && src.indexOf('data:') !== 0) {
+            src = 'data:image/png;base64,' + src;
+          }
+          var dlUrl = DL_BASE + shareId + '/download?file=image_' + i;
+          var label = img.name || ('方案' + (i + 1));
+          html += '<div class="image-item">';
+          html += '<img src="' + src + '" alt="' + esc(label) + '" loading="lazy">';
+          html += '<div class="img-label">' + esc(label) + '</div>';
+          html += '<a class="img-dl" href="' + dlUrl + '" download title="下载">💾</a>';
+          html += '</div>';
+        }
+        html += '</div>';
+      }
+
+      // 3D Models
+      var models = data.models || [];
+      if (models.length > 0) {
+        var glbModel = null;
+        for (var m = 0; m < models.length; m++) {
+          if (models[m].format === 'glb') { glbModel = models[m]; break; }
+        }
+        if (!glbModel && models.length > 0) glbModel = models[0];
+
+        html += '<div class="section-title">🗿 3D模型预览</div>';
+        html += '<div class="viewer-section">';
+        html += '<model-viewer src="' + esc(glbModel.url) + '" alt="3D模型" auto-rotate camera-controls shadow-intensity="1" style="width:100%;height:300px;border-radius:12px;"></model-viewer>';
+        html += '</div>';
+      }
+
+    } else if (is2D) {
+      var imgSrc = data.indexOf('data:') === 0 ? data : 'data:image/png;base64,' + data;
+      html += '<div class="preview-area"><img src="' + imgSrc + '" alt="作品图片"></div>';
+
+    } else if (is3D) {
+      html += '<div class="preview-area">';
+      html += '<model-viewer src="' + esc(data) + '" alt="3D模型" auto-rotate camera-controls shadow-intensity="1" style="width:100%;height:350px;"></model-viewer>';
+      html += '</div>';
     }
 
-    var createdDate = new Date(meta.createdAt);
-    var expiresDate = new Date(meta.expiresAt);
-    var dateStr = createdDate.getFullYear() + '/' + (createdDate.getMonth()+1) + '/' + createdDate.getDate();
-    var expStr = expiresDate.getFullYear() + '/' + (expiresDate.getMonth()+1) + '/' + expiresDate.getDate();
-    var typeLabel = is2D ? '🎨 AI生成图片' : '🗿 3D模型';
+    // ---- Info ----
+    var created = new Date(meta.createdAt);
+    var expires = new Date(meta.expiresAt);
+    var dateStr = created.getFullYear() + '/' + (created.getMonth() + 1) + '/' + created.getDate();
+    var expStr = expires.getFullYear() + '/' + (expires.getMonth() + 1) + '/' + expires.getDate();
 
-    app.innerHTML = 
-      '<div class="card">' +
-        '<div class="card-header">' +
-          '<div class="emoji">' + (is2D ? '🎨' : '🗿') + '</div>' +
-          '<h1>' + escapeHtml(meta.name || '我的作品') + '</h1>' +
-          '<div class="subtitle">' + typeLabel + ' · 中轴县奇游记</div>' +
-        '</div>' +
-        '<div class="card-body">' +
-          '<div class="preview-area">' + previewHtml + '</div>' +
-          '<div class="info-row"><span class="info-label">类型</span><span class="info-value">' + typeLabel + '</span></div>' +
-          '<div class="info-row"><span class="info-label">创建时间</span><span class="info-value">' + dateStr + '</span></div>' +
-          '<div class="info-row"><span class="info-label">有效期至</span><span class="info-value">' + expStr + '</span></div>' +
-          '<div class="btn-row">' +
-            '<a class="btn btn-primary" href="' + downloadUrl + '" download>💾 下载文件</a>' +
-            '<button class="btn btn-secondary" onclick="navigator.share?navigator.share({title:\'' + escapeJs(meta.name) + '\',url:location.href}).catch(function(){}):copyLink()">📤 分享给TA</button>' +
-          '</div>' +
-        '</div>' +
-      '</div>' +
-      '<div class="brand">来自 <a href="https://zhongzhouxian-qiyuji.pages.dev" target="_blank">中轴县奇游记</a> · AI魔法师训练营</div>';
-  }
+    html += '<div class="info-row"><span class="info-label">创建时间</span><span class="info-value">' + dateStr + '</span></div>';
+    html += '<div class="expiry">⏰ 有效期至 ' + expStr + '</div>';
 
-  function copyLink() {
-    var url = location.href;
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(url).then(function() {
-        alert('链接已复制！');
-      });
+    // ---- Downloads ----
+    html += '<div class="download-section">';
+
+    if (isPackage) {
+      // Images download
+      var images2 = data.images || [];
+      if (images2.length > 0) {
+        html += '<a class="download-btn" href="' + DL_BASE + shareId + '/download?file=image_0" download>📥 下载全部图片 (' + images2.length + '张)</a>';
+      }
+      // 3D models download
+      var models2 = data.models || [];
+      if (models2.length > 0) {
+        html += '<div class="download-grid">';
+        for (var mi = 0; mi < models2.length; mi++) {
+          var mf = models2[mi];
+          var dlUrl2 = DL_BASE + shareId + '/download?file=' + encodeURIComponent(mf.format);
+          var fmtLabel = mf.format.toUpperCase();
+          html += '<a class="download-btn secondary" href="' + dlUrl2 + '" download>' + fmtLabel + ' 模型</a>';
+        }
+        html += '</div>';
+      }
     } else {
-      prompt('复制以下链接：', url);
+      html += '<a class="download-btn" href="' + DL_BASE + shareId + '/download" download>💾 下载文件</a>';
+      if (typeof navigator.share === 'function') {
+        html += '<button class="download-btn secondary" onclick="navigator.share({title:\'' + escJs(meta.name) + '\',url:location.href}).catch(function(){})">📤 分享给TA</button>';
+      }
     }
+
+    html += '</div>'; // download-section
+    html += '</div>'; // card-body
+    html += '</div>'; // card
+
+    html += '<div class="brand">来自 <a href="https://zhongzhouxian-qiyuji.pages.dev" target="_blank">中轴奇游记 · AI魔法师训练营</a></div>';
+
+    app.innerHTML = html;
   }
 
-  function escapeHtml(s) {
+  function esc(s) {
     if (!s) return '';
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
   }
-  function escapeJs(s) {
+  function escJs(s) {
     if (!s) return '';
-    return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return s.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
   }
 })();
 </script>
