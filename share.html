@@ -210,7 +210,7 @@ body {
           if (models[m].format === 'glb') { glbModel = models[m]; break; }
         }
         if (!glbModel && models.length > 0) glbModel = models[0];
-        var modelSrc = API + '/api/proxy-model?url=' + encodeURIComponent(glbModel.url);
+        var modelSrc = API + '/api/proxy-model?shareId=' + encodeURIComponent(shareId) + '&url=' + encodeURIComponent(glbModel.url);
         html += '<div class="section-title">🗿 3D模型预览</div>';
         html += '<div class="viewer-section">';
         html += '<model-viewer id="share-model-viewer" src="' + escAttr(modelSrc) + '" alt="3D模型" auto-rotate camera-controls shadow-intensity="1" interaction-prompt="none" style="width:100%;height:350px;background:linear-gradient(180deg,#E3F2FD,#BBDEFB);border-radius:16px;"></model-viewer>';
@@ -225,7 +225,7 @@ body {
       html += '<img src="' + escAttr(imgSrc) + '" alt="作品图片" style="max-width:100%;max-height:400px;object-fit:contain;">';
       html += '</div>';
     } else if (is3D) {
-      var modelSrc3d = API + '/api/proxy-model?url=' + encodeURIComponent(data);
+      var modelSrc3d = API + '/api/proxy-model?shareId=' + encodeURIComponent(shareId) + '&url=' + encodeURIComponent(data);
       html += '<div class="viewer-section">';
       html += '<model-viewer src="' + escAttr(modelSrc3d) + '" alt="3D模型" auto-rotate camera-controls shadow-intensity="1" interaction-prompt="none" style="width:100%;height:350px;background:linear-gradient(180deg,#E3F2FD,#BBDEFB);border-radius:16px;"></model-viewer>';
       html += '</div>';
@@ -372,23 +372,43 @@ body {
     if (idx < 0 || idx >= models.length) return;
     var model = models[idx];
     var fname = model.filename || ('model.' + model.format);
-    // Try fetch-based download with correct filename
-    fetch(model.url, { mode: 'cors' })
-      .then(function(r) { return r.blob(); })
-      .then(function(blob) {
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = fname;
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(function() { URL.revokeObjectURL(url); document.body.removeChild(a); }, 2000);
-      })
-      .catch(function() {
-        // CORS fallback: open URL directly
-        window.open(model.url, '_blank');
-      });
+
+    // For GLB: use Worker download endpoint (may serve from cache)
+    if (model.format === 'glb') {
+      var dlUrl = DL_BASE + shareId + '/download?file=glb';
+      fetch(dlUrl)
+        .then(function(r) {
+          var ct = r.headers.get('content-type') || '';
+          if (ct.indexOf('application/json') >= 0) {
+            return r.json().then(function(j) {
+              // Cache miss, try direct URL
+              return fetch(j.url, { mode: 'cors' });
+            });
+          }
+          return r;
+        })
+        .then(function(r) { return r.blob(); })
+        .then(function(blob) {
+          var u = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = u; a.download = fname; a.style.display = 'none';
+          document.body.appendChild(a); a.click();
+          setTimeout(function() { URL.revokeObjectURL(u); document.body.removeChild(a); }, 2000);
+        })
+        .catch(function() { window.open(model.url, '_blank'); });
+    } else {
+      // For STL/3MF: try direct fetch, fallback to opening URL
+      fetch(model.url, { mode: 'cors' })
+        .then(function(r) { return r.blob(); })
+        .then(function(blob) {
+          var u = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = u; a.download = fname; a.style.display = 'none';
+          document.body.appendChild(a); a.click();
+          setTimeout(function() { URL.revokeObjectURL(u); document.body.removeChild(a); }, 2000);
+        })
+        .catch(function() { window.open(model.url, '_blank'); });
+    }
   };
 
   // Legacy single-file download
