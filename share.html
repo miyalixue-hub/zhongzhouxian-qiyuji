@@ -264,12 +264,19 @@ body {
     html += '<div class="brand">来自 <a href="https://zhongzhouxian-qiyuji.pages.dev" target="_blank">中轴奇游记 · AI魔法师训练营</a></div>';
     app.innerHTML = html;
 
-    // model-viewer load event: hide loading overlay
+    // model-viewer load/error/timeout handling
     var mv = document.getElementById('share-model-viewer');
     var vl = document.getElementById('viewer-loading');
     if (mv && vl) {
-      mv.addEventListener('load', function() { if (vl) vl.style.display = 'none'; });
-      mv.addEventListener('error', function() { if (vl) { vl.innerHTML = '<div style="text-align:center;color:#c62828;font-size:13px;padding:20px;">3D模型加载失败<br><span style="font-size:11px;color:#78909C;">模型URL可能已过期</span></div>'; } });
+      var settled = false;
+      function settleError() {
+        if (settled) return; settled = true;
+        vl.innerHTML = '<div style="text-align:center;color:#546E7A;font-size:13px;padding:20px;">⏳ 3D模型暂未加载<br><span style="font-size:11px;color:#90A4AE;">可点击下方按钮下载模型文件</span></div>';
+      }
+      mv.addEventListener('load', function() { if (vl) vl.style.display = 'none'; settled = true; });
+      mv.addEventListener('error', settleError);
+      // Fallback: if neither event fires within 12s, show fallback message
+      setTimeout(function() { if (!settled) settleError(); }, 12000);
     }
   }
 
