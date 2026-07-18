@@ -348,8 +348,24 @@ body {
     var models = shareData.models || [];
     if (idx < 0 || idx >= models.length) return;
     var model = models[idx];
-    // Open URL in new tab for download
-    window.open(model.url, '_blank');
+    var fname = model.filename || ('model.' + model.format);
+    // Try fetch-based download with correct filename
+    fetch(model.url, { mode: 'cors' })
+      .then(function(r) { return r.blob(); })
+      .then(function(blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = fname;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() { URL.revokeObjectURL(url); document.body.removeChild(a); }, 2000);
+      })
+      .catch(function() {
+        // CORS fallback: open URL directly
+        window.open(model.url, '_blank');
+      });
   };
 
   // Legacy single-file download
