@@ -8,7 +8,7 @@
             // 火山引擎 Seedream 配置
             // API Key 由 Worker 服务端管理，前端不再存储密钥
             baseUrl: 'https://ark.cn-beijing.volces.com/api/v3',  // 保留作为备份，实际通过 Worker 代理调用
-            model: 'doubao-seedream-4-5-251128',  // Seedream 4.5
+            model: 'doubao-seedream-5-0-260128',  // Seedream 5.0 Lite
             size: '1920x1920',  // Seedream 4.5 要求至少 3686400 像素 (1920x1920)
             
             // 腾讯云 COS 配置（用于持久化存储生成的图片）
