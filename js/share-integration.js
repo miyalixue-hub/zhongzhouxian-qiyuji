@@ -186,15 +186,6 @@
       }
     }
 
-    // DEBUG: show what we collected (temporary - remove after testing)
-    var dbgMsg = '[分享调试]\n图片: ' + images.length + '张\n模型: ' + models.length + '个\n';
-    dbgMsg += 'state._generatedImageUrls: ' + (state._generatedImageUrls || []).length + '项, truthy=' + (state._generatedImageUrls || []).filter(function(u){return !!u;}).length + '\n';
-    dbgMsg += 'state.meshyAllUrls: ' + (state.meshyAllUrls ? JSON.stringify(Object.keys(state.meshyAllUrls)) : 'null') + '\n';
-    var cachedCount = 0;
-    try { cachedCount = (JSON.parse(localStorage.getItem('cached_ai_images') || '[]')).length; } catch(e) {}
-    dbgMsg += 'localStorage cached_ai_images: ' + cachedCount + '条';
-    alert(dbgMsg);
-
     return {
       type: 'package',
       name: name,
