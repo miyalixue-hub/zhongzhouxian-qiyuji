@@ -42,46 +42,48 @@
     document.head.appendChild(s);
   }
 
+  // ========== Helper: extract base64 from a DOM <img> element via canvas ==========
+  function extractFromDOM(imgEl, label) {
+    try {
+      if (!imgEl || !imgEl.complete || !imgEl.naturalWidth) {
+        console.log('[Share] domExtract SKIP: img not ready, label=' + label);
+        return null;
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = imgEl.naturalWidth;
+      canvas.height = imgEl.naturalHeight;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(imgEl, 0, 0);
+      var dataURL = canvas.toDataURL('image/png');
+      console.log('[Share] domExtract OK: label=' + label + ', size=' + imgEl.naturalWidth + 'x' + imgEl.naturalHeight + ', b64len=' + dataURL.length);
+      return dataURL;
+    } catch(e) {
+      console.error('[Share] domExtract FAILED: label=' + label + ', err=' + e.message);
+      return null;
+    }
+  }
+
   // ========== Helper: convert any image source to base64 data URI ==========
   async function imageToBase64(src, label) {
-    if (!src) { console.log('[Share] img2b64 SKIP: empty src, label=' + (label||'')); return null; }
-    console.log('[Share] img2b64 START: label=' + (label||'') + ', type=' + typeof src + ', len=' + src.length + ', preview=' + src.substring(0, 50));
+    if (!src) { console.log('[Share] img2b64 SKIP: empty src'); return null; }
     // Already a data URI
-    if (src.indexOf('data:') === 0) { console.log('[Share] img2b64 PASS: already data URI'); return src; }
+    if (src.indexOf('data:image') === 0) return src;
     // HTTP URL → fetch → blob → base64
-    if (src.indexOf('http') === 0 || src.indexOf('https') === 0) {
+    if (src.indexOf('http') === 0) {
       try {
-        console.log('[Share] img2b64: fetching HTTP URL...');
-        var resp = await fetch(src);
-        console.log('[Share] img2b64: fetch done, ok=' + resp.ok + ', status=' + resp.status);
+        var resp = await fetch(src, { mode: 'cors' });
         if (resp.ok) {
           var blob = await resp.blob();
-          console.log('[Share] img2b64: blob ok, size=' + blob.size + ', type=' + blob.type);
           return await new Promise(function(resolve, reject) {
             var reader = new FileReader();
-            reader.onloadend = function() { console.log('[Share] img2b64: FileReader done, len=' + reader.result.length); resolve(reader.result); };
-            reader.onerror = function() { console.error('[Share] img2b64: FileReader error'); reject(new Error('base64 failed')); };
+            reader.onloadend = function() { resolve(reader.result); };
+            reader.onerror = function() { reject(new Error('FileReader failed')); };
             reader.readAsDataURL(blob);
           });
         }
-      } catch(e) { console.error('[Share] img2b64 HTTP fetch failed:', label, e.message); }
+        console.log('[Share] img2b64: fetch status=' + resp.status + ' for ' + label);
+      } catch(e) { console.log('[Share] img2b64: fetch error for ' + label + ': ' + e.message); }
     }
-    // Relative or other path → try fetch anyway
-    try {
-      console.log('[Share] img2b64: trying relative fetch...');
-      var resp2 = await fetch(src);
-      console.log('[Share] img2b64: relative fetch done, ok=' + resp2.ok);
-      if (resp2.ok) {
-        var blob2 = await resp2.blob();
-        return await new Promise(function(resolve, reject) {
-          var reader = new FileReader();
-          reader.onloadend = function() { resolve(reader.result); };
-          reader.onerror = function() { reject(new Error('base64 failed')); };
-          reader.readAsDataURL(blob2);
-        });
-      }
-    } catch(e) { console.error('[Share] img2b64 relative fetch failed:', label, e.message); }
-    console.log('[Share] img2b64 FAILED: all methods exhausted for label=' + (label||''));
     return null;
   }
 
@@ -92,89 +94,73 @@
     var name = studentName + '的' + creatureName;
     var styleNames = ['古石刻韵', '琉璃焕彩', '青铜古韵', '水墨丹青', '经典复古', '现代简约', '金色华贵', '传统风格'];
 
-    // ============ Collect 2D images with multi-layer fallback ============
-    var rawUrls = [];  // array of {url, source}
+    // ============ Collect 2D images — DOM-first strategy ============
+    // Root cause: state._generatedImageUrls stores TOS HTTP URLs (ark-acg-cn-beijing.tos)
+    // Browser CORS blocks fetch of these URLs → all conversions fail.
+    // Fix: Extract directly from DOM <img> elements (already loaded in browser).
 
-    // Layer 1: state._generatedImageUrls (filter truthy)
-    var stateUrls = state._generatedImageUrls || [];
-    var stateTruthy = stateUrls.filter(function(u) { return !!u; });
-    console.log('[Share] Layer1 state._generatedImageUrls: total=' + stateUrls.length + ', truthy=' + stateTruthy.length);
-    stateTruthy.forEach(function(u, i) { rawUrls.push({url: u, source: 'state[' + i + ']'}); });
-
-    // Layer 2: DOM candidate images (only if state was empty)
-    if (rawUrls.length === 0) {
-      var domImgs = document.querySelectorAll('.candidate-card .candidate-image img');
-      console.log('[Share] Layer2 DOM candidate imgs: ' + domImgs.length);
-      for (var d = 0; d < domImgs.length && rawUrls.length < 4; d++) {
-        var src = domImgs[d].getAttribute('src');
-        if (src && src !== '' && src.indexOf('loading') < 0) {
-          rawUrls.push({url: src, source: 'dom[' + d + ']'});
+    // Layer 1: Extract from DOM candidate-card images (MOST RELIABLE)
+    var domImgs = document.querySelectorAll('.candidate-card .candidate-image img');
+    console.log('[Share] Layer1 DOM candidate imgs: ' + domImgs.length);
+    for (var d = 0; d < domImgs.length && images.length < 4; d++) {
+      var imgEl = domImgs[d];
+      var src = imgEl.getAttribute('src');
+      if (!src || src === '' || src.indexOf('loading') >= 0) continue;
+      // If already data URI, use directly
+      if (src.indexOf('data:image') === 0) {
+        images.push({ base64: src, name: styleNames[images.length] || ('方案' + (images.length + 1)), mime: 'image/png' });
+        console.log('[Share] Layer1 dom direct data-uri OK: idx=' + images.length);
+      } else {
+        // Extract via canvas (browser already loaded this image)
+        var b64 = extractFromDOM(imgEl, 'dom[' + d + ']');
+        if (b64) {
+          images.push({ base64: b64, name: styleNames[images.length] || ('方案' + (images.length + 1)), mime: 'image/png' });
+        } else {
+          console.log('[Share] Layer1 dom canvas extract failed for dom[' + d + ']');
         }
       }
     }
 
-    // Layer 3: localStorage cached_ai_images (last resort)
-    if (rawUrls.length === 0) {
+    // Layer 2: localStorage cached_ai_images
+    if (images.length < 4) {
       try {
         var cached = JSON.parse(localStorage.getItem('cached_ai_images') || '[]');
-        console.log('[Share] Layer3 localStorage cached_ai_images: ' + cached.length);
-        // Take the last 4 (most recent)
-        var start = Math.max(0, cached.length - 4);
-        for (var c = start; c < cached.length; c++) {
-          rawUrls.push({url: cached[c], source: 'cache[' + c + ']'});
+        console.log('[Share] Layer2 localStorage cached: ' + cached.length + ' items');
+        for (var c = cached.length - 1; c >= 0 && images.length < 4; c--) {
+          var cachedItem = cached[c];
+          if (!cachedItem) continue;
+          if (typeof cachedItem === 'string' && cachedItem.indexOf('data:image') === 0) {
+            images.push({ base64: cachedItem, name: styleNames[images.length] || ('方案' + (images.length + 1)), mime: 'image/png' });
+            console.log('[Share] Layer2 cache direct data-uri OK');
+          } else if (typeof cachedItem === 'string' && cachedItem.indexOf('http') === 0) {
+            var b64 = await imageToBase64(cachedItem, 'cache[' + c + ']');
+            if (b64) {
+              images.push({ base64: b64, name: styleNames[images.length] || ('方案' + (images.length + 1)), mime: 'image/png' });
+            }
+          }
         }
-      } catch(e) { console.warn('[Share] localStorage read failed:', e.message); }
+      } catch(e) { console.warn('[Share] Layer2 localStorage read failed:', e.message); }
     }
 
-    // Layer 4: any <img> on page-10 with a real src (very broad fallback)
-    if (rawUrls.length === 0) {
-      var page10 = document.getElementById('page-10');
-      if (page10) {
-        var allImgs = page10.querySelectorAll('img[src]');
-        console.log('[Share] Layer4 page-10 all imgs: ' + allImgs.length);
-        for (var p = 0; p < allImgs.length && rawUrls.length < 4; p++) {
-          var pSrc = allImgs[p].getAttribute('src');
-          if (pSrc && pSrc.length > 20 && (pSrc.indexOf('data:image') === 0 || pSrc.indexOf('http') === 0 || pSrc.indexOf('assets/') === 0)) {
-            rawUrls.push({url: pSrc, source: 'page10-img[' + p + ']'});
+    // Layer 3: state._generatedImageUrls (HTTP URLs — likely CORS fail, last resort)
+    if (images.length < 4) {
+      var stateUrls = state._generatedImageUrls || [];
+      console.log('[Share] Layer3 state._generatedImageUrls: ' + stateUrls.length + ' items');
+      for (var s = 0; s < stateUrls.length && images.length < 4; s++) {
+        var u = stateUrls[s];
+        if (!u) continue;
+        if (typeof u === 'string' && u.indexOf('data:image') === 0) {
+          images.push({ base64: u, name: styleNames[images.length] || ('方案' + (images.length + 1)), mime: 'image/png' });
+        } else if (typeof u === 'string' && u.indexOf('http') === 0) {
+          var b64 = await imageToBase64(u, 'state[' + s + ']');
+          if (b64) {
+            images.push({ base64: b64, name: styleNames[images.length] || ('方案' + (images.length + 1)), mime: 'image/png' });
+          } else {
+            console.log('[Share] Layer3 state fetch failed (expected CORS): state[' + s + ']');
           }
         }
       }
     }
-
-    console.log('[Share] Total rawUrls collected: ' + rawUrls.length);
-    for (var r = 0; r < rawUrls.length; r++) {
-      console.log('[Share]   [' + r + '] source=' + rawUrls[r].source + ', url_len=' + rawUrls[r].url.length + ', preview=' + rawUrls[r].url.substring(0, 60));
-    }
-
-    // Convert all raw URLs to base64
-    for (var i = 0; i < rawUrls.length && images.length < 4; i++) {
-      var b64 = await imageToBase64(rawUrls[i].url, rawUrls[i].source);
-      if (b64) {
-        images.push({ base64: b64, name: styleNames[i] || ('方案' + (i + 1)), mime: 'image/png' });
-        console.log('[Share] image[' + i + '] OK: len=' + b64.length + ' from ' + rawUrls[i].source);
-      } else {
-        console.error('[Share] image[' + i + '] FAILED to convert from ' + rawUrls[i].source);
-      }
-    }
-
-    // === ULTRA DEBUG: show exact details of each item ===
-    var dbgDetail = '[DEBUG DETAIL]\n';
-    for (var j = 0; j < rawUrls.length; j++) {
-      var item = rawUrls[j].url;
-      dbgDetail += '[' + j + '] src=' + rawUrls[j].source + '\n';
-      dbgDetail += '    type=' + typeof item + '\n';
-      dbgDetail += '    len=' + item.length + '\n';
-      dbgDetail += '    starts=' + item.substring(0, 30) + '\n';
-      dbgDetail += '    isDataUri=' + (item.indexOf('data:') === 0) + '\n';
-      dbgDetail += '    isHttp=' + (item.indexOf('http') === 0) + '\n';
-    }
-    dbgDetail += 'converted=' + images.length + '/4\n';
-    dbgDetail += 'localStorage cached: ' + (localStorage.getItem('cached_ai_images') || '[]').substring(0, 100);
-    console.log(dbgDetail);
-
-    // === Show detailed debug to user ===
-    var dbgMsg2 = '[详细调试]\n' + dbgDetail;
-    alert(dbgMsg2);
 
     // Collect 3D models
     var urls = state.meshyAllUrls || {};
