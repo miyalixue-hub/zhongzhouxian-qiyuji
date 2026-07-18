@@ -48,34 +48,60 @@
     var models = [];
     var name = studentName + '的' + creatureName;
 
-    // Collect 2D images
+    // Collect 2D images - 3-strategy: state→fetch→DOM→canvas
     var imgs = state._generatedImageUrls || [];
     var styleNames = ['经典复古', '现代简约', '金色华贵', '水墨丹青', '古石刻韵', '琉璃焕彩', '青铜古韵', '水墨丹青'];
+    // Get DOM images as fallback
+    var domImgs = document.querySelectorAll('.candidate-card .candidate-image img');
+    var domSrcs = [];
+    for (var d = 0; d < domImgs.length; d++) {
+      var s = domImgs[d].getAttribute('src');
+      if (s) domSrcs.push(s);
+    }
+    // If state empty but DOM has images, use DOM
+    if (imgs.length === 0 && domSrcs.length > 0) {
+      console.log('[Share] state empty, using DOM images (' + domSrcs.length + ')');
+      imgs = domSrcs.slice(0, 4);
+    }
     for (var i = 0; i < imgs.length; i++) {
       if (imgs[i]) {
         var b64 = imgs[i];
-        // If it's a URL (not a data URI), fetch and convert to base64
         if (b64.indexOf('http') === 0 || b64.indexOf('https') === 0) {
+          var converted = false;
+          // Strategy 1: fetch + base64
           try {
             var imgResp = await fetch(b64);
-            var blob = await imgResp.blob();
-            b64 = await new Promise(function(resolve, reject) {
-              var reader = new FileReader();
-              reader.onloadend = function() { resolve(reader.result); };
-              reader.onerror = function() { reject(new Error('base64转换失败')); };
-              reader.readAsDataURL(blob);
-            });
-          } catch(e) {
-            console.warn('[Share] Image ' + i + ' URL→base64 failed:', e);
-            // Skip this image if conversion fails
-            continue;
+            if (imgResp.ok) {
+              var blob = await imgResp.blob();
+              b64 = await new Promise(function(resolve, reject) {
+                var reader = new FileReader();
+                reader.onloadend = function() { resolve(reader.result); };
+                reader.onerror = function() { reject(new Error('base64 failed')); };
+                reader.readAsDataURL(blob);
+              });
+              converted = true;
+            }
+          } catch(e) { console.warn('[Share] img' + i + ' fetch fail:', e.message); }
+          // Strategy 2: DOM src
+          if (!converted && domSrcs[i]) {
+            b64 = domSrcs[i]; converted = true;
+            console.log('[Share] img' + i + ' DOM fallback');
           }
+          // Strategy 3: canvas extraction
+          if (!converted && domImgs[i]) {
+            try {
+              var canvas = document.createElement('canvas');
+              canvas.width = domImgs[i].naturalWidth || 512;
+              canvas.height = domImgs[i].naturalHeight || 512;
+              canvas.getContext('2d').drawImage(domImgs[i], 0, 0);
+              b64 = canvas.toDataURL('image/png');
+              converted = true;
+              console.log('[Share] img' + i + ' canvas fallback');
+            } catch(e) { console.warn('[Share] img' + i + ' canvas fail'); }
+          }
+          if (!converted) { console.error('[Share] img' + i + ' all failed'); continue; }
         }
-        images.push({
-          base64: b64, // full data URI for display
-          name: styleNames[i] || ('方案' + (i + 1)),
-          mime: 'image/png'
-        });
+        images.push({ base64: b64, name: styleNames[i] || ('方案' + (i + 1)), mime: 'image/png' });
       }
     }
 
