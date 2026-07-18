@@ -7,227 +7,112 @@
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   background: linear-gradient(160deg, #E3F2FD 0%, #BBDEFB 40%, #E1F5FE 100%);
   min-height: 100vh;
   padding: 16px;
 }
-
-/* Loading */
-.loading {
-  text-align: center;
-  padding: 100px 20px;
-  color: #1565C0;
-}
+.loading { text-align: center; padding: 100px 20px; color: #1565C0; }
 .spinner {
   width: 48px; height: 48px;
-  border: 4px solid #BBDEFB;
-  border-top-color: #1976D2;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  border: 4px solid #BBDEFB; border-top-color: #1976D2;
+  border-radius: 50%; animation: spin 0.8s linear infinite;
   margin: 0 auto 20px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading p { font-size: 16px; color: #1565C0; }
-
-/* Error */
 .error { text-align: center; padding: 80px 20px; }
 .error .icon { font-size: 64px; margin-bottom: 16px; }
 .error h2 { color: #1565C0; margin-bottom: 8px; font-size: 20px; }
 .error p { color: #546E7A; font-size: 14px; line-height: 1.8; }
-
-/* Card */
 .card {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255,255,255,0.95);
   backdrop-filter: blur(10px);
   border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(25, 118, 210, 0.12);
-  max-width: 480px;
-  margin: 0 auto;
-  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(25,118,210,0.12);
+  max-width: 480px; margin: 0 auto; overflow: hidden;
 }
-
 .card-header {
   background: linear-gradient(135deg, #1976D2 0%, #42A5F5 100%);
-  padding: 28px 20px;
-  text-align: center;
-  color: white;
+  padding: 28px 20px; text-align: center; color: white;
 }
 .card-header .emoji { font-size: 48px; margin-bottom: 8px; }
 .card-header h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
 .card-header .subtitle { font-size: 13px; opacity: 0.9; }
-
 .card-body { padding: 20px; }
-
-/* 2D Image Gallery */
 .image-gallery {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 16px;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin-bottom: 16px;
 }
 .image-item {
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  background: #E3F2FD;
-  aspect-ratio: 1;
+  position: relative; border-radius: 12px; overflow: hidden;
+  background: #E3F2FD; aspect-ratio: 1;
 }
-.image-item img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  display: block;
-}
+.image-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .image-item .img-label {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
+  position: absolute; bottom: 0; left: 0; right: 0;
   background: linear-gradient(transparent, rgba(0,0,0,0.5));
-  color: white;
-  font-size: 11px;
-  padding: 16px 8px 6px;
-  text-align: center;
+  color: white; font-size: 11px; padding: 16px 8px 6px; text-align: center;
 }
 .image-item .img-dl {
-  position: absolute;
-  top: 6px; right: 6px;
+  position: absolute; top: 6px; right: 6px;
   width: 28px; height: 28px;
-  background: rgba(255,255,255,0.85);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  font-size: 14px;
-  opacity: 0;
-  transition: opacity 0.2s;
+  background: rgba(255,255,255,0.85); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 14px; border: none;
 }
-.image-item:hover .img-dl,
-.image-item:focus .img-dl,
-.image-item:active .img-dl { opacity: 1; }
-
-/* Single image (legacy) */
-.preview-area {
-  background: #E3F2FD;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 16px;
-  min-height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.preview-area img {
-  max-width: 100%;
-  max-height: 400px;
-  object-fit: contain;
-}
-
-/* 3D Viewer */
-.viewer-section {
-  margin-bottom: 16px;
-}
+.viewer-section { margin-bottom: 16px; }
 .viewer-section model-viewer {
-  width: 100%;
-  height: 300px;
+  width: 100%; height: 300px;
   background: linear-gradient(180deg, #E3F2FD, #BBDEFB);
   border-radius: 12px;
 }
-
-/* Section Title */
 .section-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1565C0;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  font-size: 15px; font-weight: 600; color: #1565C0;
+  margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
 }
-
-/* Download Buttons */
-.download-section { margin-top: 16px; }
 .download-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 14px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 14px;
   background: linear-gradient(135deg, #1976D2, #1565C0);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
+  color: white; border: none; border-radius: 12px;
+  font-size: 15px; font-weight: 600; cursor: pointer;
   margin-bottom: 10px;
-  transition: transform 0.15s, box-shadow 0.15s;
 }
 .download-btn:active { transform: scale(0.97); }
 .download-btn.secondary {
-  background: #E3F2FD;
-  color: #1565C0;
+  background: #E3F2FD; color: #1565C0;
   border: 1.5px solid #90CAF9;
 }
-.download-btn.secondary:active { background: #BBDEFB; }
-
-.download-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-/* Info Row */
+.download-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
 .info-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid #E3F2FD;
-  font-size: 13px;
+  display: flex; justify-content: space-between;
+  padding: 10px 0; border-bottom: 1px solid #E3F2FD; font-size: 13px;
 }
 .info-row:last-child { border-bottom: none; }
 .info-label { color: #78909C; }
 .info-value { color: #37474F; font-weight: 600; }
-
-/* Expiry */
 .expiry {
-  color: #1976D2;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 12px;
-  padding: 8px;
-  background: #E3F2FD;
-  border-radius: 8px;
+  color: #1976D2; font-size: 12px; text-align: center;
+  margin-top: 12px; padding: 8px;
+  background: #E3F2FD; border-radius: 8px;
 }
-
-/* Brand Footer */
 .brand {
-  text-align: center;
-  padding: 20px 16px;
-  color: #90A4AE;
-  font-size: 12px;
+  text-align: center; padding: 20px 16px;
+  color: #90A4AE; font-size: 12px;
 }
 .brand a { color: #1976D2; text-decoration: none; }
-
-/* Mobile touch: always show download icon */
-@media (hover: none) {
-  .image-item .img-dl { opacity: 1; }
-}
+@media (hover: none) { .image-item .img-dl { opacity: 1; } }
 </style>
 </head>
 <body>
-
 <div id="app">
   <div class="loading" id="loading">
     <div class="spinner"></div>
     <p>正在加载作品...</p>
   </div>
 </div>
-
 <script>
 (function() {
   var API = 'https://api.mindbubble.cloud';
@@ -235,6 +120,8 @@ body {
   var params = new URLSearchParams(window.location.search);
   var shareId = params.get('id');
   var app = document.getElementById('app');
+  var shareData = null;
+  var shareMeta = null;
 
   if (!shareId || !/^[A-Za-z0-9]{8}$/.test(shareId)) {
     showError('无效的分享链接', '链接格式不正确，请检查是否完整。');
@@ -252,10 +139,12 @@ body {
         }
         return;
       }
-      renderShare(result.metadata, result.data);
+      shareMeta = result.metadata;
+      shareData = result.data;
+      renderShare(shareMeta, shareData);
     })
     .catch(function(err) {
-      showError('网络错误', '无法连接服务器，请检查网络。\n错误: ' + err.message);
+      showError('网络错误', '无法连接服务器，请检查网络。');
     });
 
   function showError(title, msg) {
@@ -272,7 +161,6 @@ body {
     var isPackage = meta.type === 'package' && typeof data === 'object' && data !== null;
     var is2D = meta.type === '2d';
     var is3D = meta.type === '3d';
-
     var html = '<div class="card">';
 
     // Header
@@ -285,12 +173,11 @@ body {
     html += '<h1>' + headerTitle + '</h1>';
     html += '<div class="subtitle">' + headerSub + '</div>';
     html += '</div>';
-
     html += '<div class="card-body">';
 
     // ---- Content Preview ----
     if (isPackage) {
-      // 2D Images
+      // 2D Images - use data URI directly
       var images = data.images || [];
       if (images.length > 0) {
         html += '<div class="section-title">🎨 AI生成图片 (' + images.length + '张)</div>';
@@ -301,18 +188,17 @@ body {
           if (src && src.indexOf('data:') !== 0) {
             src = 'data:image/png;base64,' + src;
           }
-          var dlUrl = DL_BASE + shareId + '/download?file=image_' + i;
           var label = img.name || ('方案' + (i + 1));
           html += '<div class="image-item">';
-          html += '<img src="' + src + '" alt="' + esc(label) + '" loading="lazy">';
+          html += '<img src="' + escAttr(src) + '" alt="' + esc(label) + '" loading="lazy">';
           html += '<div class="img-label">' + esc(label) + '</div>';
-          html += '<a class="img-dl" href="' + dlUrl + '" download title="下载">💾</a>';
+          html += '<button class="img-dl" onclick="dlImage(' + i + ')" title="下载">💾</button>';
           html += '</div>';
         }
         html += '</div>';
       }
 
-      // 3D Models
+      // 3D Models - model-viewer preview
       var models = data.models || [];
       if (models.length > 0) {
         var glbModel = null;
@@ -320,20 +206,19 @@ body {
           if (models[m].format === 'glb') { glbModel = models[m]; break; }
         }
         if (!glbModel && models.length > 0) glbModel = models[0];
-
-        html += '<div class="section-title">🗿 3D模型预览</div>';
+        html += '<div class="section-title"> 3D模型预览</div>';
         html += '<div class="viewer-section">';
-        html += '<model-viewer src="' + esc(glbModel.url) + '" alt="3D模型" auto-rotate camera-controls shadow-intensity="1" style="width:100%;height:300px;border-radius:12px;"></model-viewer>';
+        html += '<model-viewer src="' + escAttr(glbModel.url) + '" alt="3D模型" auto-rotate camera-controls shadow-intensity="1" style="width:100%;height:300px;border-radius:12px;"></model-viewer>';
         html += '</div>';
       }
-
     } else if (is2D) {
       var imgSrc = data.indexOf('data:') === 0 ? data : 'data:image/png;base64,' + data;
-      html += '<div class="preview-area"><img src="' + imgSrc + '" alt="作品图片"></div>';
-
+      html += '<div style="background:#E3F2FD;border-radius:12px;overflow:hidden;margin-bottom:16px;min-height:200px;display:flex;align-items:center;justify-content:center;">';
+      html += '<img src="' + escAttr(imgSrc) + '" alt="作品图片" style="max-width:100%;max-height:400px;object-fit:contain;">';
+      html += '</div>';
     } else if (is3D) {
-      html += '<div class="preview-area">';
-      html += '<model-viewer src="' + esc(data) + '" alt="3D模型" auto-rotate camera-controls shadow-intensity="1" style="width:100%;height:350px;"></model-viewer>';
+      html += '<div class="viewer-section">';
+      html += '<model-viewer src="' + escAttr(data) + '" alt="3D模型" auto-rotate camera-controls shadow-intensity="1" style="width:100%;height:350px;border-radius:12px;"></model-viewer>';
       html += '</div>';
     }
 
@@ -342,45 +227,81 @@ body {
     var expires = new Date(meta.expiresAt);
     var dateStr = created.getFullYear() + '/' + (created.getMonth() + 1) + '/' + created.getDate();
     var expStr = expires.getFullYear() + '/' + (expires.getMonth() + 1) + '/' + expires.getDate();
-
     html += '<div class="info-row"><span class="info-label">创建时间</span><span class="info-value">' + dateStr + '</span></div>';
     html += '<div class="expiry">⏰ 有效期至 ' + expStr + '</div>';
 
     // ---- Downloads ----
-    html += '<div class="download-section">';
-
+    html += '<div style="margin-top:16px;">';
     if (isPackage) {
-      // Images download
       var images2 = data.images || [];
       if (images2.length > 0) {
-        html += '<a class="download-btn" href="' + DL_BASE + shareId + '/download?file=image_0" download>📥 下载全部图片 (' + images2.length + '张)</a>';
+        html += '<button class="download-btn" onclick="dlAllImages()">📥 下载全部图片 (' + images2.length + '张)</button>';
       }
-      // 3D models download
       var models2 = data.models || [];
       if (models2.length > 0) {
         html += '<div class="download-grid">';
         for (var mi = 0; mi < models2.length; mi++) {
           var mf = models2[mi];
-          var dlUrl2 = DL_BASE + shareId + '/download?file=' + encodeURIComponent(mf.format);
           var fmtLabel = mf.format.toUpperCase();
-          html += '<a class="download-btn secondary" href="' + dlUrl2 + '" download>' + fmtLabel + ' 模型</a>';
+          html += '<button class="download-btn secondary" onclick="dlModel(' + mi + ')">' + fmtLabel + ' 模型</button>';
         }
         html += '</div>';
       }
     } else {
-      html += '<a class="download-btn" href="' + DL_BASE + shareId + '/download" download>💾 下载文件</a>';
-      if (typeof navigator.share === 'function') {
-        html += '<button class="download-btn secondary" onclick="navigator.share({title:\'' + escJs(meta.name) + '\',url:location.href}).catch(function(){})">📤 分享给TA</button>';
-      }
+      html += '<button class="download-btn" onclick="dlLegacy()">💾 下载文件</button>';
     }
-
-    html += '</div>'; // download-section
-    html += '</div>'; // card-body
-    html += '</div>'; // card
-
+    html += '</div>';
+    html += '</div></div>';
     html += '<div class="brand">来自 <a href="https://zhongzhouxian-qiyuji.pages.dev" target="_blank">中轴奇游记 · AI魔法师训练营</a></div>';
-
     app.innerHTML = html;
+  }
+
+  // ---- Download helpers ----
+  // Download single image by index using data URI
+  window.dlImage = function(idx) {
+    var images = shareData.images || [];
+    if (idx < 0 || idx >= images.length) return;
+    var img = images[idx];
+    var src = img.base64 || '';
+    if (src.indexOf('data:') !== 0) src = 'data:image/png;base64,' + src;
+    var fname = (shareMeta.name || 'artwork') + '_' + (idx + 1) + '.png';
+    triggerDownload(src, fname);
+  };
+
+  // Download all images
+  window.dlAllImages = function() {
+    var images = shareData.images || [];
+    for (var i = 0; i < images.length; i++) {
+      (function(idx) {
+        setTimeout(function() { window.dlImage(idx); }, idx * 500);
+      })(i);
+    }
+  };
+
+  // Download 3D model by index
+  window.dlModel = function(idx) {
+    var models = shareData.models || [];
+    if (idx < 0 || idx >= models.length) return;
+    var model = models[idx];
+    var fname = model.filename || ('model.' + model.format);
+    // Open URL in new tab for download
+    window.open(model.url, '_blank');
+  };
+
+  // Legacy single-file download
+  window.dlLegacy = function() {
+    window.open(DL_BASE + shareId + '/download', '_blank');
+  };
+
+  // Trigger browser download from data URI
+  function triggerDownload(dataUri, filename) {
+    var a = document.createElement('a');
+    a.href = dataUri;
+    a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function() { document.body.removeChild(a); }, 200);
   }
 
   function esc(s) {
@@ -389,9 +310,9 @@ body {
     d.textContent = s;
     return d.innerHTML;
   }
-  function escJs(s) {
+  function escAttr(s) {
     if (!s) return '';
-    return s.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 })();
 </script>
