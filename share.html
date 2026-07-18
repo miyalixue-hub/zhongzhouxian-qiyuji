@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>作品分享 - 中轴县奇游记</title>
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#f5f0e6 0%,#e8dcc4 100%);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+.loading{text-align:center;padding:60px 20px;}
+.loading .spinner{width:48px;height:48px;border:4px solid #e8dcc4;border-top-color:#c04830;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading p{color:#7a6a56;font-size:16px;}
+.error{text-align:center;padding:60px 20px;}
+.error .icon{font-size:64px;margin-bottom:16px;}
+.error h2{color:#c04830;margin-bottom:8px;}
+.error p{color:#7a6a56;font-size:14px;line-height:1.6;}
+.card{background:white;border-radius:24px;box-shadow:0 12px 40px rgba(0,0,0,0.12);max-width:560px;width:100%;overflow:hidden;}
+.card-header{background:linear-gradient(135deg,#c04830,#e8704a);padding:24px;text-align:center;color:white;}
+.card-header .emoji{font-size:48px;margin-bottom:8px;}
+.card-header h1{font-size:20px;font-weight:700;margin-bottom:4px;}
+.card-header .subtitle{font-size:14px;opacity:0.9;}
+.card-body{padding:24px;}
+.preview-area{background:#f9f5ed;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:200px;display:flex;align-items:center;justify-content:center;}
+.preview-area img{max-width:100%;max-height:400px;object-fit:contain;}
+.preview-area model-viewer{width:100%;height:400px;background:#f9f5ed;}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f0e8d6;}
+.info-row:last-child{border-bottom:none;}
+.info-label{color:#7a6a56;font-size:13px;}
+.info-value{color:#3a2a1a;font-size:14px;font-weight:600;}
+.expiry{color:#c04830;font-size:12px;text-align:center;margin-top:8px;}
+.btn-row{display:flex;gap:12px;margin-top:20px;}
+.btn{flex:1;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:transform 0.15s;}
+.btn:active{transform:scale(0.97);}
+.btn-primary{background:linear-gradient(135deg,#c04830,#e8704a);color:white;}
+.btn-secondary{background:#f0e8d6;color:#7a6a56;}
+.brand{text-align:center;padding:16px;color:#7a6a56;font-size:12px;}
+.brand a{color:#c04830;text-decoration:none;}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>正在加载作品...</p>
+  </div>
+</div>
+
+<script>
+(function() {
+  var API = 'https://api.mindbubble.cloud';
+  var params = new URLSearchParams(window.location.search);
+  var shareId = params.get('id');
+  var app = document.getElementById('app');
+
+  if (!shareId || !/^[A-Za-z0-9]{8}$/.test(shareId)) {
+    showError('无效的分享链接', '链接格式不正确，请检查是否完整复制。');
+    return;
+  }
+
+  // 加载分享数据
+  fetch(API + '/api/share/' + shareId)
+    .then(function(r) { return r.json(); })
+    .then(function(result) {
+      if (!result.success) {
+        if (result.code === 'NOT_FOUND') {
+          showError('作品已过期', '这个分享链接已失效或超过30天有效期。\n快去重新创建一个吧！');
+        } else {
+          showError('加载失败', result.error || '未知错误');
+        }
+        return;
+      }
+      renderShare(result.metadata, result.data);
+    })
+    .catch(function(err) {
+      showError('网络错误', '无法连接到服务器，请检查网络后重试。\n错误: ' + err.message);
+    });
+
+  function showError(title, msg) {
+    app.innerHTML = 
+      '<div class="error">' +
+        '<div class="icon">😔</div>' +
+        '<h2>' + title + '</h2>' +
+        '<p>' + msg.replace(/\n/g, '<br>') + '</p>' +
+      '</div>' +
+      '<div class="brand">来自 <a href="https://zhongzhouxian-qiyuji.pages.dev" target="_blank">中轴县奇游记</a></div>';
+  }
+
+  function renderShare(meta, data) {
+    var is2D = meta.type === '2d';
+    var previewHtml = '';
+    var downloadUrl = API + '/api/share/' + shareId + '/download';
+    
+    if (is2D) {
+      // 2D图片：直接用base64显示
+      var imgSrc = data.startsWith('data:') ? data : 'data:image/png;base64,' + data;
+      previewHtml = '<img src="' + imgSrc + '" alt="作品图片">';
+    } else {
+      // 3D模型：用model-viewer显示GLB
+      previewHtml = '<model-viewer src="' + data + '" alt="3D模型" auto-rotate camera-controls shadow-intensity="1" style="width:100%;height:400px;"></model-viewer>';
+    }
+
+    var createdDate = new Date(meta.createdAt);
+    var expiresDate = new Date(meta.expiresAt);
+    var dateStr = createdDate.getFullYear() + '/' + (createdDate.getMonth()+1) + '/' + createdDate.getDate();
+    var expStr = expiresDate.getFullYear() + '/' + (expiresDate.getMonth()+1) + '/' + expiresDate.getDate();
+    var typeLabel = is2D ? '🎨 AI生成图片' : '🗿 3D模型';
+
+    app.innerHTML = 
+      '<div class="card">' +
+        '<div class="card-header">' +
+          '<div class="emoji">' + (is2D ? '🎨' : '🗿') + '</div>' +
+          '<h1>' + escapeHtml(meta.name || '我的作品') + '</h1>' +
+          '<div class="subtitle">' + typeLabel + ' · 中轴县奇游记</div>' +
+        '</div>' +
+        '<div class="card-body">' +
+          '<div class="preview-area">' + previewHtml + '</div>' +
+          '<div class="info-row"><span class="info-label">类型</span><span class="info-value">' + typeLabel + '</span></div>' +
+          '<div class="info-row"><span class="info-label">创建时间</span><span class="info-value">' + dateStr + '</span></div>' +
+          '<div class="info-row"><span class="info-label">有效期至</span><span class="info-value">' + expStr + '</span></div>' +
+          '<div class="btn-row">' +
+            '<a class="btn btn-primary" href="' + downloadUrl + '" download>💾 下载文件</a>' +
+            '<button class="btn btn-secondary" onclick="navigator.share?navigator.share({title:\'' + escapeJs(meta.name) + '\',url:location.href}).catch(function(){}):copyLink()">📤 分享给TA</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="brand">来自 <a href="https://zhongzhouxian-qiyuji.pages.dev" target="_blank">中轴县奇游记</a> · AI魔法师训练营</div>';
+  }
+
+  function copyLink() {
+    var url = location.href;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(function() {
+        alert('链接已复制！');
+      });
+    } else {
+      prompt('复制以下链接：', url);
+    }
+  }
+
+  function escapeHtml(s) {
+    if (!s) return '';
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function escapeJs(s) {
+    if (!s) return '';
+    return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  }
+})();
+</script>
+</body>
+</html>
