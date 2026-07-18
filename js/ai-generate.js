@@ -28,49 +28,54 @@
             var authHeader = getAuthHeader();
             if (authHeader) headers['Authorization'] = authHeader;
             
-            var response = await fetch(proxyUrl + '/api/2d/generate', {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify(requestBody)
-            });
-            if (!response.ok) {
-                var errText = '';
-                var errCode = '';
-                try { 
-                    var errData = await response.json(); 
-                    errText = (errData.error && errData.error.message) ? errData.error.message : (errData.error || JSON.stringify(errData));
-                    errCode = errData.code || '';
-                } catch(e) { errText = response.statusText; }
-                
-                // Token 失效，清除后重试一次
-                if (response.status === 401 && errCode === 'AUTH_REQUIRED') {
-                    clearToken();
-                    var retryAuthed = await ensureAuthenticated();
-                    if (retryAuthed) {
-                        headers['Authorization'] = getAuthHeader();
-                        response = await fetch(proxyUrl + '/api/2d/generate', {
-                            method: 'POST',
-                            headers: headers,
-                            body: JSON.stringify(requestBody)
-                        });
-                        if (response.ok) {
-                            // 重试成功，继续处理
-                            return await handleSeedreamResponse(response);
-                        }
+            // 带重试的请求函数
+            async function fetchWithRetry(maxRetries = 3) {
+                for (let attempt = 0; attempt <= maxRetries; attempt++) {
+                    var response = await fetch(proxyUrl + '/api/2d/generate', {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify(requestBody)
+                    });
+                    
+                    if (response.ok) {
+                        return await handleSeedreamResponse(response);
                     }
-                    throw new Error('访问密码验证失败');
+                    
+                    var errText = '';
+                    var errCode = '';
+                    try { 
+                        var errData = await response.json(); 
+                        errText = (errData.error && errData.error.message) ? errData.error.message : (errData.error || JSON.stringify(errData));
+                        errCode = errData.code || '';
+                    } catch(e) { errText = response.statusText; }
+                    
+                    // Token 失效，清除后重试一次
+                    if (response.status === 401 && errCode === 'AUTH_REQUIRED') {
+                        clearToken();
+                        var retryAuthed = await ensureAuthenticated();
+                        if (retryAuthed) {
+                            headers['Authorization'] = getAuthHeader();
+                            continue;
+                        }
+                        throw new Error('访问密码验证失败');
+                    }
+                    // 检测服务端配置错误
+                    if (response.status === 500 && /未配置/.test(errText)) {
+                        throw new Error('服务端未配置API Key，请联系管理员');
+                    }
+                    // 检测限流 - 等待后重试
+                    if (response.status === 429) {
+                        if (attempt < maxRetries) {
+                            console.log(`[2D] 遇到429限流，${3 * (attempt + 1)}秒后重试 (第${attempt + 1}次)...`);
+                            await new Promise(r => setTimeout(r, 3000 * (attempt + 1)));
+                            continue;
+                        }
+                        throw new Error('请求太频繁，请稍后再试');
+                    }
+                    throw new Error('API错误(' + response.status + '): ' + errText);
                 }
-                // 检测服务端配置错误
-                if (response.status === 500 && /未配置/.test(errText)) {
-                    throw new Error('服务端未配置API Key，请联系管理员');
-                }
-                // 检测限流
-                if (response.status === 429) {
-                    throw new Error('请求太频繁，请稍后再试');
-                }
-                throw new Error('API错误(' + response.status + '): ' + errText);
             }
-            return await handleSeedreamResponse(response);
+            return await fetchWithRetry();
         }
         
         async function handleSeedreamResponse(response) {
@@ -137,10 +142,19 @@
                 grid.appendChild(card);
             });
             
-            // 并行调用4次API
-            var promises = stylesConfig.map(function(style, i) {
+            // 串行调用，每个请求间隔2秒，避免触发Seedream限流
+            var results = [];
+            for (let i = 0; i < stylesConfig.length; i++) {
+                let style = stylesConfig[i];
                 var fullPrompt = basePrompt + style.suffix;
-                return callSeedreamAPI(fullPrompt, { refImages: refImages }).then(function(url) {
+                
+                // 第一个请求不等待，后续请求间隔2秒
+                if (i > 0) {
+                    console.log(`[2D] 等待2秒后生成第${i+1}个风格...`);
+                    await new Promise(r => setTimeout(r, 2000));
+                }
+                
+                var result = await callSeedreamAPI(fullPrompt, { refImages: refImages }).then(function(url) {
                     state._generatedImageUrls[i] = url;
                     // 缓存成功的AI图片URL到localStorage，供限流时作为示例图使用
                     try {
@@ -158,9 +172,9 @@
                     console.error('候选' + (i+1) + '生成失败:', err);
                     return { index: i, error: err.message, style: style, success: false };
                 });
-            });
-            
-            var results = await Promise.all(promises);
+                
+                results.push(result);
+            }
             var successCount = 0;
             
             // 更新卡片UI
