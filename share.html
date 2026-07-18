@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>作品分享 - 中轴奇游记</title>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
@@ -207,9 +210,13 @@ body {
           if (models[m].format === 'glb') { glbModel = models[m]; break; }
         }
         if (!glbModel && models.length > 0) glbModel = models[0];
-        html += '<div class="section-title"> 3D模型预览</div>';
+        var modelSrc = API + '/api/proxy-model?url=' + encodeURIComponent(glbModel.url);
+        html += '<div class="section-title">🗿 3D模型预览</div>';
         html += '<div class="viewer-section">';
-        html += '<model-viewer src="' + escAttr(glbModel.url) + '" alt="3D模型" auto-rotate camera-controls shadow-intensity="1" style="width:100%;height:300px;border-radius:12px;"></model-viewer>';
+        html += '<model-viewer id="share-model-viewer" src="' + escAttr(modelSrc) + '" alt="3D模型" auto-rotate camera-controls shadow-intensity="1" interaction-prompt="none" style="width:100%;height:350px;background:linear-gradient(180deg,#E3F2FD,#BBDEFB);border-radius:16px;"></model-viewer>';
+        html += '<div id="viewer-loading" style="position:relative;margin-top:-350px;height:350px;display:flex;align-items:center;justify-content:center;pointer-events:none;border-radius:16px;">';
+        html += '<div style="text-align:center;color:#1976D2;"><div class="spinner" style="width:36px;height:36px;border-width:3px;margin-bottom:8px;"></div><div style="font-size:13px;">3D模型加载中...</div></div>';
+        html += '</div>';
         html += '</div>';
       }
     } else if (is2D) {
@@ -218,8 +225,9 @@ body {
       html += '<img src="' + escAttr(imgSrc) + '" alt="作品图片" style="max-width:100%;max-height:400px;object-fit:contain;">';
       html += '</div>';
     } else if (is3D) {
+      var modelSrc3d = API + '/api/proxy-model?url=' + encodeURIComponent(data);
       html += '<div class="viewer-section">';
-      html += '<model-viewer src="' + escAttr(data) + '" alt="3D模型" auto-rotate camera-controls shadow-intensity="1" style="width:100%;height:350px;border-radius:12px;"></model-viewer>';
+      html += '<model-viewer src="' + escAttr(modelSrc3d) + '" alt="3D模型" auto-rotate camera-controls shadow-intensity="1" interaction-prompt="none" style="width:100%;height:350px;background:linear-gradient(180deg,#E3F2FD,#BBDEFB);border-radius:16px;"></model-viewer>';
       html += '</div>';
     }
 
@@ -255,6 +263,14 @@ body {
     html += '</div></div>';
     html += '<div class="brand">来自 <a href="https://zhongzhouxian-qiyuji.pages.dev" target="_blank">中轴奇游记 · AI魔法师训练营</a></div>';
     app.innerHTML = html;
+
+    // model-viewer load event: hide loading overlay
+    var mv = document.getElementById('share-model-viewer');
+    var vl = document.getElementById('viewer-loading');
+    if (mv && vl) {
+      mv.addEventListener('load', function() { if (vl) vl.style.display = 'none'; });
+      mv.addEventListener('error', function() { if (vl) { vl.innerHTML = '<div style="text-align:center;color:#c62828;font-size:13px;padding:20px;">3D模型加载失败<br><span style="font-size:11px;color:#78909C;">模型URL可能已过期</span></div>'; } });
+    }
   }
 
   // ---- Download helpers ----
