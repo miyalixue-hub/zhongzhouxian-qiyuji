@@ -68,21 +68,20 @@
     if (!src) { console.log('[Share] img2b64 SKIP: empty src'); return null; }
     // Already a data URI
     if (src.indexOf('data:image') === 0) return src;
-    // HTTP URL → fetch → blob → base64
+    // HTTP URL → try Worker proxy first (avoids CORS issues with TOS etc.)
     if (src.indexOf('http') === 0) {
       try {
-        var resp = await fetch(src, { mode: 'cors' });
+        var proxyUrl = SHARE_API + '/api/proxy-image?url=' + encodeURIComponent(src);
+        var resp = await fetch(proxyUrl);
         if (resp.ok) {
-          var blob = await resp.blob();
-          return await new Promise(function(resolve, reject) {
-            var reader = new FileReader();
-            reader.onloadend = function() { resolve(reader.result); };
-            reader.onerror = function() { reject(new Error('FileReader failed')); };
-            reader.readAsDataURL(blob);
-          });
+          var json = await resp.json();
+          if (json.base64) {
+            console.log('[Share] img2b64: proxy OK for ' + label + ', size=' + json.size);
+            return json.base64;
+          }
         }
-        console.log('[Share] img2b64: fetch status=' + resp.status + ' for ' + label);
-      } catch(e) { console.log('[Share] img2b64: fetch error for ' + label + ': ' + e.message); }
+        console.log('[Share] img2b64: proxy failed status=' + resp.status + ' for ' + label);
+      } catch(e) { console.log('[Share] img2b64: proxy error for ' + label + ': ' + e.message); }
     }
     return null;
   }

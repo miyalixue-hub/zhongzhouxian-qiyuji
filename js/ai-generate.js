@@ -184,7 +184,7 @@
                 var imgContainer = card.querySelector('.candidate-image');
                 
                 if (result.success) {
-                    imgContainer.innerHTML = '<img src="' + result.url + '" alt="' + result.style.name + '" loading="lazy" crossorigin="anonymous" style="width:100%;height:100%;object-fit:cover;border-radius:4px;" />';
+                    imgContainer.innerHTML = '<img src="' + result.url + '" alt="' + result.style.name + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:4px;" />';
                     successCount++;
                     
                     // 绑定点击选择事件
@@ -287,7 +287,7 @@
                         card.className = 'candidate-card';
                         card.dataset.index = idx;
                         card.innerHTML = '<div class="candidate-image" style="background:#f5f0e8;">' +
-                            '<img src="' + url + '" alt="' + styleName + '" loading="lazy" crossorigin="anonymous" style="width:100%;height:100%;object-fit:cover;border-radius:4px;" />' +
+                            '<img src="' + url + '" alt="' + styleName + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:4px;" />' +
                             '</div>' +
                             '<div class="candidate-info"><div class="candidate-name">方案' + (idx+1) + ' · 历史作品</div>' +
                             '<div class="candidate-style">之前生成的AI图片</div></div>';
