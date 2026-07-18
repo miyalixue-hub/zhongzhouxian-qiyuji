@@ -82,24 +82,24 @@
               converted = true;
             }
           } catch(e) { console.warn('[Share] img' + i + ' fetch fail:', e.message); }
-          // Strategy 2: DOM src
-          if (!converted && domSrcs[i]) {
+          // Strategy 2: DOM src (only if already a data URI)
+          if (!converted && domSrcs[i] && domSrcs[i].indexOf('data:') === 0) {
             b64 = domSrcs[i]; converted = true;
-            console.log('[Share] img' + i + ' DOM fallback');
+            console.log('[Share] img' + i + ' DOM data-URI fallback');
           }
-          // Strategy 3: canvas extraction
-          if (!converted && domImgs[i]) {
+          // Strategy 3: canvas extraction (works even for cross-origin loaded images)
+          if (!converted && domImgs[i] && domImgs[i].complete && domImgs[i].naturalWidth > 0) {
             try {
               var canvas = document.createElement('canvas');
-              canvas.width = domImgs[i].naturalWidth || 512;
-              canvas.height = domImgs[i].naturalHeight || 512;
+              canvas.width = domImgs[i].naturalWidth;
+              canvas.height = domImgs[i].naturalHeight;
               canvas.getContext('2d').drawImage(domImgs[i], 0, 0);
               b64 = canvas.toDataURL('image/png');
               converted = true;
-              console.log('[Share] img' + i + ' canvas fallback');
-            } catch(e) { console.warn('[Share] img' + i + ' canvas fail'); }
+              console.log('[Share] img' + i + ' canvas extraction OK, len=' + b64.length);
+            } catch(e) { console.warn('[Share] img' + i + ' canvas fail:', e.message); }
           }
-          if (!converted) { console.error('[Share] img' + i + ' all failed'); continue; }
+          if (!converted) { console.error('[Share] img' + i + ' all strategies failed'); continue; }
         }
         images.push({ base64: b64, name: styleNames[i] || ('方案' + (i + 1)), mime: 'image/png' });
       }
