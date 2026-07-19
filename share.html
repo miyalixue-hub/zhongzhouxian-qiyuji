@@ -212,9 +212,13 @@ body {
         if (!glbModel && models.length > 0) glbModel = models[0];
         var modelSrc = API + '/api/proxy-model?shareId=' + encodeURIComponent(shareId) + '&url=' + encodeURIComponent(glbModel.url);
         html += '<div class="section-title">🗿 3D模型预览</div>';
-        html += '<div class="viewer-section">';
-        html += '<model-viewer id="share-model-viewer" src="' + escAttr(modelSrc) + '" alt="3D模型" auto-rotate camera-controls shadow-intensity="1" interaction-prompt="none" style="width:100%;height:350px;background:linear-gradient(180deg,#E3F2FD,#BBDEFB);border-radius:16px;"></model-viewer>';
-        html += '<div id="viewer-loading" style="position:relative;margin-top:-350px;height:350px;display:flex;align-items:center;justify-content:center;pointer-events:none;border-radius:16px;">';
+        html += '<div class="viewer-section" style="position:relative;">';
+        // Thumbnail fallback: show Meshy preview image behind model-viewer
+        if (glbModel.thumbnail) {
+          html += '<img src="' + escAttr(glbModel.thumbnail) + '" alt="3D模型预览图" style="position:absolute;top:0;left:0;width:100%;height:350px;object-fit:contain;border-radius:16px;background:linear-gradient(180deg,#E3F2FD,#BBDEFB);z-index:1;">';
+        }
+        html += '<model-viewer id="share-model-viewer" src="' + escAttr(modelSrc) + '" alt="3D模型" auto-rotate camera-controls shadow-intensity="1" interaction-prompt="none" style="position:relative;width:100%;height:350px;background:transparent;border-radius:16px;z-index:2;"></model-viewer>';
+        html += '<div id="viewer-loading" style="position:absolute;top:0;left:0;width:100%;height:350px;display:flex;align-items:center;justify-content:center;pointer-events:none;border-radius:16px;z-index:3;">';
         html += '<div style="text-align:center;color:#1976D2;"><div class="spinner" style="width:36px;height:36px;border-width:3px;margin-bottom:8px;"></div><div style="font-size:13px;">3D模型加载中...</div></div>';
         html += '</div>';
         html += '</div>';
@@ -269,14 +273,16 @@ body {
     var vl = document.getElementById('viewer-loading');
     if (mv && vl) {
       var settled = false;
-      function settleError() {
-        if (settled) return; settled = true;
-        vl.innerHTML = '<div style="text-align:center;color:#546E7A;font-size:13px;padding:20px;">⏳ 3D模型暂未加载<br><span style="font-size:11px;color:#90A4AE;">可点击下方按钮下载模型文件</span></div>';
+      function hideLoading() {
+        if (vl) vl.style.display = 'none';
+        settled = true;
       }
-      mv.addEventListener('load', function() { if (vl) vl.style.display = 'none'; settled = true; });
-      mv.addEventListener('error', settleError);
-      // Fallback: if neither event fires within 12s, show fallback message
-      setTimeout(function() { if (!settled) settleError(); }, 12000);
+      // 加载完成：隐藏loading遮罩，让缩略图/model-viewer显示
+      mv.addEventListener('load', hideLoading);
+      // 加载失败：也隐藏loading，让缩略图显示
+      mv.addEventListener('error', hideLoading);
+      // 12秒超时兜底
+      setTimeout(function() { hideLoading(); }, 12000);
     }
   }
 

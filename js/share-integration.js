@@ -168,6 +168,10 @@
       // Use proxy URL if available (Worker will download & cache GLB via Meshy API)
       var glbUrl = glbProxyUrl || urls.glb;
       var glbEntry = { url: glbUrl, format: 'glb', filename: name + '.glb' };
+      // Include Meshy thumbnail for share page fallback preview
+      if (state.meshyThumbnail) {
+        glbEntry.thumbnail = state.meshyThumbnail;
+      }
       console.log('[Share] GLB URL for upload: ' + (glbProxyUrl ? 'Worker proxy' : 'direct Meshy'));
       models.push(glbEntry);
     }
