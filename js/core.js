@@ -585,21 +585,23 @@
                     svgContent = '<rect x="35" y="100" width="50" height="12" stroke="rgba(74,127,181,0.5)" stroke-width="1.5" fill="none" rx="2"/>' +
                                '<line x1="60" y1="100" x2="60" y2="112" stroke="rgba(74,127,181,0.5)" stroke-width="1" stroke-dasharray="2,1"/>';
                     break;
-                case 'km_marker':
-                    svgContent = '<circle cx="95" cy="25" r="10" fill="rgba(196,92,92,0.5)"/>' +
-                               '<text x="95" y="29" text-anchor="middle" fill="white" font-size="8" font-weight="bold">中</text>';
+                case 'brick_platform':
+                    svgContent = '<rect x="30" y="100" width="60" height="14" stroke="rgba(107,123,140,0.5)" stroke-width="1.5" fill="none" rx="1"/>' +
+                               '<line x1="30" y1="105" x2="90" y2="105" stroke="rgba(107,123,140,0.5)" stroke-width="0.8"/>' +
+                               '<line x1="30" y1="110" x2="90" y2="110" stroke="rgba(107,123,140,0.5)" stroke-width="0.8"/>';
                     break;
-                case 'plaque':
-                    svgContent = '<rect x="10" y="55" width="20" height="12" stroke="rgba(212,168,67,0.5)" stroke-width="1.5" fill="none"/>' +
-                               '<line x1="14" y1="59" x2="26" y2="59" stroke="rgba(212,168,67,0.5)" stroke-width="0.8"/>';
+                case 'marble_base':
+                    svgContent = '<polygon points="30,112 90,112 95,104 25,104" fill="none" stroke="rgba(176,176,176,0.5)" stroke-width="1.5"/>' +
+                               '<polygon points="34,104 86,104 88,98 32,98" fill="none" stroke="rgba(176,176,176,0.5)" stroke-width="1"/>' +
+                               '<path d="M34,98 Q42,94 50,98 Q58,94 66,98 Q74,94 82,98" stroke="rgba(176,176,176,0.5)" stroke-width="0.8" fill="none"/>';
                     break;
-                case 'archaeology_tag':
-                    svgContent = '<rect x="90" y="60" width="18" height="14" stroke="rgba(107,123,140,0.5)" stroke-width="1.5" fill="rgba(250,248,240,0.8)"/>' +
-                               '<line x1="93" y1="64" x2="105" y2="64" stroke="rgba(107,123,140,0.5)" stroke-width="0.8"/>';
+                case 'glazed_base':
+                    svgContent = '<polygon points="60,96 80,104 80,114 60,122 40,114 40,104" fill="none" stroke="rgba(212,168,67,0.5)" stroke-width="1.5"/>' +
+                               '<polygon points="60,100 74,106 74,112 60,118 46,112 46,106" fill="none" stroke="rgba(196,92,92,0.5)" stroke-width="1"/>';
                     break;
-                case 'custom_tag':
-                    svgContent = '<rect x="5" y="65" width="22" height="10" stroke="rgba(212,168,67,0.5)" stroke-width="1" fill="rgba(250,248,240,0.8)" rx="2"/>' +
-                               '<text x="16" y="73" text-anchor="middle" fill="rgba(212,168,67,0.8)" font-size="5">神兽</text>';
+                case 'name_stone':
+                    svgContent = '<rect x="35" y="98" width="50" height="16" stroke="rgba(139,115,85,0.5)" stroke-width="1.5" fill="none" rx="1"/>' +
+                               '<text x="60" y="110" text-anchor="middle" fill="rgba(139,115,85,0.6)" font-size="7" font-weight="bold">神兽</text>';
                     break;
             }
             return svgContent;
