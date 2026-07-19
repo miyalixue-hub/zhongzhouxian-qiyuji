@@ -35,7 +35,7 @@
             enablePbr: true,           // 生成PBR贴图
             // 轮询配置
             pollInterval: 3000,        // 每3秒轮询一次
-            maxPollTime: 300000        // 最长等待5分钟
+            maxPollTime: 480000        // 最长等待8分钟
         };
 
         var state = { 
