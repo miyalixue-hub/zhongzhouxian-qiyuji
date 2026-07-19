@@ -437,11 +437,15 @@
                 }
             }
             
-            // 获取年代名称
+            // 获取年代名称和视觉描述
             var eraName = '1924年老式';
+            var eraVisualDesc = '';
             if (state.tramEra) {
                 var te = tramEras.find(function(e) { return e.id === state.tramEra; });
-                if (te) eraName = te.name;
+                if (te) {
+                    eraName = te.name;
+                    eraVisualDesc = te.visualDesc || '';
+                }
             }
             
             // 获取装饰名称
@@ -454,9 +458,8 @@
             }
             
             var prompt = '中国传统手绘风格，北京正阳门前的有轨铛铛车，' + eraName + '，' + colorName + '车身';
-            if (decorNames.length > 0) {
-                prompt += '，' + decorNames.join('、');
-            }
+            if (eraVisualDesc) prompt += '，' + eraVisualDesc;
+            if (decorNames.length > 0) prompt += '，' + decorNames.join('、');
             prompt += '，背景是正阳门城楼和前门大街，水墨淡彩风格，传统工笔画质感，8k高清';
             
             var summaryHtml = '<div class="tram-prompt-summary">';
@@ -1203,9 +1206,10 @@
                     if (tc) { colorName = tc.name; colorHex = tc.hex; }
                 }
                 var eraName = '1924年老式';
+                var eraVisualDesc = '';
                 if (state.tramEra) {
                     var te = tramEras.find(function(e) { return e.id === state.tramEra; });
-                    if (te) eraName = te.name;
+                    if (te) { eraName = te.name; eraVisualDesc = te.visualDesc || ''; }
                 }
                 var decorNames = [];
                 if (state.tramDecors && state.tramDecors.length > 0) {
@@ -1215,6 +1219,7 @@
                     });
                 }
                 var prompt = '中国传统手绘风格，北京正阳门前的有轨铛铛车，' + eraName + '，' + colorName + '车身';
+                if (eraVisualDesc) prompt += '，' + eraVisualDesc;
                 if (decorNames.length > 0) prompt += '，' + decorNames.join('、');
                 prompt += '，背景是正阳门城楼和前门大街，水墨淡彩风格，传统工笔画质感，8k高清';
                 var summaryHtml = '<div class="tram-prompt-summary">';
