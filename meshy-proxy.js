@@ -1,82 +1,67 @@
 /**
- * Cloudflare Worker - 统一 API 代理
+ * Cloudflare Worker - Unified API Proxy with Share Functionality
+ * Version 3.2.0
  * 
- * 功能：
- *   1. Meshy 3D 生成代理（/api/image-to-3d, /api/balance）
- *   2. 火山引擎 Seedream 2D 图片生成代理（/api/2d/generate）
- *   3. 密钥统一管理（存储在 Worker 环境变量/Secrets）
- *   4. CORS 来源限制（只允许指定域名）
- *   5. 基础限流（每台设备每分钟请求数限制）
+ * Changes in v3.2:
+ *   - Cache GLB binary in KV on upload for reliable 3D preview
+ *   - proxy-model supports shareId param for cached model retrieval
+ *   - Download handler serves cached GLB directly
  * 
- * 部署方式：
- *   1. 安装 Wrangler: npm install -g wrangler
- *   2. 登录: wrangler login
- *   3. 设置密钥: 
- *      wrangler secret put MESHY_API_KEY
- *      wrangler secret put VOLCENGINE_API_KEY
- *      wrangler secret put ACCESS_PASSWORD
- *   4. 部署: wrangler deploy
+ * Changes in v3.1:
+ *   - Package upload: data can be object {images:[], models:[]} for 2D+3D bundle
+ *   - Download handler: ?file= parameter for individual files from packages
+ *   - New endpoint: POST /api/test-upload for pre-stored test packages
  * 
- * 安全说明：
- *   - API Key 存储在 Worker Secrets，前端不接触密钥
- *   - CORS 限制为 mindbubble.cloud 和 pages.dev
- *   - 基础限流防止滥用
- *   - 访问密码验证（ACCESS_PASSWORD），前端需先验证获取 token
+ * KV Namespace Required:
+ *   - SHARE_STORAGE: stores shared content
+ * 
+ * Environment Variables:
+ *   - MESHY_API_KEY, VOLCENGINE_API_KEY, ACCESS_PASSWORD
  */
 
-// 允许的域名列表
-const ALLOWED_ORIGINS = [
+var ALLOWED_ORIGINS = [
   'https://mindbubble.cloud',
   'https://zhongzhouxian-qiyuji.pages.dev',
-  'http://localhost:8080',  // 本地开发
-  'http://localhost:5173',  // Vite 开发
+  'http://localhost:8080',
+  'http://localhost:5173',
   'http://127.0.0.1:8080',
   'http://127.0.0.1:5173'
 ];
 
-// 限流配置（每分钟每 IP 最大请求数）
-const RATE_LIMIT = {
-  '2d': 20,      // 2D 图片生成（每分钟20次）
-  '3d': 5,       // 3D 模型生成
-  'default': 30  // 其他接口
+var RATE_LIMIT = {
+  '2d': 20,
+  '3d': 5,
+  'share-upload': 10,
+  'auth': 10,
+  'default': 30
 };
 
-// 滑动窗口限流（修复：使用数组记录每次请求时间戳，窗口过期自动清理）
-const rateLimitStore = new Map();
+var SHARE_EXPIRY_SECONDS = 30 * 24 * 60 * 60;
+var rateLimitStore = new Map();
 
 function checkRateLimit(ip, type) {
-  const key = `${ip}:${type}`;
-  const now = Date.now();
-  const windowMs = 60 * 1000; // 1分钟窗口
-  const limit = RATE_LIMIT[type] || RATE_LIMIT.default;
-  
-  let timestamps = rateLimitStore.get(key);
-  
-  // 清理过期时间戳（只保留最近1分钟内的）
+  var key = ip + ':' + type;
+  var now = Date.now();
+  var windowMs = 60 * 1000;
+  var limit = RATE_LIMIT[type] || RATE_LIMIT['default'];
+  var timestamps = rateLimitStore.get(key);
   if (timestamps) {
-    timestamps = timestamps.filter(t => now - t < windowMs);
+    timestamps = timestamps.filter(function(t) { return now - t < windowMs; });
   } else {
     timestamps = [];
   }
-  
-  // 检查是否超过限制
   if (timestamps.length >= limit) {
     rateLimitStore.set(key, timestamps);
-    console.log(`[RateLimit] BLOCKED ${key}: ${timestamps.length}/${limit} requests in window`);
     return false;
   }
-  
-  // 记录本次请求
   timestamps.push(now);
   rateLimitStore.set(key, timestamps);
-  console.log(`[RateLimit] ALLOWED ${key}: ${timestamps.length}/${limit} requests in window`);
   return true;
 }
 
 function getCorsHeaders(request) {
-  const origin = request.headers.get('Origin') || '';
-  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-  
+  var origin = request.headers.get('Origin') || '';
+  var allowedOrigin = ALLOWED_ORIGINS.indexOf(origin) >= 0 ? origin : ALLOWED_ORIGINS[0];
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -86,42 +71,44 @@ function getCorsHeaders(request) {
   };
 }
 
-function isAllowedOrigin(request) {
-  const origin = request.headers.get('Origin') || '';
-  // 允许无 Origin 的请求（如 curl 测试）
-  if (!origin) return true;
-  return ALLOWED_ORIGINS.includes(origin);
+function generateShareId() {
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  var id = '';
+  for (var i = 0; i < 8; i++) {
+    id += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return id;
 }
 
-// Token 有效期：30天（适合"输入一次一直用"的场景）
-const TOKEN_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000;
+// Token management
+var TOKEN_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000;
 
-// 生成 HMAC token
 async function generateToken(password) {
-  const encoder = new TextEncoder();
-  const payload = { exp: Date.now() + TOKEN_EXPIRY_MS };
-  const payloadB64 = btoa(JSON.stringify(payload));
-  const key = await crypto.subtle.importKey(
+  var encoder = new TextEncoder();
+  var payload = { exp: Date.now() + TOKEN_EXPIRY_MS };
+  var payloadB64 = btoa(JSON.stringify(payload));
+  var key = await crypto.subtle.importKey(
     'raw', encoder.encode(password), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
   );
-  const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(payloadB64));
-  const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig)));
+  var sig = await crypto.subtle.sign('HMAC', key, encoder.encode(payloadB64));
+  var sigB64 = btoa(String.fromCharCode.apply(null, new Uint8Array(sig)));
   return payloadB64 + '.' + sigB64;
 }
 
-// 验证 token
 async function verifyToken(token, password) {
   try {
-    const [payloadB64, sigB64] = token.split('.');
+    var parts = token.split('.');
+    var payloadB64 = parts[0];
+    var sigB64 = parts[1];
     if (!payloadB64 || !sigB64) return false;
-    const encoder = new TextEncoder();
-    const key = await crypto.subtle.importKey(
+    var encoder = new TextEncoder();
+    var key = await crypto.subtle.importKey(
       'raw', encoder.encode(password), { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']
     );
-    const sig = Uint8Array.from(atob(sigB64), c => c.charCodeAt(0));
-    const valid = await crypto.subtle.verify('HMAC', key, sig, encoder.encode(payloadB64));
+    var sig = Uint8Array.from(atob(sigB64), function(c) { return c.charCodeAt(0); });
+    var valid = await crypto.subtle.verify('HMAC', key, sig, encoder.encode(payloadB64));
     if (!valid) return false;
-    const payload = JSON.parse(atob(payloadB64));
+    var payload = JSON.parse(atob(payloadB64));
     return payload.exp > Date.now();
   } catch (e) {
     return false;
@@ -130,215 +117,771 @@ async function verifyToken(token, password) {
 
 export default {
   async fetch(request, env) {
-    const corsHeaders = getCorsHeaders(request);
+    var corsHeaders = getCorsHeaders(request);
     
-    // 处理 CORS 预检请求
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders });
     }
     
-    // 检查来源
-    if (!isAllowedOrigin(request)) {
-      return new Response(JSON.stringify({ error: 'Origin not allowed' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders }
-      });
-    }
-    
-    const url = new URL(request.url);
-    const path = url.pathname;
-    const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+    var url = new URL(request.url);
+    var path = url.pathname;
+    var clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
     
     try {
-      // ========== 密码认证 ==========
+      // ========== Auth (no password required — rate-limited token issuance) ==========
       if (path === '/api/auth' && request.method === 'POST') {
-        const password = env.ACCESS_PASSWORD;
-        if (!password) {
-          return new Response(JSON.stringify({ error: '服务端未配置访问密码' }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        var signingKey = env.ACCESS_PASSWORD;
+        if (!signingKey) {
+          return new Response(JSON.stringify({ error: 'ACCESS_PASSWORD not configured' }), {
+            status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
           });
         }
-        const body = await request.json();
-        if (body.password !== password) {
-          return new Response(JSON.stringify({ error: '密码错误' }), {
-            status: 401,
-            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        // Rate limit token issuance to prevent abuse (max 10 per minute per IP)
+        if (!checkRateLimit(clientIp, 'auth')) {
+          return new Response(JSON.stringify({ error: 'Too many auth requests' }), {
+            status: 429, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
           });
         }
-        const token = await generateToken(password);
-        return new Response(JSON.stringify({ token, exp: Date.now() + TOKEN_EXPIRY_MS }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        // Issue token signed with server-side key (no password needed from client)
+        var token = await generateToken(signingKey);
+        return new Response(JSON.stringify({ token: token, exp: Date.now() + TOKEN_EXPIRY_MS }), {
+          status: 200, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
         });
       }
 
-      // ========== Token 验证（2D/3D 接口需要） ==========
-      const protectedPaths = ['/api/2d/generate', '/api/image-to-3d'];
-      if (protectedPaths.some(p => path === p || path.startsWith(p + '/'))) {
-        const password = env.ACCESS_PASSWORD;
-        if (password) {
-          const authHeader = request.headers.get('Authorization') || '';
-          const token = authHeader.replace('Bearer ', '');
-          if (!token || !(await verifyToken(token, password))) {
-            return new Response(JSON.stringify({ error: '未授权，请先输入访问密码', code: 'AUTH_REQUIRED' }), {
-              status: 401,
-              headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      // Protected paths check
+      var protectedPaths = ['/api/2d/generate', '/api/image-to-3d', '/api/share/upload', '/api/test-upload'];
+      if (protectedPaths.some(function(p) { return path === p || path.indexOf(p + '/') === 0; })) {
+        var pwd = env.ACCESS_PASSWORD;
+        if (pwd) {
+          var authHeader = request.headers.get('Authorization') || '';
+          var tok = authHeader.replace('Bearer ', '');
+          if (!tok || !(await verifyToken(tok, pwd))) {
+            return new Response(JSON.stringify({ error: 'Unauthorized', code: 'AUTH_REQUIRED' }), {
+              status: 401, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
             });
           }
         }
       }
 
-      // ========== 2D 图片生成（火山引擎 Seedream）==========
+      // ========== SHARE: Upload ==========
+      // POST /api/share/upload
+      // Body: { type: "2d"|"3d"|"package", name: string, data: string|object }
+      // For packages, data = { images: [{base64}], models: [{url, format, filename}] }
+      // =========================================
+      if (path === '/api/share/upload' && request.method === 'POST') {
+        console.log('[Share] Upload from ' + clientIp);
+        
+        if (!checkRateLimit(clientIp, 'share-upload')) {
+          return new Response(JSON.stringify({ error: 'Too frequent' }), {
+            status: 429, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+        
+        if (!env.SHARE_STORAGE) {
+          return new Response(JSON.stringify({ error: 'Storage not configured' }), {
+            status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+        
+        var uploadBody = await request.json();
+        var shareType = uploadBody.type;
+        var shareName = uploadBody.name || 'untitled';
+        var shareData = uploadBody.data;
+        
+        if (!shareType || shareData === undefined || shareData === null) {
+          return new Response(JSON.stringify({ error: 'Missing type or data' }), {
+            status: 400, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+        
+        // Size check - handle both string and object data
+        var dataStr = typeof shareData === 'string' ? shareData : JSON.stringify(shareData);
+        if (dataStr.length > 20 * 1024 * 1024) {
+          return new Response(JSON.stringify({ error: 'Data too large (max ~15MB)' }), {
+            status: 413, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+        
+        var shareId = generateShareId();
+        var now = new Date().toISOString();
+        
+        var metadata = {
+          id: shareId,
+          type: shareType,
+          name: shareName,
+          createdAt: now,
+          expiresAt: new Date(Date.now() + SHARE_EXPIRY_SECONDS * 1000).toISOString()
+        };
+        
+        var kvKey = 'share:' + shareId;
+        await env.SHARE_STORAGE.put(kvKey, JSON.stringify({
+          meta: metadata,
+          data: shareData
+        }), {
+          expirationTtl: SHARE_EXPIRY_SECONDS
+        });
+        
+        console.log('[Share] Created ' + shareId + ' type=' + shareType);
+        
+        // Cache GLB model binary in separate KV key for share page preview & download
+        if (shareType === 'package' && typeof shareData === 'object' && shareData.models) {
+          var glbModel = shareData.models.find(function(m) { return m.format === 'glb'; });
+          if (glbModel) {
+            try {
+              // Priority 1: Use binary data sent from browser (Meshy URLs are CloudFront signed, Worker can't fetch)
+              if (glbModel.binary) {
+                console.log('[Share] Using browser-provided GLB binary for ' + shareId);
+                var b64Str = glbModel.binary;
+                // Strip data URI prefix: data:...;base64,
+                var commaIdx = b64Str.indexOf(',');
+                if (commaIdx >= 0) b64Str = b64Str.substring(commaIdx + 1);
+                // Decode base64 to ArrayBuffer
+                var binStr = atob(b64Str);
+                var bytes = new Uint8Array(binStr.length);
+                for (var bi = 0; bi < binStr.length; bi++) bytes[bi] = binStr.charCodeAt(bi);
+                await env.SHARE_STORAGE.put('model_bin:' + shareId, bytes.buffer, {
+                  expirationTtl: SHARE_EXPIRY_SECONDS
+                });
+                console.log('[Share] Cached GLB ' + bytes.byteLength + ' bytes (from browser) for ' + shareId);
+              }
+              // Priority 2: If URL is our own meshy-glb proxy, fetch from KV cache or proxy endpoint
+              else if (glbModel.url && glbModel.url.indexOf('/api/meshy-glb/') >= 0) {
+                console.log('[Share] GLB URL is own proxy, fetching for ' + shareId);
+                try {
+                  var proxyResp = await fetch(glbModel.url);
+                  if (proxyResp.ok) {
+                    var proxyBin = await proxyResp.arrayBuffer();
+                    await env.SHARE_STORAGE.put('model_bin:' + shareId, proxyBin, {
+                      expirationTtl: SHARE_EXPIRY_SECONDS
+                    });
+                    console.log('[Share] Cached GLB ' + proxyBin.byteLength + ' bytes (from meshy-glb proxy) for ' + shareId);
+                  } else {
+                    console.warn('[Share] meshy-glb proxy fetch failed: ' + proxyResp.status);
+                  }
+                } catch(e) {
+                  console.warn('[Share] meshy-glb proxy error: ' + e.message);
+                }
+              }
+              // Priority 3: Try fetching from URL (may fail for signed URLs)
+              else if (glbModel.url) {
+                console.log('[Share] Trying to fetch GLB from URL for ' + shareId);
+                var glbResp = await fetch(glbModel.url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+                if (glbResp.ok) {
+                  var glbBin = await glbResp.arrayBuffer();
+                  await env.SHARE_STORAGE.put('model_bin:' + shareId, glbBin, {
+                    expirationTtl: SHARE_EXPIRY_SECONDS
+                  });
+                  console.log('[Share] Cached GLB ' + glbBin.byteLength + ' bytes (from URL) for ' + shareId);
+                } else {
+                  console.warn('[Share] GLB URL fetch failed: ' + glbResp.status);
+                }
+              }
+            } catch (e) {
+              console.warn('[Share] GLB cache error: ' + e.message);
+            }
+          }
+        }
+        
+        return new Response(JSON.stringify({
+          success: true,
+          shareId: shareId,
+          metadata: metadata
+        }), {
+          status: 200,
+          headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+        });
+      }
+
+      // ========== SHARE: Get ==========
+      if (path.match(/^\/api\/share\/[A-Za-z0-9]{8}$/) && request.method === 'GET') {
+        var getId = path.split('/')[3];
+        
+        if (!env.SHARE_STORAGE) {
+          return new Response(JSON.stringify({ error: 'Storage not configured' }), {
+            status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+        
+        var stored = await env.SHARE_STORAGE.get('share:' + getId);
+        if (!stored) {
+          return new Response(JSON.stringify({ error: 'Not found or expired', code: 'NOT_FOUND' }), {
+            status: 404, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+        
+        var parsed = JSON.parse(stored);
+        return new Response(JSON.stringify({
+          success: true,
+          metadata: parsed.meta,
+          data: parsed.data
+        }), {
+          status: 200,
+          headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+        });
+      }
+
+      // ========== SHARE: Download ==========
+      // GET /api/share/:id/download
+      // For packages: ?file=image_N or ?file=stl or ?file=3mf or ?file=glb
+      // For legacy: returns the single file
+      // =========================================
+      if (path.match(/^\/api\/share\/[A-Za-z0-9]{8}\/download$/) && request.method === 'GET') {
+        var dlId = path.split('/')[3];
+        var searchParams = url.searchParams;
+        
+        if (!env.SHARE_STORAGE) {
+          return new Response(JSON.stringify({ error: 'Storage not configured' }), {
+            status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+        
+        var stored = await env.SHARE_STORAGE.get('share:' + dlId);
+        if (!stored) {
+          return new Response(JSON.stringify({ error: 'Not found or expired' }), {
+            status: 404, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+        
+        var parsed = JSON.parse(stored);
+        var data = parsed.data;
+        var meta = parsed.meta;
+        var fileKey = searchParams.get('file');
+        
+        // ---- Package format ----
+        if (meta.type === 'package' && typeof data === 'object' && data !== null) {
+          if (!fileKey) {
+            return new Response(JSON.stringify({ error: 'Specify ?file=image_N, ?file=stl, ?file=3mf, or ?file=glb' }), {
+              status: 400, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+            });
+          }
+          
+          // Image files: ?file=image_0, image_1, etc.
+          if (fileKey.indexOf('image_') === 0) {
+            var idx = parseInt(fileKey.split('_')[1]);
+            var images = data.images || [];
+            if (idx >= 0 && idx < images.length) {
+              var imgObj = images[idx];
+              var b64 = imgObj.base64 || '';
+              // Handle both data URI and raw base64
+              var rawB64 = b64;
+              var mime = imgObj.mime || 'image/png';
+              if (b64.indexOf('data:') === 0) {
+                // Extract from data URI
+                var commaIdx = b64.indexOf(',');
+                rawB64 = b64.substring(commaIdx + 1);
+                if (!mime && b64.indexOf(';base64,') > 0) {
+                  mime = b64.substring(5, b64.indexOf(';'));
+                }
+              }
+              // Strip any whitespace/newlines from base64
+              rawB64 = rawB64.replace(/[\s\r\n]/g, '');
+              // Add padding if needed
+              while (rawB64.length % 4 !== 0) { rawB64 += '='; }
+              try {
+                var bin = Uint8Array.from(atob(rawB64), function(c) { return c.charCodeAt(0); });
+              } catch (e) {
+                return new Response(JSON.stringify({ error: 'Invalid base64 for image ' + fileKey + ': ' + e.message }), {
+                  status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+                });
+              }
+              var fname = (meta.name || 'artwork') + '_' + (idx + 1) + '.' + (mime.split('/')[1] || 'png');
+              return new Response(bin, {
+                status: 200,
+                headers: Object.assign({
+                  'Content-Type': mime,
+                  'Content-Disposition': 'attachment; filename="' + encodeURIComponent(fname) + '"',
+                  'Access-Control-Expose-Headers': 'Content-Disposition'
+                }, corsHeaders)
+              });
+            }
+            return new Response(JSON.stringify({ error: 'Image not found: ' + fileKey }), {
+              status: 404, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+            });
+          }
+          
+          // 3D model files: ?file=stl, ?file=3mf, ?file=glb
+          var models = data.models || [];
+          var model = null;
+          for (var mi = 0; mi < models.length; mi++) {
+            if (models[mi].format === fileKey) { model = models[mi]; break; }
+          }
+          if (model && model.url) {
+            // For GLB: try KV cache first (cached at upload time)
+            if (fileKey === 'glb') {
+              try {
+                var cachedGlb = await env.SHARE_STORAGE.get('model_bin:' + dlId, 'arrayBuffer');
+                if (cachedGlb) {
+                  var glbFname = model.filename || 'model.glb';
+                  return new Response(cachedGlb, {
+                    status: 200,
+                    headers: Object.assign({
+                      'Content-Type': 'model/gltf-binary',
+                      'Content-Disposition': 'attachment; filename="' + encodeURIComponent(glbFname) + '"',
+                      'Access-Control-Expose-Headers': 'Content-Disposition',
+                      'X-Cache': 'HIT'
+                    }, corsHeaders)
+                  });
+                }
+              } catch (e) {
+                console.warn('[Download] GLB cache read error: ' + e.message);
+              }
+            }
+            // Fallback: return URL as JSON
+            return new Response(JSON.stringify({
+              url: model.url,
+              filename: model.filename || ('model.' + fileKey),
+              format: fileKey
+            }), {
+              status: 200,
+              headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+            });
+          }
+          return new Response(JSON.stringify({ error: 'Model not found: ' + fileKey }), {
+            status: 404, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+        
+        // ---- Legacy single-file format ----
+        if (meta.type === '2d') {
+          var binary = Uint8Array.from(atob(data), function(c) { return c.charCodeAt(0); });
+          var fileName = (meta.name || 'share') + '.png';
+          return new Response(binary, {
+            status: 200,
+            headers: Object.assign({
+              'Content-Type': 'image/png',
+              'Content-Disposition': 'attachment; filename="' + encodeURIComponent(fileName) + '"',
+              'Access-Control-Expose-Headers': 'Content-Disposition'
+            }, corsHeaders)
+          });
+        } else if (meta.type === '3d') {
+          return new Response(null, {
+            status: 302,
+            headers: Object.assign({ 'Location': data }, corsHeaders)
+          });
+        }
+        
+        return new Response(JSON.stringify({ error: 'Unknown share type' }), {
+          status: 400, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+        });
+      }
+
+      // ========== SHARE: Delete ==========
+      if (path.match(/^\/api\/share\/[A-Za-z0-9]{8}$/) && request.method === 'DELETE') {
+        var delId = path.split('/').pop();
+        if (!env.SHARE_STORAGE) {
+          return new Response(JSON.stringify({ error: 'Storage not configured' }), {
+            status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+        await env.SHARE_STORAGE.delete('share:' + delId);
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+        });
+      }
+
+      // ========== TEST: Upload pre-stored test package ==========
+      // POST /api/test-upload
+      // Creates a test package with dummy images + Astronaut 3D model
+      // =========================================
+      if (path === '/api/test-upload' && request.method === 'POST') {
+        console.log('[Test] Upload test package from ' + clientIp);
+        
+        if (!env.SHARE_STORAGE) {
+          return new Response(JSON.stringify({ error: 'Storage not configured' }), {
+            status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+        
+        var testBody = await request.json().catch(function() { return {}; });
+        var testName = testBody.name || '测试神兽作品';
+        
+        // Use provided test images or generate minimal 1x1 PNG placeholders
+        var defaultColors = ['FF6B6B', '4ECDC4', '45B7D1', '96CEB4'];
+        var defaultNames = ['经典复古', '现代简约', '金色华贵', '水墨丹青'];
+        var testImages = [];
+        
+        if (testBody.images && Array.isArray(testBody.images)) {
+          testImages = testBody.images;
+        } else {
+          // Generate minimal colored PNG placeholders using a 1x1 pixel approach
+          // Actually, let's use simple SVG data URIs converted to a format the browser can display
+          for (var ci = 0; ci < 4; ci++) {
+            testImages.push({
+              base64: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
+              name: defaultNames[ci],
+              mime: 'image/png'
+            });
+          }
+        }
+        
+        // Test 3D model URLs
+        var testModels = [
+          { url: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb', format: 'glb', filename: 'test_model.glb' },
+          { url: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb', format: 'stl', filename: 'test_model.stl' },
+          { url: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb', format: '3mf', filename: 'test_model.3mf' }
+        ];
+        
+        var testData = {
+          images: testImages,
+          models: testModels,
+          isTest: true
+        };
+        
+        var testShareId = generateShareId();
+        var testNow = new Date().toISOString();
+        var testMetadata = {
+          id: testShareId,
+          type: 'package',
+          name: testName,
+          createdAt: testNow,
+          expiresAt: new Date(Date.now() + SHARE_EXPIRY_SECONDS * 1000).toISOString()
+        };
+        
+        await env.SHARE_STORAGE.put('share:' + testShareId, JSON.stringify({
+          meta: testMetadata,
+          data: testData
+        }), {
+          expirationTtl: SHARE_EXPIRY_SECONDS
+        });
+        
+        console.log('[Test] Created test package ' + testShareId);
+        
+        return new Response(JSON.stringify({
+          success: true,
+          shareId: testShareId,
+          metadata: testMetadata
+        }), {
+          status: 200,
+          headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+        });
+      }
+
+      // ========== 2D image generation (Seedream) ==========
       if (path === '/api/2d/generate' && request.method === 'POST') {
-        console.log(`[2D] Request from ${clientIp}, path: ${path}`);
-        
         if (!checkRateLimit(clientIp, '2d')) {
-          console.log(`[2D] RATE LIMITED ${clientIp}`);
-          return new Response(JSON.stringify({ error: '请求太频繁，请稍后再试' }), {
-            status: 429,
-            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+          return new Response(JSON.stringify({ error: 'Too many requests' }), {
+            status: 429, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
           });
         }
         
-        const apiKey = env.VOLCENGINE_API_KEY;
+        var apiKey = env.VOLCENGINE_API_KEY;
         if (!apiKey) {
-          return new Response(JSON.stringify({ error: '服务端未配置火山引擎 API Key' }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+          return new Response(JSON.stringify({ error: 'VOLCENGINE_API_KEY not configured' }), {
+            status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
           });
         }
         
-        const body = await request.json();
-        console.log(`[2D] Calling Seedream API for ${clientIp}, model: ${body.model || 'unknown'}`);
+        var genBody = await request.json();
+        if (!genBody.model) genBody.model = 'doubao-seedream-5-0-260128';
         
-        // 添加超时控制（60秒）
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000);
+        var controller = new AbortController();
+        var timeoutId = setTimeout(function() { controller.abort(); }, 90000);
         
         try {
-          const response = await fetch('https://ark.cn-beijing.volces.com/api/v3/images/generations', {
+          var response = await fetch('https://ark.cn-beijing.volces.com/api/v3/images/generations', {
             method: 'POST',
             headers: {
               'Authorization': 'Bearer ' + apiKey,
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify(body),
+            body: JSON.stringify(genBody),
             signal: controller.signal
           });
           
           clearTimeout(timeoutId);
-          console.log(`[2D] Seedream response status: ${response.status}`);
-          const responseBody = await response.text();
-          console.log(`[2D] Response body length: ${responseBody.length}`);
-          
-          // 如果不是200，记录详细错误
-          if (!response.ok) {
-            console.error(`[2D] Seedream error: ${responseBody.substring(0, 500)}`);
-          }
+          var responseBody = await response.text();
           
           return new Response(responseBody, {
             status: response.status,
-            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
           });
         } catch (err) {
           clearTimeout(timeoutId);
           if (err.name === 'AbortError') {
-            console.error(`[2D] Timeout: Seedream API took more than 60s`);
-            return new Response(JSON.stringify({ 
-              error: '生成超时，请稍后重试',
-              code: 'TIMEOUT'
-            }), {
-              status: 504,
-              headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            return new Response(JSON.stringify({ error: 'Generation timeout' }), {
+              status: 504, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
             });
           }
-          console.error(`[2D] Fetch error: ${err.message}`);
-          throw err;
+          return new Response(JSON.stringify({ error: 'Proxy error: ' + err.message }), {
+            status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
         }
       }
       
-      // ========== 3D 模型生成（Meshy）==========
-      if (path.startsWith('/api/image-to-3d') || path === '/api/balance') {
-        const meshyKey = env.MESHY_API_KEY;
+      // ========== 3D model generation (Meshy proxy) ==========
+      if (path.indexOf('/api/image-to-3d') === 0 || path === '/api/balance') {
+        var meshyKey = env.MESHY_API_KEY;
         if (!meshyKey) {
-          return new Response(JSON.stringify({ error: '服务端未配置 Meshy API Key' }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+          return new Response(JSON.stringify({ error: 'MESHY_API_KEY not configured' }), {
+            status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
           });
         }
         
-        // 3D 生成需要更严格的限流
         if (path === '/api/image-to-3d' && request.method === 'POST') {
           if (!checkRateLimit(clientIp, '3d')) {
-            return new Response(JSON.stringify({ error: '3D 生成请求太频繁，请稍后再试' }), {
-              status: 429,
-              headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            return new Response(JSON.stringify({ error: 'Too frequent' }), {
+              status: 429, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
             });
           }
         }
         
-        const meshyBaseUrl = 'https://api.meshy.ai/openapi';
-        let targetUrl;
+        var meshyBaseUrl = 'https://api.meshy.ai/openapi';
+        var targetUrl;
         
         if (path === '/api/image-to-3d' && request.method === 'POST') {
           targetUrl = meshyBaseUrl + '/v1/image-to-3d';
         } else if (path.match(/^\/api\/image-to-3d\/[\w-]+$/) && request.method === 'GET') {
-          const taskId = path.split('/').pop();
+          var taskId = path.split('/').pop();
           targetUrl = meshyBaseUrl + '/v1/image-to-3d/' + taskId;
         } else if (path === '/api/balance' && request.method === 'GET') {
           targetUrl = meshyBaseUrl + '/v1/balance';
         } else {
           return new Response(JSON.stringify({ error: 'Invalid route' }), {
-            status: 404,
-            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+            status: 404, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
           });
         }
         
-        const forwardHeaders = {
+        var forwardHeaders = {
           'Authorization': 'Bearer ' + meshyKey,
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         };
         
-        const forwardInit = {
-          method: request.method,
-          headers: forwardHeaders,
-        };
-        
+        var forwardInit = { method: request.method, headers: forwardHeaders };
         if (request.method === 'POST') {
           forwardInit.body = await request.text();
         }
         
-        const meshyResponse = await fetch(targetUrl, forwardInit);
-        const responseBody = await meshyResponse.text();
+        var meshyResponse = await fetch(targetUrl, forwardInit);
+        var meshyBody = await meshyResponse.text();
         
-        return new Response(responseBody, {
+        return new Response(meshyBody, {
           status: meshyResponse.status,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+          headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
         });
       }
       
-      // ========== 健康检查 ==========
+      // ========== Proxy image (for CORS-blocked URLs like TOS) ==========
+      if (path === '/api/proxy-image' && request.method === 'GET') {
+        var imgUrl = url.searchParams.get('url');
+        if (!imgUrl) {
+          return new Response(JSON.stringify({ error: 'Missing url parameter' }), {
+            status: 400, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+        try {
+          var imgResp = await fetch(imgUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+          if (!imgResp.ok) {
+            return new Response(JSON.stringify({ error: 'Fetch failed: ' + imgResp.status }), {
+              status: imgResp.status, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+            });
+          }
+          var arrayBuffer = await imgResp.arrayBuffer();
+          var bytes = new Uint8Array(arrayBuffer);
+          var binary = '';
+          for (var i = 0; i < bytes.length; i++) {
+            binary += String.fromCharCode(bytes[i]);
+          }
+          var base64 = btoa(binary);
+          var contentType = imgResp.headers.get('content-type') || 'image/png';
+          return new Response(JSON.stringify({ 
+            base64: 'data:' + contentType + ';base64,' + base64,
+            contentType: contentType,
+            size: bytes.length
+          }), {
+            headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        } catch(e) {
+          return new Response(JSON.stringify({ error: 'Proxy failed: ' + e.message }), {
+            status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+      }
+
+      // ========== Proxy model (GLB) for model-viewer (CORS) ==========
+      if (path === '/api/proxy-model' && request.method === 'GET') {
+        var modelUrl = url.searchParams.get('url');
+        var proxyShareId = url.searchParams.get('shareId');
+        if (!modelUrl && !proxyShareId) {
+          return new Response(JSON.stringify({ error: 'Missing url or shareId parameter' }), {
+            status: 400, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+        
+        // Handle preflight for model binary
+        if (request.headers.get('X-Preflight-Check') === '1') {
+          return new Response(null, { status: 204, headers: corsHeaders });
+        }
+        
+        // 1) Try KV cache first (cached at share creation time)
+        if (proxyShareId && env.SHARE_STORAGE) {
+          try {
+            var cachedModel = await env.SHARE_STORAGE.get('model_bin:' + proxyShareId, 'arrayBuffer');
+            if (cachedModel) {
+              console.log('[ProxyModel] Cache HIT for ' + proxyShareId + ' size=' + cachedModel.byteLength);
+              return new Response(cachedModel, {
+                status: 200,
+                headers: Object.assign({
+                  'Content-Type': 'model/gltf-binary',
+                  'Cache-Control': 'public, max-age=86400',
+                  'X-Cache': 'HIT'
+                }, corsHeaders)
+              });
+            }
+          } catch (e) {
+            console.warn('[ProxyModel] Cache read error: ' + e.message);
+          }
+        }
+        
+        // 2) Fallback: direct fetch from URL
+        if (!modelUrl) {
+          return new Response(JSON.stringify({ error: 'No cached model and no url provided' }), {
+            status: 404, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+        try {
+          var modelResp = await fetch(modelUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+          if (!modelResp.ok) {
+            return new Response(JSON.stringify({ error: 'Fetch failed: ' + modelResp.status }), {
+              status: modelResp.status, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+            });
+          }
+          // Stream binary GLB directly with CORS headers
+          var modelHeaders = Object.assign({
+            'Content-Type': modelResp.headers.get('content-type') || 'model/gltf-binary',
+            'Cache-Control': 'public, max-age=86400'
+          }, corsHeaders);
+          return new Response(modelResp.body, { headers: modelHeaders });
+        } catch(e) {
+          return new Response(JSON.stringify({ error: 'Model proxy failed: ' + e.message }), {
+            status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+      }
+
+      // ========== Meshy GLB download & cache ==========
+      // GET /api/meshy-glb/{taskId} — download GLB via Meshy API, cache in KV, serve with CORS
+      if (path.match(/^\/api\/meshy-glb\/[\w-]+$/) && request.method === 'GET') {
+        var glbTaskId = path.split('/').pop();
+        var cacheKey = 'meshy_glb:' + glbTaskId;
+        
+        // 1) Check KV cache first
+        if (env.SHARE_STORAGE) {
+          try {
+            var cached = await env.SHARE_STORAGE.get(cacheKey, 'arrayBuffer');
+            if (cached && cached.byteLength > 0) {
+              console.log('[MeshyGlb] KV HIT for ' + glbTaskId + ' size=' + cached.byteLength);
+              return new Response(cached, {
+                status: 200,
+                headers: Object.assign({
+                  'Content-Type': 'model/gltf-binary',
+                  'Cache-Control': 'public, max-age=86400',
+                  'X-Cache': 'HIT'
+                }, corsHeaders)
+              });
+            }
+          } catch(e) {
+            console.warn('[MeshyGlb] KV read error: ' + e.message);
+          }
+        }
+        
+        // 2) Fetch task details from Meshy API to get GLB URL
+        var meshyKey = env.MESHY_API_KEY;
+        if (!meshyKey) {
+          return new Response(JSON.stringify({ error: 'MESHY_API_KEY not configured' }), {
+            status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+        
+        try {
+          var taskResp = await fetch('https://api.meshy.ai/openapi/v1/image-to-3d/' + glbTaskId, {
+            headers: { 'Authorization': 'Bearer ' + meshyKey }
+          });
+          if (!taskResp.ok) {
+            return new Response(JSON.stringify({ error: 'Meshy task fetch failed: ' + taskResp.status }), {
+              status: taskResp.status, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+            });
+          }
+          var taskData = await taskResp.json();
+          var glbUrl = taskData.model_urls && taskData.model_urls.glb;
+          if (!glbUrl) {
+            return new Response(JSON.stringify({ error: 'No GLB URL in task result', status: taskData.status }), {
+              status: 404, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+            });
+          }
+          
+          // 3) Try downloading GLB from Meshy CDN
+          // Strategy A: fetch without User-Agent (clean request)
+          var glbResp = await fetch(glbUrl);
+          if (!glbResp.ok) {
+            // Strategy B: fetch with browser-like headers
+            glbResp = await fetch(glbUrl, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+                'Accept': 'model/gltf-binary,*/*',
+                'Origin': 'https://www.meshy.ai',
+                'Referer': 'https://www.meshy.ai/'
+              }
+            });
+          }
+          if (!glbResp.ok) {
+            return new Response(JSON.stringify({ 
+              error: 'GLB download failed: ' + glbResp.status,
+              glb_url: glbUrl.substring(0, 80) + '...'
+            }), {
+              status: glbResp.status, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+            });
+          }
+          
+          var glbArrayBuffer = await glbResp.arrayBuffer();
+          console.log('[MeshyGlb] Downloaded ' + glbArrayBuffer.byteLength + ' bytes for task ' + glbTaskId);
+          
+          // 4) Cache in KV (30 day TTL)
+          if (env.SHARE_STORAGE && glbArrayBuffer.byteLength > 0) {
+            try {
+              await env.SHARE_STORAGE.put(cacheKey, glbArrayBuffer, {
+                expirationTtl: 30 * 24 * 60 * 60
+              });
+              console.log('[MeshyGlb] Cached in KV: meshy_glb:' + glbTaskId + ' (' + glbArrayBuffer.byteLength + ' bytes)');
+            } catch(e) {
+              console.warn('[MeshyGlb] KV write error: ' + e.message);
+            }
+          }
+          
+          // 5) Serve GLB with CORS headers
+          return new Response(glbArrayBuffer, {
+            status: 200,
+            headers: Object.assign({
+              'Content-Type': 'model/gltf-binary',
+              'Cache-Control': 'public, max-age=86400',
+              'X-Cache': 'MISS'
+            }, corsHeaders)
+          });
+        } catch(e) {
+          return new Response(JSON.stringify({ error: 'MeshyGlb error: ' + e.message }), {
+            status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+      }
+      
+      // ========== Health check ==========
       if (path === '/api/health') {
         return new Response(JSON.stringify({ 
           status: 'ok', 
           time: new Date().toISOString(),
-          version: '2.0.0'
+          version: '3.2.2-meshy-glb-proxy'
         }), {
-          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+          headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
         });
       }
       
-      // 未知路由
       return new Response(JSON.stringify({ error: 'Unknown route' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        status: 404, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
       });
       
     } catch (err) {
-      return new Response(JSON.stringify({ error: 'Proxy error: ' + err.message }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders }
+      return new Response(JSON.stringify({ error: 'Server error: ' + err.message }), {
+        status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
       });
     }
   }
