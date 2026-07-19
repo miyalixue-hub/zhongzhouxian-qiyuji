@@ -120,6 +120,33 @@
             return '<img src="' + url + '" alt="' + styleName + '" loading="lazy" onerror="this.parentNode.innerHTML=\'<div class=&quot;ai-error&quot;>图片加载失败</div>\'"  />';
         }
         
+        // 更新单个候选卡片UI（并行模式用）
+        function _updateCandidateCard(grid, i, result) {
+            var card = grid.querySelector('.candidate-card[data-index="' + i + '"]');
+            if (!card) return;
+            var imgContainer = card.querySelector('.candidate-image');
+            if (result.success) {
+                imgContainer.innerHTML = '<img src="' + result.url + '" alt="' + result.style.name + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:4px;" />';
+                card.addEventListener('click', (function(idx, st) {
+                    return function() {
+                        var all = grid.querySelectorAll('.candidate-card');
+                        for (var j = 0; j < all.length; j++) all[j].classList.remove('selected');
+                        this.classList.add('selected');
+                        state.selectedCandidate = idx;
+                        var btn = document.getElementById('btn-confirm-image');
+                        if (btn) btn.disabled = false;
+                        var hint = document.getElementById('preview-hint-8');
+                        if (hint) hint.textContent = '已选: 方案' + (idx+1) + ' · ' + st.name;
+                    };
+                })(result.index, result.style));
+            } else {
+                var isServerError = /服务端未配置|请联系管理员/.test(result.error || '');
+                var isRateLimited = /请求太频繁|429/.test(result.error || '');
+                var errLabel = isServerError ? '⚙️ 服务未配置' : (isRateLimited ? '⏳ 请求频繁' : '生成失败');
+                imgContainer.innerHTML = '<div class="ai-error">' + errLabel + '<br/><span style="font-size:10px;opacity:0.7;">' + (result.error || '').substring(0, 30) + '</span></div>';
+            }
+        }
+
         // AI生成候选方案（通用）
         async function generateAICandidatesGeneric(grid, basePrompt, stylesConfig, refImages) {
             state._generatedImageUrls = [];
@@ -142,71 +169,32 @@
                 grid.appendChild(card);
             });
             
-            // 串行调用，每个请求间隔2秒，避免触发Seedream限流
-            var results = [];
-            for (let i = 0; i < stylesConfig.length; i++) {
-                let style = stylesConfig[i];
+            // 并行生成所有风格，每张完成即更新对应卡片
+            var promises = stylesConfig.map(function(style, i) {
                 var fullPrompt = basePrompt + style.suffix;
-                
-                // 第一个请求不等待，后续请求间隔2秒
-                if (i > 0) {
-                    console.log(`[2D] 等待2秒后生成第${i+1}个风格...`);
-                    await new Promise(r => setTimeout(r, 2000));
-                }
-                
-                var result = await callSeedreamAPI(fullPrompt, { refImages: refImages }).then(function(url) {
+                return callSeedreamAPI(fullPrompt, { refImages: refImages }).then(function(url) {
                     state._generatedImageUrls[i] = url;
                     // 缓存成功的AI图片URL到localStorage，供限流时作为示例图使用
                     try {
                         var cached = JSON.parse(localStorage.getItem('cached_ai_images') || '[]');
-                        // 去重：如果已存在相同URL则不重复添加
                         if (cached.indexOf(url) === -1) {
                             cached.push(url);
-                            // 最多保留8张缓存
                             if (cached.length > 8) cached = cached.slice(cached.length - 8);
                             localStorage.setItem('cached_ai_images', JSON.stringify(cached));
                         }
                     } catch(e) { console.warn('[Cache] 缓存图片失败:', e); }
+                    // 立即更新对应卡片
+                    _updateCandidateCard(grid, i, { index: i, url: url, style: style, success: true });
                     return { index: i, url: url, style: style, success: true };
                 }).catch(function(err) {
                     console.error('候选' + (i+1) + '生成失败:', err);
+                    // 立即更新失败卡片
+                    _updateCandidateCard(grid, i, { index: i, error: err.message, style: style, success: false });
                     return { index: i, error: err.message, style: style, success: false };
                 });
-                
-                results.push(result);
-            }
-            var successCount = 0;
-            
-            // 更新卡片UI
-            results.forEach(function(result) {
-                var card = grid.querySelector('.candidate-card[data-index="' + result.index + '"]');
-                if (!card) return;
-                var imgContainer = card.querySelector('.candidate-image');
-                
-                if (result.success) {
-                    imgContainer.innerHTML = '<img src="' + result.url + '" alt="' + result.style.name + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:4px;" />';
-                    successCount++;
-                    
-                    // 绑定点击选择事件
-                    card.addEventListener('click', (function(idx, st) {
-                        return function() {
-                            var all = grid.querySelectorAll('.candidate-card');
-                            for (var j = 0; j < all.length; j++) all[j].classList.remove('selected');
-                            this.classList.add('selected');
-                            state.selectedCandidate = idx;
-                            var btn = document.getElementById('btn-confirm-image');
-                            if (btn) btn.disabled = false;
-                            var hint = document.getElementById('preview-hint-8');
-                            if (hint) hint.textContent = '已选: 方案' + (idx+1) + ' · ' + st.name;
-                        };
-                    })(result.index, result.style));
-                } else {
-                    var isServerError = /服务端未配置|请联系管理员/.test(result.error || '');
-                    var isRateLimited = /请求太频繁|429/.test(result.error || '');
-                    var errLabel = isServerError ? '⚙️ 服务未配置' : (isRateLimited ? '⏳ 请求频繁' : '生成失败');
-                    imgContainer.innerHTML = '<div class="ai-error">' + errLabel + '<br/><span style="font-size:10px;opacity:0.7;">' + (result.error || '').substring(0, 30) + '</span></div>';
-                }
             });
+            var results = await Promise.all(promises);
+            var successCount = results.filter(function(r) { return r.success; }).length;
             
             // 全部失败时显示重试
             if (successCount === 0) {
