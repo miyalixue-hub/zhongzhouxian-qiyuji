@@ -161,10 +161,31 @@
       }
     }
 
-    // Collect 3D models
+    // Collect 3D models - download GLB binary in browser first (Meshy URLs are CloudFront signed, Worker can't fetch them)
     var urls = state.meshyAllUrls || {};
     if (urls.glb) {
-      models.push({ url: urls.glb, format: 'glb', filename: name + '.glb' });
+      var glbEntry = { url: urls.glb, format: 'glb', filename: name + '.glb' };
+      // Pre-download GLB in browser and convert to base64 for Worker to cache
+      try {
+        console.log('[Share] Pre-downloading GLB in browser...');
+        var glbResp = await fetch(urls.glb);
+        if (glbResp.ok) {
+          var glbBlob = await glbResp.blob();
+          var glbB64 = await new Promise(function(resolve, reject) {
+            var reader = new FileReader();
+            reader.onloadend = function() { resolve(reader.result); };
+            reader.onerror = function() { reject(new Error('GLB base64 convert failed')); };
+            reader.readAsDataURL(glbBlob);
+          });
+          glbEntry.binary = glbB64; // data:application/octet-stream;base64,...
+          console.log('[Share] GLB pre-downloaded: ' + glbBlob.size + ' bytes');
+        } else {
+          console.warn('[Share] GLB pre-download failed: ' + glbResp.status);
+        }
+      } catch(e) {
+        console.warn('[Share] GLB pre-download error: ' + e.message);
+      }
+      models.push(glbEntry);
     }
     if (urls.stl) {
       models.push({ url: urls.stl, format: 'stl', filename: name + '.stl' });

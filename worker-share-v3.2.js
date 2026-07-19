@@ -225,18 +225,37 @@ export default {
         // Cache GLB model binary in separate KV key for share page preview & download
         if (shareType === 'package' && typeof shareData === 'object' && shareData.models) {
           var glbModel = shareData.models.find(function(m) { return m.format === 'glb'; });
-          if (glbModel && glbModel.url) {
+          if (glbModel) {
             try {
-              console.log('[Share] Caching GLB model for ' + shareId);
-              var glbResp = await fetch(glbModel.url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-              if (glbResp.ok) {
-                var glbBin = await glbResp.arrayBuffer();
-                await env.SHARE_STORAGE.put('model_bin:' + shareId, glbBin, {
+              // Priority 1: Use binary data sent from browser (Meshy URLs are CloudFront signed, Worker can't fetch)
+              if (glbModel.binary) {
+                console.log('[Share] Using browser-provided GLB binary for ' + shareId);
+                var b64Str = glbModel.binary;
+                // Strip data URI prefix: data:...;base64,
+                var commaIdx = b64Str.indexOf(',');
+                if (commaIdx >= 0) b64Str = b64Str.substring(commaIdx + 1);
+                // Decode base64 to ArrayBuffer
+                var binStr = atob(b64Str);
+                var bytes = new Uint8Array(binStr.length);
+                for (var bi = 0; bi < binStr.length; bi++) bytes[bi] = binStr.charCodeAt(bi);
+                await env.SHARE_STORAGE.put('model_bin:' + shareId, bytes.buffer, {
                   expirationTtl: SHARE_EXPIRY_SECONDS
                 });
-                console.log('[Share] Cached GLB ' + glbBin.byteLength + ' bytes for ' + shareId);
-              } else {
-                console.warn('[Share] GLB fetch failed: ' + glbResp.status);
+                console.log('[Share] Cached GLB ' + bytes.byteLength + ' bytes (from browser) for ' + shareId);
+              }
+              // Priority 2: Try fetching from URL (may fail for signed URLs)
+              else if (glbModel.url) {
+                console.log('[Share] Trying to fetch GLB from URL for ' + shareId);
+                var glbResp = await fetch(glbModel.url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+                if (glbResp.ok) {
+                  var glbBin = await glbResp.arrayBuffer();
+                  await env.SHARE_STORAGE.put('model_bin:' + shareId, glbBin, {
+                    expirationTtl: SHARE_EXPIRY_SECONDS
+                  });
+                  console.log('[Share] Cached GLB ' + glbBin.byteLength + ' bytes (from URL) for ' + shareId);
+                } else {
+                  console.warn('[Share] GLB URL fetch failed: ' + glbResp.status);
+                }
               }
             } catch (e) {
               console.warn('[Share] GLB cache error: ' + e.message);
@@ -735,7 +754,7 @@ export default {
         return new Response(JSON.stringify({ 
           status: 'ok', 
           time: new Date().toISOString(),
-          version: '3.2.0-model-cache'
+          version: '3.2.1-browser-glb-cache'
         }), {
           headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
         });
