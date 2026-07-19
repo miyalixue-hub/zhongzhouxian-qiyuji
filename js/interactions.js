@@ -403,6 +403,15 @@
             var tipText = page9.querySelector('.tip-text');
             if (tipText) tipText.textContent = '🎯 点击下方按钮开始AI生成你的铛铛车';
             
+            // 显示返回修改按钮并绑定事件
+            var btnBackDecor = document.getElementById('btn-back-to-decor');
+            if (btnBackDecor) {
+                btnBackDecor.style.display = 'block';
+                btnBackDecor.onclick = function() {
+                    showPage('4c');
+                };
+            }
+            
             // 显示page-9
             state.currentPage = 9;
             document.querySelectorAll('.page-section').forEach(function(p) { p.classList.remove('active'); });
@@ -1168,6 +1177,14 @@
                 if (genBtn) genBtn.textContent = '🎨 开始AI生成';
                 var tipText = page9.querySelector('.tip-text');
                 if (tipText) tipText.textContent = '🎯 点击下方按钮开始AI生成你的铛铛车';
+                // 显示返回修改按钮并绑定事件
+                var btnBackDecor = document.getElementById('btn-back-to-decor');
+                if (btnBackDecor) {
+                    btnBackDecor.style.display = 'block';
+                    btnBackDecor.onclick = function() {
+                        showPage('4c');
+                    };
+                }
                 state.currentPage = 9;
                 document.querySelectorAll('.page-section').forEach(function(p) { p.classList.remove('active'); });
                 page9.classList.add('active');

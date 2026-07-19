@@ -150,6 +150,9 @@
                 updatePreview(); 
                 updateRecipeBar();
                 if (n === 9) { 
+                    // 镇水兽模式进入page-9时隐藏返回按钮（仅铛铛车模式显示）
+                    var btnBackDecor = document.getElementById('btn-back-to-decor');
+                    if (btnBackDecor) btnBackDecor.style.display = 'none';
                     try {
                         generatePromptSummary();
 } catch(e) {
