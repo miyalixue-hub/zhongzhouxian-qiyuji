@@ -448,19 +448,23 @@
                 }
             }
             
-            // 获取装饰名称
+            // 获取装饰名称和精确位置描述
             var decorNames = [];
+            var decorDescs = [];
             if (state.tramDecors && state.tramDecors.length > 0) {
                 state.tramDecors.forEach(function(d) {
                     var td = tramDecors.find(function(x) { return x.id === d; });
-                    if (td) decorNames.push(td.name);
+                    if (td) {
+                        decorNames.push(td.name);
+                        decorDescs.push(td.promptDesc || td.name);
+                    }
                 });
             }
             
-            var prompt = '中国传统手绘风格，北京正阳门前的有轨铛铛车，' + eraName + '，' + colorName + '车身';
+            var prompt = '中国传统工笔画风格，北京老式有轨铛铛车，' + eraName + '，' + colorName + '车身';
             if (eraVisualDesc) prompt += '，' + eraVisualDesc;
-            if (decorNames.length > 0) prompt += '，' + decorNames.join('、');
-            prompt += '，背景是正阳门城楼和前门大街，水墨淡彩风格，传统工笔画质感，8k高清';
+            if (decorDescs.length > 0) prompt += '，' + decorDescs.join('，');
+            prompt += '，纯白干净背景，车身线条清晰明确，色彩饱满扎实，主体突出居中，适合3D建模参考，8k高清';
             
             var summaryHtml = '<div class="tram-prompt-summary">';
             summaryHtml += '<h3>🚃 铛铛车设计摘要</h3>';
@@ -1212,16 +1216,20 @@
                     if (te) { eraName = te.name; eraVisualDesc = te.visualDesc || ''; }
                 }
                 var decorNames = [];
+                var decorDescs = [];
                 if (state.tramDecors && state.tramDecors.length > 0) {
                     state.tramDecors.forEach(function(d) {
                         var td = tramDecors.find(function(x) { return x.id === d; });
-                        if (td) decorNames.push(td.name);
+                        if (td) {
+                            decorNames.push(td.name);
+                            decorDescs.push(td.promptDesc || td.name);
+                        }
                     });
                 }
-                var prompt = '中国传统手绘风格，北京正阳门前的有轨铛铛车，' + eraName + '，' + colorName + '车身';
+                var prompt = '中国传统工笔画风格，北京老式有轨铛铛车，' + eraName + '，' + colorName + '车身';
                 if (eraVisualDesc) prompt += '，' + eraVisualDesc;
-                if (decorNames.length > 0) prompt += '，' + decorNames.join('、');
-                prompt += '，背景是正阳门城楼和前门大街，水墨淡彩风格，传统工笔画质感，8k高清';
+                if (decorDescs.length > 0) prompt += '，' + decorDescs.join('，');
+                prompt += '，纯白干净背景，车身线条清晰明确，色彩饱满扎实，主体突出居中，适合3D建模参考，8k高清';
                 var summaryHtml = '<div class="tram-prompt-summary">';
                 summaryHtml += '<h3>🚃 铛铛车设计摘要</h3>';
                 summaryHtml += '<div class="prompt-row"><span class="prompt-label">车身颜色:</span> <span style="color:' + colorHex + ';">●</span> ' + colorName + '</div>';

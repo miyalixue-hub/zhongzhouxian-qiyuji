@@ -519,15 +519,19 @@
             var tc = tramColors.find(function(c) { return c.id === state.tramColor; }) || tramColors[0];
             var te = tramEras.find(function(e) { return e.id === state.tramEra; }) || tramEras[0];
             var decorNames = [];
+            var decorDescs = [];
             if (state.tramDecors && state.tramDecors.length > 0) {
                 state.tramDecors.forEach(function(d) {
                     var td = tramDecors.find(function(x) { return x.id === d; });
-                    if (td) decorNames.push(td.name);
+                    if (td) {
+                        decorNames.push(td.name);
+                        decorDescs.push(td.promptDesc || td.name);
+                    }
                 });
             }
             
-            var summonText = '我设计了一辆' + te.name + '铛铛车，' + tc.name + '车身' + (decorNames.length ? '，配备了' + decorNames.join('和') : '') + '，行驶在正阳门前的老街道上，叮叮当当...';
-            var aiPrompt = '一辆可爱的' + te.name + '北京有轨铛铛车，' + te.visualDesc + '，' + tc.name + '车身（' + tc.hex + '），' + (decorNames.length ? '配备' + decorNames.join('、') + '，' : '') + '背景是正阳门城楼和前门大街，中国传统手绘风格，水墨淡彩质感，3D渲染，干净背景，儿童插画风格，高质量，温馨可爱';
+            var summonText = '我设计了一辆' + te.name + '铛铛车，' + tc.name + '车身' + (decorNames.length ? '，配备了' + decorNames.join('和') : '') + '，叮叮当当...';
+            var aiPrompt = '一辆北京老式有轨铛铛车，' + te.name + '，' + te.visualDesc + '，' + tc.name + '车身（' + tc.hex + '），' + (decorDescs.length ? decorDescs.join('，') + '，' : '') + '纯白干净背景，车身线条清晰明确，色彩饱满扎实，主体突出居中，3D渲染风格，适合3D建模参考，8k高清，精致质感';
             
             var tags = document.querySelector('#page-9 .prompt-tags');
             if (tags) {
