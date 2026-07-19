@@ -169,10 +169,13 @@
                 grid.appendChild(card);
             });
             
-            // 并行生成所有风格，每张完成即更新对应卡片
+            // 交错并行生成：每张间隔500ms发起，避免同时请求触发限流
             var promises = stylesConfig.map(function(style, i) {
                 var fullPrompt = basePrompt + style.suffix;
-                return callSeedreamAPI(fullPrompt, { refImages: refImages }).then(function(url) {
+                // 每张间隔500ms发起（比原来串行2秒快很多，又不会同时打API）
+                return new Promise(function(resolve) {
+                    setTimeout(function() { resolve(callSeedreamAPI(fullPrompt, { refImages: refImages })); }, i * 500);
+                }).then(function(url) {
                     state._generatedImageUrls[i] = url;
                     // 缓存成功的AI图片URL到localStorage，供限流时作为示例图使用
                     try {
