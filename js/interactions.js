@@ -1006,9 +1006,6 @@
         window.appState = state;
         // Expose generatePromptSummary so oracle event handlers can call it
         window.generatePromptSummary = generatePromptSummary;
-        // Expose API key dialog and SVG fallback for inline onclick handlers
-        window.showApiKeyDialog = showApiKeyDialog;
-        window.showMeshyKeyDialog = showMeshyKeyDialog;
         window.generateSVGFallback = generateSVGFallback;
 
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

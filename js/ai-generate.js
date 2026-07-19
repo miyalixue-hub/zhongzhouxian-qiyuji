@@ -102,11 +102,6 @@
             throw new Error('API返回数据异常');
         }
         
-        // API Key 由服务端管理，此函数改为显示提示信息
-        function showApiKeyDialog() {
-            alert('⚙️ API Key 由服务端统一管理\n\n无需在前端输入密钥。\n如果生成失败显示"服务未配置"，请联系管理员。');
-        }
-        
         // 为候选卡片创建loading状态HTML
         function createAILoadingHTML(styleName) {
             return '<div class="ai-loading">' +

@@ -627,13 +627,6 @@
             if (p9home) { p9home.disabled = false; p9home.style.opacity = '1'; p9home.style.cursor = 'pointer'; }
         }
         
-        // API Key 由服务端管理，此函数改为显示提示信息
-        function showMeshyKeyDialog(onSuccess) {
-            alert('⚙️ API Key 由服务端统一管理\n\n无需在前端输入密钥。\n如果3D生成失败显示"服务未配置"，请联系管理员。');
-            // 降级到 SVG 模型
-            showFallbackSVG();
-        }
-
         // ============ 新增：打印体检报告 + 下载面板 ============
         
         // 打印体检报告 - 动画逐项检查
