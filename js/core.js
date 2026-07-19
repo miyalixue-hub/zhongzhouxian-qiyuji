@@ -579,29 +579,41 @@
             var svgContent = '';
             switch(elementId) {
                 case 'cloud_base':
-                    svgContent = '<path d="M20,105 Q35,95 50,105 Q65,115 80,105 Q95,95 100,105" stroke="rgba(196,92,92,0.5)" stroke-width="2" fill="none"/>';
+                    svgContent = '<ellipse cx="60" cy="112" rx="35" ry="6" fill="#8B2020" opacity="0.3"/>' +
+                               '<path d="M28,112 Q40,104 52,112 Q64,120 76,112 Q88,104 92,112" stroke="#C45C5C" stroke-width="2.5" fill="none" opacity="0.7"/>' +
+                               '<path d="M32,108 Q44,100 56,108 Q68,116 80,108" stroke="#D4A843" stroke-width="1.5" fill="none" opacity="0.5"/>' +
+                               '<path d="M38,114 Q50,110 62,114 Q74,118 86,114" stroke="#C45C5C" stroke-width="1" fill="none" opacity="0.4"/>';
                     break;
                 case 'map_base':
-                    svgContent = '<rect x="35" y="100" width="50" height="12" stroke="rgba(74,127,181,0.5)" stroke-width="1.5" fill="none" rx="2"/>' +
-                               '<line x1="60" y1="100" x2="60" y2="112" stroke="rgba(74,127,181,0.5)" stroke-width="1" stroke-dasharray="2,1"/>';
+                    svgContent = '<rect x="30" y="106" width="60" height="14" fill="#5C3A21" rx="2" opacity="0.35"/>' +
+                               '<rect x="33" y="107" width="54" height="10" fill="#D4C4A0" rx="1" opacity="0.5"/>' +
+                               '<line x1="45" y1="112" x2="75" y2="112" stroke="#C45C5C" stroke-width="1.5" stroke-dasharray="3,1.5" opacity="0.6"/>' +
+                               '<circle cx="60" cy="112" r="2" fill="#C45C5C" opacity="0.5"/>';
                     break;
                 case 'brick_platform':
-                    svgContent = '<rect x="30" y="100" width="60" height="14" stroke="rgba(107,123,140,0.5)" stroke-width="1.5" fill="none" rx="1"/>' +
-                               '<line x1="30" y1="105" x2="90" y2="105" stroke="rgba(107,123,140,0.5)" stroke-width="0.8"/>' +
-                               '<line x1="30" y1="110" x2="90" y2="110" stroke="rgba(107,123,140,0.5)" stroke-width="0.8"/>';
+                    svgContent = '<rect x="28" y="104" width="64" height="16" fill="#6B7B8C" rx="1" opacity="0.4"/>' +
+                               '<line x1="28" y1="108" x2="92" y2="108" stroke="#556677" stroke-width="0.8" opacity="0.5"/>' +
+                               '<line x1="28" y1="112" x2="92" y2="112" stroke="#556677" stroke-width="0.8" opacity="0.5"/>' +
+                               '<line x1="28" y1="116" x2="92" y2="116" stroke="#556677" stroke-width="0.8" opacity="0.5"/>' +
+                               '<circle cx="30" cy="106" r="2.5" fill="#6B7B8C" opacity="0.4"/>' +
+                               '<circle cx="90" cy="106" r="2.5" fill="#6B7B8C" opacity="0.4"/>';
                     break;
                 case 'marble_base':
-                    svgContent = '<polygon points="30,112 90,112 95,104 25,104" fill="none" stroke="rgba(176,176,176,0.5)" stroke-width="1.5"/>' +
-                               '<polygon points="34,104 86,104 88,98 32,98" fill="none" stroke="rgba(176,176,176,0.5)" stroke-width="1"/>' +
-                               '<path d="M34,98 Q42,94 50,98 Q58,94 66,98 Q74,94 82,98" stroke="rgba(176,176,176,0.5)" stroke-width="0.8" fill="none"/>';
+                    svgContent = '<path d="M30,116 L90,116 L93,110 L27,110 Z" fill="#E8E8E8" opacity="0.45"/>' +
+                               '<path d="M34,110 L86,110 L88,105 L32,105 Z" fill="#F0F0F0" opacity="0.35"/>' +
+                               '<path d="M36,105 Q42,101 48,105 Q54,101 60,105 Q66,101 72,105 Q78,101 84,105" stroke="#D0D0D0" stroke-width="1.2" fill="none" opacity="0.6"/>' +
+                               '<path d="M38,102 Q44,99 50,102 Q56,99 62,102 Q68,99 74,102 Q80,99 86,102" stroke="#D0D0D0" stroke-width="0.8" fill="none" opacity="0.4"/>';
                     break;
                 case 'glazed_base':
-                    svgContent = '<polygon points="60,96 80,104 80,114 60,122 40,114 40,104" fill="none" stroke="rgba(212,168,67,0.5)" stroke-width="1.5"/>' +
-                               '<polygon points="60,100 74,106 74,112 60,118 46,112 46,106" fill="none" stroke="rgba(196,92,92,0.5)" stroke-width="1"/>';
+                    svgContent = '<polygon points="60,100 78,107 78,117 60,124 42,117 42,107" fill="#D4A843" opacity="0.3"/>' +
+                               '<polygon points="60,102 74,108 74,116 60,122 46,116 46,108" fill="#C4A830" opacity="0.2"/>' +
+                               '<line x1="44" y1="110" x2="76" y2="110" stroke="#2D8B5E" stroke-width="1.5" opacity="0.4"/>' +
+                               '<line x1="46" y1="114" x2="74" y2="114" stroke="#D4A843" stroke-width="1" opacity="0.35"/>';
                     break;
                 case 'name_stone':
-                    svgContent = '<rect x="35" y="98" width="50" height="16" stroke="rgba(139,115,85,0.5)" stroke-width="1.5" fill="none" rx="1"/>' +
-                               '<text x="60" y="110" text-anchor="middle" fill="rgba(139,115,85,0.6)" font-size="7" font-weight="bold">神兽</text>';
+                    svgContent = '<rect x="32" y="102" width="56" height="18" fill="#8B8070" rx="1" opacity="0.35"/>' +
+                               '<rect x="36" y="105" width="48" height="12" fill="#A09888" rx="1" opacity="0.25"/>' +
+                               '<text x="60" y="115" text-anchor="middle" fill="#6B5B4B" font-size="7" font-weight="bold" opacity="0.5">神兽</text>';
                     break;
             }
             return svgContent;

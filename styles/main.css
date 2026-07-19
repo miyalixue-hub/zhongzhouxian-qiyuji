@@ -1840,13 +1840,20 @@
         }
         
         .element-icon {
-            width: 40px;
-            height: 40px;
+            width: 120px;
+            height: 90px;
             margin: 0 auto 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+        .element-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
         }
         
         .element-name {
