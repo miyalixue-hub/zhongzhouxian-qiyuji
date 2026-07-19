@@ -493,39 +493,8 @@
     return '';  // 无名字时返回空，由 collectPackage 处理为通用标题
   }
 
-  function getAuthHeader() {
-    var token = localStorage.getItem('share_auth_token');
-    return token ? 'Bearer ' + token : '';
-  }
-
-  async function ensureAuthenticated() {
-    // Check if we already have a valid token
-    var existing = localStorage.getItem('share_auth_token');
-    if (existing) return true;
-
-    // Auto-authenticate: request token (server uses IP-based rate limiting, no password in frontend)
-    return new Promise(function(resolve) {
-      fetch(SHARE_API + '/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
-      })
-      .then(function(r) { return r.json(); })
-      .then(function(result) {
-        if (result.token) {
-          localStorage.setItem('share_auth_token', result.token);
-          resolve(true);
-        } else {
-          showToastMessage('❌ 认证失败');
-          resolve(false);
-        }
-      })
-      .catch(function() {
-        showToastMessage('❌ 认证失败');
-        resolve(false);
-      });
-    });
-  }
+  // 复用 config.js 中的全局 getAuthHeader() 和 ensureAuthenticated()
+  // 不再使用独立的 share_auth_token 和硬编码密码
 
   function showToastMessage(msg) {
     if (typeof window.showToastMessage === 'function') {

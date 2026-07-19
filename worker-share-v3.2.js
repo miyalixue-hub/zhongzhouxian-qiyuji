@@ -128,7 +128,7 @@ export default {
     var clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
     
     try {
-      // ========== Auth (no password required — rate-limited token issuance) ==========
+      // ========== Auth (password required — password only known to user, not in source code) ==========
       if (path === '/api/auth' && request.method === 'POST') {
         var signingKey = env.ACCESS_PASSWORD;
         if (!signingKey) {
@@ -136,13 +136,18 @@ export default {
             status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
           });
         }
-        // Rate limit token issuance to prevent abuse (max 10 per minute per IP)
+        // Rate limit auth attempts (max 10 per minute per IP)
         if (!checkRateLimit(clientIp, 'auth')) {
-          return new Response(JSON.stringify({ error: 'Too many auth requests' }), {
+          return new Response(JSON.stringify({ error: 'Too many auth attempts' }), {
             status: 429, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
           });
         }
-        // Issue token signed with server-side key (no password needed from client)
+        var body = await request.json();
+        if (!body.password || body.password !== signingKey) {
+          return new Response(JSON.stringify({ error: '口令错误' }), {
+            status: 401, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
         var token = await generateToken(signingKey);
         return new Response(JSON.stringify({ token: token, exp: Date.now() + TOKEN_EXPIRY_MS }), {
           status: 200, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
