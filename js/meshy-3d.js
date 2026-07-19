@@ -329,6 +329,26 @@
                         // 更新进度到75%，激活第4阶段
                         activateStage(3, 75);
                         
+                        // 立即缓存GLB二进制（URL最新鲜时），供分享时使用
+                        (function cacheGlbBinary() {
+                            if (!glbUrl) return;
+                            fetch(glbUrl).then(function(r) {
+                                if (r.ok) return r.blob();
+                                console.warn('[Meshy] GLB cache fetch failed:', r.status);
+                                return null;
+                            }).then(function(blob) {
+                                if (!blob) return;
+                                var reader = new FileReader();
+                                reader.onloadend = function() {
+                                    state._glbBinary = reader.result; // data:application/octet-stream;base64,...
+                                    console.log('[Meshy] GLB binary cached:', blob.size, 'bytes');
+                                };
+                                reader.readAsDataURL(blob);
+                            }).catch(function(e) {
+                                console.warn('[Meshy] GLB cache error:', e.message);
+                            });
+                        })();
+                        
                         // 加载3D模型到 viewer
                         loadMeshyModel(state.meshyModelUrl);
                     } else if (status === 'FAILED' || status === 'CANCELED') {
