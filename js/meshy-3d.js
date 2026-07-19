@@ -445,6 +445,14 @@
                 
                 console.log('[Meshy] model-viewer 自定义元素已注册，开始加载GLB...');
                 
+                // 确保model-done容器是relative定位，用于承载absolute的model-viewer
+                var modelDone = modelEl.parentElement;
+                if (modelDone) {
+                    modelDone.style.position = 'relative';
+                    modelDone.style.width = '100%';
+                    modelDone.style.height = '100%';
+                }
+                
                 var loadFired = false;
                 
                 var onLoad = function() {
@@ -456,10 +464,15 @@
                     clearTimeout(hintTimeout);
                     console.log('[Meshy] 3D模型加载完成');
                     
-                    // 切换到 3D 交互视图（用visibility替代display，避免web component初始化问题）
-                    if (thumbEl) thumbEl.style.display = 'none';
+                    // 不隐藏缩略图！让model-viewer叠在上面
+                    // 如果model-viewer渲染成功，3D模型会覆盖缩略图
+                    // 如果渲染失败（白屏），缩略图仍然可见
                     modelEl.style.visibility = 'visible';
-                    modelEl.style.position = 'relative';
+                    modelEl.style.position = 'absolute';
+                    modelEl.style.top = '0';
+                    modelEl.style.left = '0';
+                    modelEl.style.width = '100%';
+                    modelEl.style.height = '100%';
                     modelEl.style.zIndex = '10';
                     
                     activateStage(3, 100);
