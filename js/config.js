@@ -190,9 +190,9 @@
             { id: 'palace_yellow', name: '宫墙黄', hex: '#F9A825', desc: '皇家气质' }
         ];
         var tramEras = [
-            { id: 'vintage_1924', name: '1924年老式', desc: '白皮车·木质车厢·开放式座位' },
-            { id: 'improved_1940', name: '1940s改良版', desc: '全封闭车窗·金属车身' },
-            { id: 'modern_retro', name: '现代复古版', desc: '保留经典元素·现代舒适感' }
+            { id: 'vintage_1924', name: '1924年老式', desc: '白皮车·木质车厢·开放式座位', visualDesc: '白色木质车身的早期有轨电车，开放式木质长条座椅，铁质辐条车轮，车顶装有铜质铃铛，车身有岁月斑驳痕迹，民国初年老北京风格' },
+            { id: 'improved_1940', name: '1940s改良版', desc: '全封闭车窗·金属车身', visualDesc: '墨绿色全金属铆接车身的中期有轨电车，全封闭玻璃窗，橡胶轮胎，圆弧形车顶，Art Deco装饰风格线条，车头有圆形大灯' },
+            { id: 'modern_retro', name: '现代复古版', desc: '保留经典元素·现代舒适感', visualDesc: '暗红色精致漆面搭配金色装饰线条的现代复刻有轨电车，大面积落地玻璃窗，车内有软垫座椅，车顶精致铜铃配LED氛围灯，兼具复古韵味与现代质感' }
         ];
         var tramDecors = [
             { id: 'roof_bell', name: '车顶铜铃', desc: '铛铛声的来源' },

@@ -527,7 +527,7 @@
             }
             
             var summonText = '我设计了一辆' + te.name + '铛铛车，' + tc.name + '车身' + (decorNames.length ? '，配备了' + decorNames.join('和') : '') + '，行驶在正阳门前的老街道上，叮叮当当...';
-            var aiPrompt = '一辆可爱的' + te.name + '北京有轨铛铛车，' + tc.name + '车身（' + tc.hex + '），' + (decorNames.length ? '配备' + decorNames.join('、') + '，' : '') + '背景是正阳门城楼和前门大街，中国传统手绘风格，水墨淡彩质感，3D渲染，干净背景，儿童插画风格，高质量，温馨可爱';
+            var aiPrompt = '一辆可爱的' + te.name + '北京有轨铛铛车，' + te.visualDesc + '，' + tc.name + '车身（' + tc.hex + '），' + (decorNames.length ? '配备' + decorNames.join('、') + '，' : '') + '背景是正阳门城楼和前门大街，中国传统手绘风格，水墨淡彩质感，3D渲染，干净背景，儿童插画风格，高质量，温馨可爱';
             
             var tags = document.querySelector('#page-9 .prompt-tags');
             if (tags) {

@@ -1241,6 +1241,20 @@
             justify-content: center;
             font-size: 32px;
         }
+        /* 铛铛车年代卡片图片适配 */
+        [data-tram-era] .option-icon {
+            width: 100%;
+            height: 90px;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+        [data-tram-era] .option-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: 8px;
+        }
         
         .option-title {
             font-size: 16px;
