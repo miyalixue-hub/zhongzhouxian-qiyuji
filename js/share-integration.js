@@ -90,7 +90,8 @@
   async function collectPackage(studentName, creatureName) {
     var images = [];
     var models = [];
-    var name = studentName + '的' + creatureName;
+    // 有名字时显示"XX的守护神兽"，无名字时显示"专属守护神兽"
+    var name = studentName ? (studentName + '的' + creatureName) : '专属' + creatureName;
     var styleNames = ['古石刻韵', '琉璃焕彩', '青铜古韵', '水墨丹青', '经典复古', '现代简约', '金色华贵', '传统风格'];
 
     // ============ Collect 2D images — DOM-first strategy ============
@@ -490,7 +491,7 @@
     if (state.userName) return state.userName;
     var saved = localStorage.getItem('student_name');
     if (saved) return saved;
-    return '小明';
+    return '';  // 无名字时返回空，由 collectPackage 处理为通用标题
   }
 
   function getAuthHeader() {
