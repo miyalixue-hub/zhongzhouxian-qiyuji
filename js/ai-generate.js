@@ -169,13 +169,19 @@
                 grid.appendChild(card);
             });
             
-            // 交错并行生成：每张间隔500ms发起，避免同时请求触发限流
-            var promises = stylesConfig.map(function(style, i) {
+            // 串行生成，每张间隔1秒（比原来2秒快，且不会被限流）
+            var results = [];
+            for (let i = 0; i < stylesConfig.length; i++) {
+                let style = stylesConfig[i];
                 var fullPrompt = basePrompt + style.suffix;
-                // 每张间隔500ms发起（比原来串行2秒快很多，又不会同时打API）
-                return new Promise(function(resolve) {
-                    setTimeout(function() { resolve(callSeedreamAPI(fullPrompt, { refImages: refImages })); }, i * 500);
-                }).then(function(url) {
+                
+                // 第一张不等待，后续每张间隔1秒
+                if (i > 0) {
+                    console.log(`[2D] 等待1秒后生成第${i+1}个风格...`);
+                    await new Promise(r => setTimeout(r, 1000));
+                }
+                
+                var result = await callSeedreamAPI(fullPrompt, { refImages: refImages }).then(function(url) {
                     state._generatedImageUrls[i] = url;
                     // 缓存成功的AI图片URL到localStorage，供限流时作为示例图使用
                     try {
@@ -195,8 +201,9 @@
                     _updateCandidateCard(grid, i, { index: i, error: err.message, style: style, success: false });
                     return { index: i, error: err.message, style: style, success: false };
                 });
-            });
-            var results = await Promise.all(promises);
+                
+                results.push(result);
+            }
             var successCount = results.filter(function(r) { return r.success; }).length;
             
             // 全部失败时显示重试
