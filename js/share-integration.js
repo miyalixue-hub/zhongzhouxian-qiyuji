@@ -504,43 +504,15 @@
     }
   }
 
-  // ========== Create test button element ==========
-  function createTestBtn(id) {
-    var btn = document.createElement('button');
-    btn.id = id;
-    btn.innerHTML = '🧪 用预存数据测试分享';
-    btn.style.cssText = 'width:100%;margin-top:10px;padding:12px;background:linear-gradient(135deg,#FFA726,#FF7043);color:white;border:none;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 12px rgba(255,112,67,0.3);transition:transform 0.2s;';
-    btn.onclick = function() { quickTestShare(); };
-    btn.onmouseenter = function() { if (!this.disabled) this.style.transform = 'scale(1.02)'; };
-    btn.onmouseleave = function() { this.style.transform = 'scale(1)'; };
-    btn.title = '使用预存的测试数据（4张图+3D模型）快速测试分享功能';
-    return btn;
-  }
-
   // ========== Inject buttons ==========
   function injectButtons() {
     // 1. Download panel (page-11)
     var shareBtn = document.getElementById('btn-share-creature');
     if (shareBtn) {
-      if (!document.getElementById('btn-test-share')) {
-        var testBtn = createTestBtn('btn-test-share');
-        shareBtn.parentNode.insertBefore(testBtn, shareBtn.nextSibling);
-        console.log('[Share] 下载面板测试按钮已注入');
-      }
       // Override share button to use package upload
       shareBtn.onclick = function() { uploadAndShare(); };
       shareBtn.onmouseenter = function() { if (!this.disabled) this.style.transform = 'scale(1.02)'; };
       shareBtn.onmouseleave = function() { this.style.transform = 'scale(1)'; };
-    }
-
-    // 2. Style selection page (page-9)
-    var skipBtn = Array.from(document.querySelectorAll('button')).find(function(b) {
-      return b.textContent.indexOf('跳过') >= 0 && b.textContent.indexOf('测试用') >= 0;
-    });
-    if (skipBtn && !document.getElementById('btn-test-share-page9')) {
-      var page9Btn = createTestBtn('btn-test-share-page9');
-      skipBtn.parentNode.insertBefore(page9Btn, skipBtn.nextSibling);
-      console.log('[Share] 风格选择页测试按钮已注入');
     }
   }
 
