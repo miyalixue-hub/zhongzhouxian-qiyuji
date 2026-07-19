@@ -127,6 +127,9 @@ export default {
     var path = url.pathname;
     var clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
     
+    // P3-1: Basic request logging
+    console.log('[Request] ' + request.method + ' ' + path + ' from ' + clientIp);
+    
     try {
       // ========== Auth (password required — password only known to user, not in source code) ==========
       if (path === '/api/auth' && request.method === 'POST') {
@@ -157,6 +160,14 @@ export default {
       // Protected paths check
       var protectedPaths = ['/api/2d/generate', '/api/image-to-3d', '/api/share/upload', '/api/test-upload'];
       if (protectedPaths.some(function(p) { return path === p || path.indexOf(p + '/') === 0; })) {
+        // P1-2: Reject oversized request bodies early (5MB limit)
+        var cl = parseInt(request.headers.get('Content-Length') || '0');
+        if (cl > 5 * 1024 * 1024) {
+          return new Response(JSON.stringify({ error: 'Request too large' }), {
+            status: 413, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+        
         var pwd = env.ACCESS_PASSWORD;
         if (pwd) {
           var authHeader = request.headers.get('Authorization') || '';
@@ -245,10 +256,15 @@ export default {
                 var binStr = atob(b64Str);
                 var bytes = new Uint8Array(binStr.length);
                 for (var bi = 0; bi < binStr.length; bi++) bytes[bi] = binStr.charCodeAt(bi);
-                await env.SHARE_STORAGE.put('model_bin:' + shareId, bytes.buffer, {
-                  expirationTtl: SHARE_EXPIRY_SECONDS
-                });
-                console.log('[Share] Cached GLB ' + bytes.byteLength + ' bytes (from browser) for ' + shareId);
+                // P2: Validate GLB magic bytes (glTF = 0x46546C67)
+                if (bytes.byteLength < 4 || new DataView(bytes.buffer).getUint32(0, true) !== 0x46546C67) {
+                  console.warn('[Share] GLB magic bytes check failed for ' + shareId);
+                } else {
+                  await env.SHARE_STORAGE.put('model_bin:' + shareId, bytes.buffer, {
+                    expirationTtl: SHARE_EXPIRY_SECONDS
+                  });
+                  console.log('[Share] Cached GLB ' + bytes.byteLength + ' bytes (from browser) for ' + shareId);
+                }
               }
               // Priority 2: If URL is our own meshy-glb proxy, fetch from KV cache or proxy endpoint
               else if (glbModel.url && glbModel.url.indexOf('/api/meshy-glb/') >= 0) {
@@ -257,10 +273,16 @@ export default {
                   var proxyResp = await fetch(glbModel.url);
                   if (proxyResp.ok) {
                     var proxyBin = await proxyResp.arrayBuffer();
-                    await env.SHARE_STORAGE.put('model_bin:' + shareId, proxyBin, {
-                      expirationTtl: SHARE_EXPIRY_SECONDS
-                    });
-                    console.log('[Share] Cached GLB ' + proxyBin.byteLength + ' bytes (from meshy-glb proxy) for ' + shareId);
+                    // Validate GLB magic bytes
+                    var pbView = new DataView(proxyBin);
+                    if (proxyBin.byteLength >= 4 && pbView.getUint32(0, true) === 0x46546C67) {
+                      await env.SHARE_STORAGE.put('model_bin:' + shareId, proxyBin, {
+                        expirationTtl: SHARE_EXPIRY_SECONDS
+                      });
+                      console.log('[Share] Cached GLB ' + proxyBin.byteLength + ' bytes (from meshy-glb proxy) for ' + shareId);
+                    } else {
+                      console.warn('[Share] GLB from proxy failed magic bytes check for ' + shareId);
+                    }
                   } else {
                     console.warn('[Share] meshy-glb proxy fetch failed: ' + proxyResp.status);
                   }
@@ -390,7 +412,7 @@ export default {
                   status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
                 });
               }
-              var fname = (meta.name || 'artwork') + '_' + (idx + 1) + '.' + (mime.split('/')[1] || 'png');
+              var fname = ((meta.name || 'artwork') + '_' + (idx + 1) + '.' + (mime.split('/')[1] || 'png')).replace(/[\/\\;\x00-\x1f"]/g, '_');
               return new Response(bin, {
                 status: 200,
                 headers: Object.assign({
@@ -417,7 +439,7 @@ export default {
               try {
                 var cachedGlb = await env.SHARE_STORAGE.get('model_bin:' + dlId, 'arrayBuffer');
                 if (cachedGlb) {
-                  var glbFname = model.filename || 'model.glb';
+                  var glbFname = (model.filename || 'model.glb').replace(/[\/\\;\x00-\x1f"]/g, '_');
                   return new Response(cachedGlb, {
                     status: 200,
                     headers: Object.assign({
@@ -450,7 +472,7 @@ export default {
         // ---- Legacy single-file format ----
         if (meta.type === '2d') {
           var binary = Uint8Array.from(atob(data), function(c) { return c.charCodeAt(0); });
-          var fileName = (meta.name || 'share') + '.png';
+          var fileName = ((meta.name || 'share') + '.png').replace(/[\/\\;\x00-\x1f"]/g, '_');
           return new Response(binary, {
             status: 200,
             headers: Object.assign({
@@ -768,6 +790,14 @@ export default {
       // GET /api/meshy-glb/{taskId} — download GLB via Meshy API, cache in KV, serve with CORS
       if (path.match(/^\/api\/meshy-glb\/[\w-]+$/) && request.method === 'GET') {
         var glbTaskId = path.split('/').pop();
+        
+        // P1-1: Validate taskId format to prevent path injection
+        if (!glbTaskId || !/^[\w-]{1,128}$/.test(glbTaskId)) {
+          return new Response(JSON.stringify({ error: 'Invalid taskId format' }), {
+            status: 400, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+        
         var cacheKey = 'meshy_glb:' + glbTaskId;
         
         // 1) Check KV cache first
@@ -871,11 +901,23 @@ export default {
       
       // ========== Health check ==========
       if (path === '/api/health') {
-        return new Response(JSON.stringify({ 
+        var healthInfo = { 
           status: 'ok', 
           time: new Date().toISOString(),
-          version: '3.2.2-meshy-glb-proxy'
-        }), {
+          version: '3.2.3-security'
+        };
+        // P2-3: Check KV connectivity
+        if (env.SHARE_STORAGE) {
+          try {
+            await env.SHARE_STORAGE.get('__health_check__');
+            healthInfo.kv = 'connected';
+          } catch(e) {
+            healthInfo.kv = 'error: ' + e.message;
+          }
+        } else {
+          healthInfo.kv = 'not configured';
+        }
+        return new Response(JSON.stringify(healthInfo), {
           headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
         });
       }
