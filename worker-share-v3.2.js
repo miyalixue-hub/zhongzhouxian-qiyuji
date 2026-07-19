@@ -32,6 +32,7 @@ var RATE_LIMIT = {
   '2d': 20,
   '3d': 5,
   'share-upload': 10,
+  'auth': 10,
   'default': 30
 };
 
@@ -127,21 +128,22 @@ export default {
     var clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
     
     try {
-      // ========== Auth ==========
+      // ========== Auth (no password required — rate-limited token issuance) ==========
       if (path === '/api/auth' && request.method === 'POST') {
-        var password = env.ACCESS_PASSWORD;
-        if (!password) {
+        var signingKey = env.ACCESS_PASSWORD;
+        if (!signingKey) {
           return new Response(JSON.stringify({ error: 'ACCESS_PASSWORD not configured' }), {
             status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
           });
         }
-        var body = await request.json();
-        if (body.password !== password) {
-          return new Response(JSON.stringify({ error: 'Invalid password' }), {
-            status: 401, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+        // Rate limit token issuance to prevent abuse (max 10 per minute per IP)
+        if (!checkRateLimit(clientIp, 'auth')) {
+          return new Response(JSON.stringify({ error: 'Too many auth requests' }), {
+            status: 429, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
           });
         }
-        var token = await generateToken(password);
+        // Issue token signed with server-side key (no password needed from client)
+        var token = await generateToken(signingKey);
         return new Response(JSON.stringify({ token: token, exp: Date.now() + TOKEN_EXPIRY_MS }), {
           status: 200, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
         });
@@ -350,7 +352,7 @@ export default {
         if (meta.type === 'package' && typeof data === 'object' && data !== null) {
           if (!fileKey) {
             return new Response(JSON.stringify({ error: 'Specify ?file=image_N, ?file=stl, ?file=3mf, or ?file=glb' }), {
-              status: 400, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+              status: 400, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
             });
           }
           
@@ -380,22 +382,21 @@ export default {
                 var bin = Uint8Array.from(atob(rawB64), function(c) { return c.charCodeAt(0); });
               } catch (e) {
                 return new Response(JSON.stringify({ error: 'Invalid base64 for image ' + fileKey + ': ' + e.message }), {
-                  status: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+                  status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
                 });
               }
               var fname = (meta.name || 'artwork') + '_' + (idx + 1) + '.' + (mime.split('/')[1] || 'png');
               return new Response(bin, {
                 status: 200,
-                headers: {
+                headers: Object.assign({
                   'Content-Type': mime,
                   'Content-Disposition': 'attachment; filename="' + encodeURIComponent(fname) + '"',
-                  'Access-Control-Allow-Origin': '*',
                   'Access-Control-Expose-Headers': 'Content-Disposition'
-                }
+                }, corsHeaders)
               });
             }
             return new Response(JSON.stringify({ error: 'Image not found: ' + fileKey }), {
-              status: 404, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+              status: 404, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
             });
           }
           
@@ -414,13 +415,12 @@ export default {
                   var glbFname = model.filename || 'model.glb';
                   return new Response(cachedGlb, {
                     status: 200,
-                    headers: {
+                    headers: Object.assign({
                       'Content-Type': 'model/gltf-binary',
                       'Content-Disposition': 'attachment; filename="' + encodeURIComponent(glbFname) + '"',
-                      'Access-Control-Allow-Origin': '*',
                       'Access-Control-Expose-Headers': 'Content-Disposition',
                       'X-Cache': 'HIT'
-                    }
+                    }, corsHeaders)
                   });
                 }
               } catch (e) {
@@ -434,11 +434,11 @@ export default {
               format: fileKey
             }), {
               status: 200,
-              headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+              headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
             });
           }
           return new Response(JSON.stringify({ error: 'Model not found: ' + fileKey }), {
-            status: 404, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+            status: 404, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
           });
         }
         
@@ -448,16 +448,16 @@ export default {
           var fileName = (meta.name || 'share') + '.png';
           return new Response(binary, {
             status: 200,
-            headers: {
+            headers: Object.assign({
               'Content-Type': 'image/png',
               'Content-Disposition': 'attachment; filename="' + encodeURIComponent(fileName) + '"',
-              'Access-Control-Allow-Origin': '*'
-            }
+              'Access-Control-Expose-Headers': 'Content-Disposition'
+            }, corsHeaders)
           });
         } else if (meta.type === '3d') {
           return new Response(null, {
             status: 302,
-            headers: { 'Location': data, 'Access-Control-Allow-Origin': '*' }
+            headers: Object.assign({ 'Location': data }, corsHeaders)
           });
         }
         
@@ -721,15 +721,11 @@ export default {
               console.log('[ProxyModel] Cache HIT for ' + proxyShareId + ' size=' + cachedModel.byteLength);
               return new Response(cachedModel, {
                 status: 200,
-                headers: {
-                  'Access-Control-Allow-Origin': '*',
-                  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-                  'Access-Control-Allow-Headers': '*',
-                  'Access-Control-Max-Age': '86400',
+                headers: Object.assign({
                   'Content-Type': 'model/gltf-binary',
                   'Cache-Control': 'public, max-age=86400',
                   'X-Cache': 'HIT'
-                }
+                }, corsHeaders)
               });
             }
           } catch (e) {
@@ -751,14 +747,10 @@ export default {
             });
           }
           // Stream binary GLB directly with CORS headers
-          var modelHeaders = {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, OPTIONS',
-            'Access-Control-Allow-Headers': '*',
-            'Access-Control-Max-Age': '86400',
+          var modelHeaders = Object.assign({
             'Content-Type': modelResp.headers.get('content-type') || 'model/gltf-binary',
             'Cache-Control': 'public, max-age=86400'
-          };
+          }, corsHeaders);
           return new Response(modelResp.body, { headers: modelHeaders });
         } catch(e) {
           return new Response(JSON.stringify({ error: 'Model proxy failed: ' + e.message }), {
@@ -781,14 +773,11 @@ export default {
               console.log('[MeshyGlb] KV HIT for ' + glbTaskId + ' size=' + cached.byteLength);
               return new Response(cached, {
                 status: 200,
-                headers: {
-                  'Access-Control-Allow-Origin': '*',
-                  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-                  'Access-Control-Allow-Headers': '*',
+                headers: Object.assign({
                   'Content-Type': 'model/gltf-binary',
                   'Cache-Control': 'public, max-age=86400',
                   'X-Cache': 'HIT'
-                }
+                }, corsHeaders)
               });
             }
           } catch(e) {
@@ -862,14 +851,11 @@ export default {
           // 5) Serve GLB with CORS headers
           return new Response(glbArrayBuffer, {
             status: 200,
-            headers: {
-              'Access-Control-Allow-Origin': '*',
-              'Access-Control-Allow-Methods': 'GET, OPTIONS',
-              'Access-Control-Allow-Headers': '*',
+            headers: Object.assign({
               'Content-Type': 'model/gltf-binary',
               'Cache-Control': 'public, max-age=86400',
               'X-Cache': 'MISS'
-            }
+            }, corsHeaders)
           });
         } catch(e) {
           return new Response(JSON.stringify({ error: 'MeshyGlb error: ' + e.message }), {

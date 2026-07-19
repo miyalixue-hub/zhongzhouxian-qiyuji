@@ -14,7 +14,6 @@
 
   var SHARE_API = 'https://api.mindbubble.cloud';
   var SHARE_PAGE_BASE = 'https://zhongzhouxian-qiyuji.pages.dev/share.html';
-  var SHARE_API_PASSWORD = 'zhongzhou2026!!!';
   var TEST_3D_URL = 'https://modelviewer.dev/shared-assets/models/Astronaut.glb';
   var QR_LIB_URL = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js';
 
@@ -504,12 +503,12 @@
     var existing = localStorage.getItem('share_auth_token');
     if (existing) return true;
 
-    // Auto-authenticate using embedded password (no prompt)
+    // Auto-authenticate: request token (server uses IP-based rate limiting, no password in frontend)
     return new Promise(function(resolve) {
       fetch(SHARE_API + '/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: SHARE_API_PASSWORD })
+        body: JSON.stringify({})
       })
       .then(function(r) { return r.json(); })
       .then(function(result) {
