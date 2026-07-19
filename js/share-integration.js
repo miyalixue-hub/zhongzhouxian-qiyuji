@@ -1,5 +1,5 @@
 /**
- * share-integration.js - Package Share System v3.1
+ * share-integration.js - Package Share System v3.2 (v20260719b Worker GLB proxy)
  * 
  * Features:
  *   - Package upload: 2D images + 3D models bundled together
@@ -161,36 +161,14 @@
       }
     }
 
-    // Collect 3D models - use pre-cached GLB binary from meshy-3d.js (cached right after generation)
+    // Collect 3D models - use Worker proxy URL for GLB (avoids Meshy CDN CORS issues)
     var urls = state.meshyAllUrls || {};
-    if (urls.glb) {
-      var glbEntry = { url: urls.glb, format: 'glb', filename: name + '.glb' };
-      // Priority 1: Use pre-cached GLB binary (cached in meshy-3d.js right after generation)
-      if (state._glbBinary) {
-        glbEntry.binary = state._glbBinary;
-        console.log('[Share] Using pre-cached GLB binary (' + state._glbBinary.length + ' chars base64)');
-      } else {
-        // Priority 2: Try to fetch now (URL may be expired)
-        try {
-          console.log('[Share] No pre-cached GLB, trying to fetch now...');
-          var glbResp = await fetch(urls.glb);
-          if (glbResp.ok) {
-            var glbBlob = await glbResp.blob();
-            var glbB64 = await new Promise(function(resolve, reject) {
-              var reader = new FileReader();
-              reader.onloadend = function() { resolve(reader.result); };
-              reader.onerror = function() { reject(new Error('GLB base64 convert failed')); };
-              reader.readAsDataURL(glbBlob);
-            });
-            glbEntry.binary = glbB64;
-            console.log('[Share] GLB fetched now: ' + glbBlob.size + ' bytes');
-          } else {
-            console.warn('[Share] GLB fetch failed: ' + glbResp.status + ' (URL may be expired)');
-          }
-        } catch(e) {
-          console.warn('[Share] GLB fetch error: ' + e.message);
-        }
-      }
+    var glbProxyUrl = state.meshyGlbProxyUrl || null;
+    if (glbProxyUrl || urls.glb) {
+      // Use proxy URL if available (Worker will download & cache GLB via Meshy API)
+      var glbUrl = glbProxyUrl || urls.glb;
+      var glbEntry = { url: glbUrl, format: 'glb', filename: name + '.glb' };
+      console.log('[Share] GLB URL for upload: ' + (glbProxyUrl ? 'Worker proxy' : 'direct Meshy'));
       models.push(glbEntry);
     }
     if (urls.stl) {

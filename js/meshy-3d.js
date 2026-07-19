@@ -1,5 +1,5 @@
 /**
- * meshy-3d.js - Meshy 3D生成、模型加载、STL下载
+ * meshy-3d.js - Meshy 3D生成、模型加载、STL下载 (v20260719b Worker GLB proxy)
  */
 
         // ============ P9: 3D模型生成（Meshy API） ============
@@ -329,28 +329,13 @@
                         // 更新进度到75%，激活第4阶段
                         activateStage(3, 75);
                         
-                        // 立即缓存GLB二进制（URL最新鲜时），供分享时使用
-                        (function cacheGlbBinary() {
-                            if (!glbUrl) return;
-                            fetch(glbUrl).then(function(r) {
-                                if (r.ok) return r.blob();
-                                console.warn('[Meshy] GLB cache fetch failed:', r.status);
-                                return null;
-                            }).then(function(blob) {
-                                if (!blob) return;
-                                var reader = new FileReader();
-                                reader.onloadend = function() {
-                                    state._glbBinary = reader.result; // data:application/octet-stream;base64,...
-                                    console.log('[Meshy] GLB binary cached:', blob.size, 'bytes');
-                                };
-                                reader.readAsDataURL(blob);
-                            }).catch(function(e) {
-                                console.warn('[Meshy] GLB cache error:', e.message);
-                            });
-                        })();
+                        // Worker代理URL：通过Worker下载GLB并存KV，解决Meshy CDN CORS问题
+                        var proxyUrl = (typeof MESHY_CONFIG !== 'undefined' && MESHY_CONFIG.proxyUrl) || 'https://api.mindbubble.cloud';
+                        state.meshyGlbProxyUrl = proxyUrl + '/api/meshy-glb/' + state.meshyTaskId;
+                        console.log('[Meshy] GLB proxy URL:', state.meshyGlbProxyUrl);
                         
-                        // 加载3D模型到 viewer
-                        loadMeshyModel(state.meshyModelUrl);
+                        // 加载3D模型到 viewer（使用Worker代理URL，不直连Meshy CDN）
+                        loadMeshyModel(state.meshyGlbProxyUrl);
                     } else if (status === 'FAILED' || status === 'CANCELED') {
                         var errMsg = '未知错误';
                         if (data.task_error) {

@@ -243,7 +243,25 @@ export default {
                 });
                 console.log('[Share] Cached GLB ' + bytes.byteLength + ' bytes (from browser) for ' + shareId);
               }
-              // Priority 2: Try fetching from URL (may fail for signed URLs)
+              // Priority 2: If URL is our own meshy-glb proxy, fetch from KV cache or proxy endpoint
+              else if (glbModel.url && glbModel.url.indexOf('/api/meshy-glb/') >= 0) {
+                console.log('[Share] GLB URL is own proxy, fetching for ' + shareId);
+                try {
+                  var proxyResp = await fetch(glbModel.url);
+                  if (proxyResp.ok) {
+                    var proxyBin = await proxyResp.arrayBuffer();
+                    await env.SHARE_STORAGE.put('model_bin:' + shareId, proxyBin, {
+                      expirationTtl: SHARE_EXPIRY_SECONDS
+                    });
+                    console.log('[Share] Cached GLB ' + proxyBin.byteLength + ' bytes (from meshy-glb proxy) for ' + shareId);
+                  } else {
+                    console.warn('[Share] meshy-glb proxy fetch failed: ' + proxyResp.status);
+                  }
+                } catch(e) {
+                  console.warn('[Share] meshy-glb proxy error: ' + e.message);
+                }
+              }
+              // Priority 3: Try fetching from URL (may fail for signed URLs)
               else if (glbModel.url) {
                 console.log('[Share] Trying to fetch GLB from URL for ' + shareId);
                 var glbResp = await fetch(glbModel.url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
@@ -749,12 +767,123 @@ export default {
         }
       }
 
+      // ========== Meshy GLB download & cache ==========
+      // GET /api/meshy-glb/{taskId} — download GLB via Meshy API, cache in KV, serve with CORS
+      if (path.match(/^\/api\/meshy-glb\/[\w-]+$/) && request.method === 'GET') {
+        var glbTaskId = path.split('/').pop();
+        var cacheKey = 'meshy_glb:' + glbTaskId;
+        
+        // 1) Check KV cache first
+        if (env.SHARE_STORAGE) {
+          try {
+            var cached = await env.SHARE_STORAGE.get(cacheKey, 'arrayBuffer');
+            if (cached && cached.byteLength > 0) {
+              console.log('[MeshyGlb] KV HIT for ' + glbTaskId + ' size=' + cached.byteLength);
+              return new Response(cached, {
+                status: 200,
+                headers: {
+                  'Access-Control-Allow-Origin': '*',
+                  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                  'Access-Control-Allow-Headers': '*',
+                  'Content-Type': 'model/gltf-binary',
+                  'Cache-Control': 'public, max-age=86400',
+                  'X-Cache': 'HIT'
+                }
+              });
+            }
+          } catch(e) {
+            console.warn('[MeshyGlb] KV read error: ' + e.message);
+          }
+        }
+        
+        // 2) Fetch task details from Meshy API to get GLB URL
+        var meshyKey = env.MESHY_API_KEY;
+        if (!meshyKey) {
+          return new Response(JSON.stringify({ error: 'MESHY_API_KEY not configured' }), {
+            status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+        
+        try {
+          var taskResp = await fetch('https://api.meshy.ai/openapi/v1/image-to-3d/' + glbTaskId, {
+            headers: { 'Authorization': 'Bearer ' + meshyKey }
+          });
+          if (!taskResp.ok) {
+            return new Response(JSON.stringify({ error: 'Meshy task fetch failed: ' + taskResp.status }), {
+              status: taskResp.status, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+            });
+          }
+          var taskData = await taskResp.json();
+          var glbUrl = taskData.model_urls && taskData.model_urls.glb;
+          if (!glbUrl) {
+            return new Response(JSON.stringify({ error: 'No GLB URL in task result', status: taskData.status }), {
+              status: 404, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+            });
+          }
+          
+          // 3) Try downloading GLB from Meshy CDN
+          // Strategy A: fetch without User-Agent (clean request)
+          var glbResp = await fetch(glbUrl);
+          if (!glbResp.ok) {
+            // Strategy B: fetch with browser-like headers
+            glbResp = await fetch(glbUrl, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+                'Accept': 'model/gltf-binary,*/*',
+                'Origin': 'https://www.meshy.ai',
+                'Referer': 'https://www.meshy.ai/'
+              }
+            });
+          }
+          if (!glbResp.ok) {
+            return new Response(JSON.stringify({ 
+              error: 'GLB download failed: ' + glbResp.status,
+              glb_url: glbUrl.substring(0, 80) + '...'
+            }), {
+              status: glbResp.status, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+            });
+          }
+          
+          var glbArrayBuffer = await glbResp.arrayBuffer();
+          console.log('[MeshyGlb] Downloaded ' + glbArrayBuffer.byteLength + ' bytes for task ' + glbTaskId);
+          
+          // 4) Cache in KV (30 day TTL)
+          if (env.SHARE_STORAGE && glbArrayBuffer.byteLength > 0) {
+            try {
+              await env.SHARE_STORAGE.put(cacheKey, glbArrayBuffer, {
+                expirationTtl: 30 * 24 * 60 * 60
+              });
+              console.log('[MeshyGlb] Cached in KV: meshy_glb:' + glbTaskId + ' (' + glbArrayBuffer.byteLength + ' bytes)');
+            } catch(e) {
+              console.warn('[MeshyGlb] KV write error: ' + e.message);
+            }
+          }
+          
+          // 5) Serve GLB with CORS headers
+          return new Response(glbArrayBuffer, {
+            status: 200,
+            headers: {
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': 'GET, OPTIONS',
+              'Access-Control-Allow-Headers': '*',
+              'Content-Type': 'model/gltf-binary',
+              'Cache-Control': 'public, max-age=86400',
+              'X-Cache': 'MISS'
+            }
+          });
+        } catch(e) {
+          return new Response(JSON.stringify({ error: 'MeshyGlb error: ' + e.message }), {
+            status: 500, headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
+          });
+        }
+      }
+      
       // ========== Health check ==========
       if (path === '/api/health') {
         return new Response(JSON.stringify({ 
           status: 'ok', 
           time: new Date().toISOString(),
-          version: '3.2.1-browser-glb-cache'
+          version: '3.2.2-meshy-glb-proxy'
         }), {
           headers: Object.assign({ 'Content-Type': 'application/json' }, corsHeaders)
         });
