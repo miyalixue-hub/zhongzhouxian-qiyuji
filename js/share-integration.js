@@ -406,7 +406,7 @@
     }
 
     try {
-      var creatureName = state.currentCreatureName || '守护神兽';
+      var creatureName = state.isTramMode ? '铛铛车' : (state.currentCreatureName || '守护神兽');
       var studentName = getStudentName();
 
       showToastMessage('⏳ 正在打包作品...');

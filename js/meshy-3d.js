@@ -767,22 +767,23 @@
             var urls = state.meshyAllUrls || {};
             var url = null;
             var filename = '';
+            var baseName = state.isTramMode ? 'dangdangche' : 'shenshou';
             
             if (format === 'stl' && urls.stl) {
                 url = urls.stl;
-                filename = 'meshy_model.stl';
+                filename = baseName + '_model.stl';
             } else if (format === '3mf' && urls['3mf']) {
                 url = urls['3mf'];
-                filename = 'meshy_model.3mf';
+                filename = baseName + '_model.3mf';
             } else if (format === 'stl' && urls['3mf']) {
                 // STL不可用时降级到3MF
                 url = urls['3mf'];
-                filename = 'meshy_model.3mf';
+                filename = baseName + '_model.3mf';
                 showToastMessage('⚠️ STL不可用，已自动切换为3MF格式');
             } else if (format === '3mf' && urls.stl) {
                 // 3MF不可用时降级到STL
                 url = urls.stl;
-                filename = 'meshy_model.stl';
+                filename = baseName + '_model.stl';
                 showToastMessage('⚠️ 3MF不可用，已自动切换为STL格式');
             }
             
