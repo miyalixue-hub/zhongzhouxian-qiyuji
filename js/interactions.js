@@ -689,11 +689,13 @@
         // 生成打印说明文件（包含神兽参数，用于对接3D打印服务）
         function handleDownloadSTL() {
             var creatureName = '';
-            if (state.selectedCreature) {
+            if (state.isTramMode) {
+                creatureName = '铛铛车';
+            } else if (state.selectedCreature) {
                 var cr = findById(creatures, state.selectedCreature);
                 if (cr) creatureName = cr.name;
             }
-            var fileName = '神兽_' + (creatureName || '模型');
+            var fileName = (state.isTramMode ? '铛铛车' : '神兽_') + (creatureName || '模型');
             
             // 如果有 Meshy 生成的真实3D模型，下载 STL + GLB 文件
             if (state.meshyModelUrl || state.meshyStlUrl) {
