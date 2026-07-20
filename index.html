@@ -106,8 +106,8 @@
         
         <!-- 9站卡片 -->
         <div class="journey-cards-v2" id="journey-cards-v2">
-            <!-- 永定门 - 已解锁（起点） -->
-            <div class="station-card-v2 unlocked" data-station="0" onclick="enterStation(0)">
+            <!-- 永定门 -->
+            <div class="station-card-v2 locked" data-station="0" onclick="showToast()">
                 <div class="card-image-v2">
                     <img src="assets/stations/station-yongdingmen.png" alt="永定门">
                 </div>
@@ -115,8 +115,7 @@
                     <div class="card-station-name">永定门</div>
                     <div class="card-station-subtitle">南大门 · 城防之始</div>
                     <div class="card-story-hook">中轴线的起点。名字里藏着这座城市最朴素的愿望——永远安定。</div>
-                    <div class="card-status-v2 status-unlocked">📖 第一章 · 已解锁</div>
-                    <button class="card-enter-btn" onclick="event.stopPropagation(); goToStation();">进入永定门 →</button>
+                    <div class="card-status-v2 status-locked">🔒 即将开放</div>
                 </div>
             </div>
             
@@ -1553,10 +1552,7 @@
     };
     
     window.enterStation = function(index) {
-        if (index === 0) {
-            // 永定门 - 跳转到永定门页面
-            if (typeof showView === 'function') showView('yongdingmen');
-        } else if (index === 3) {
+        if (index === 3) {
             // 正阳门 - 跳转到正阳门页面
             if (typeof showView === 'function') showView('zhengyangmen');
             if (typeof showPage === 'function') showPage(2);
