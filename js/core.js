@@ -11,15 +11,21 @@
             if (viewYongdingmen) {
                 viewYongdingmen.style.display = viewName === 'yongdingmen' ? 'block' : 'none';
             }
-            // 切换到正阳门或永定门时隐藏旅程区域
-            if (viewName === 'zhengyangmen' || viewName === 'yongdingmen') {
-                var jw = document.getElementById('journey-wrapper');
+            
+            var homeStoryEl = document.getElementById('home-story');
+            var jw = document.getElementById('journey-wrapper');
+            
+            if (viewName === 'home') {
+                // 首页：显示home-story，隐藏journey-wrapper
+                if (homeStoryEl) homeStoryEl.style.display = '';
                 if (jw) jw.style.display = 'none';
-                var da = document.getElementById('journey-dialogue-area');
-                if (da) da.style.display = 'none';
+            } else if (viewName === 'zhengyangmen' || viewName === 'yongdingmen') {
+                // 站点页面：隐藏home-story和journey-wrapper
+                if (homeStoryEl) homeStoryEl.style.display = 'none';
+                if (jw) jw.style.display = 'none';
             }
+            
             window.scrollTo(0, 0);
-            // home视图：journey-wrapper默认可见，home-story默认隐藏（已在HTML中设置）
         }
 
         function goBackToMap() {
