@@ -27,15 +27,18 @@
             // Cloudflare Worker 代理地址
             // API Key 由 Worker 服务端管理（存储在 Worker Secrets）
             proxyUrl: 'https://api.mindbubble.cloud',
-            // 3D模型参数
-            aiModel: 'meshy-5',        // 锁定稳定版（2025-08发布），课堂需可复现
-            topology: 'triangle',      // 三角面片（适合3D打印）
-            targetPolycount: 30000,    // 目标面数
-            shouldTexture: true,       // 生成纹理
-            enablePbr: true,           // 生成PBR贴图
+            // 3D模型参数 - 方案A（meshy-6 + smart-topology，最高打印质量）
+            aiModel: 'meshy-6',             // 最新模型，质量最好，适合3D打印
+            modelType: 'smart-topology',    // 简洁拓扑，原生分件
+            topology: 'quad',               // 四边形面片，表面更光滑
+            targetPolycount: 80000,         // 提高面数，细节更丰富
+            shouldTexture: true,            // 生成纹理
+            enablePbr: true,                // 生成PBR贴图
+            symmetryMode: 'on',             // 强制对称，铛铛车左右对称
+            shouldRemesh: true,             // 启用重拓扑
             // 轮询配置
-            pollInterval: 3000,        // 每3秒轮询一次
-            maxPollTime: 480000        // 最长等待8分钟
+            pollInterval: 5000,             // 每5秒轮询一次（meshy-6生成较慢）
+            maxPollTime: 600000             // 最长等待10分钟
         };
 
         var state = { 

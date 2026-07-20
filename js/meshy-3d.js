@@ -134,10 +134,13 @@
                 var requestBody = {
                     image_url: dataUri,
                     ai_model: MESHY_CONFIG.aiModel,
+                    model_type: MESHY_CONFIG.modelType,
                     topology: MESHY_CONFIG.topology,
                     target_polycount: MESHY_CONFIG.targetPolycount,
                     should_texture: MESHY_CONFIG.shouldTexture,
                     enable_pbr: MESHY_CONFIG.enablePbr,
+                    symmetry_mode: MESHY_CONFIG.symmetryMode,
+                    should_remesh: MESHY_CONFIG.shouldRemesh,
                     target_formats: ['glb', 'stl', '3mf']
                 };
                 console.log('[Meshy] 提交 image-to-3d 任务（base64模式）');

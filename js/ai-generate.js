@@ -531,7 +531,7 @@
             }
             
             var summonText = '我设计了一辆' + te.name + '铛铛车，' + tc.name + '车身' + (decorNames.length ? '，配备了' + decorNames.join('和') : '') + '，叮叮当当...';
-            var aiPrompt = '一辆北京老式有轨铛铛车，' + te.name + '，' + te.visualDesc + '，' + tc.name + '车身（' + tc.hex + '），' + (decorDescs.length ? decorDescs.join('，') + '，' : '') + '纯白干净背景，车身线条清晰明确，色彩饱满扎实，主体突出居中，3D渲染风格，适合3D建模参考，8k高清，精致质感';
+            var aiPrompt = '一辆北京老式有轨铛铛车，' + te.name + '，' + te.visualDesc + '，' + tc.name + '车身（' + tc.hex + '），' + (decorDescs.length ? decorDescs.join('，') + '，' : '') + '纯白干净背景，车身为实心整体块状结构，侧面窗户为凹陷浮雕效果而非镂空，车轮清晰可见为独立圆柱体安装在车底，车头有圆形大灯，车顶平整，整体轮廓方正简洁，适合3D打印的实心模型风格，3D渲染风格，适合3D建模参考，8k高清，精致质感';
             
             var tags = document.querySelector('#page-9 .prompt-tags');
             if (tags) {
