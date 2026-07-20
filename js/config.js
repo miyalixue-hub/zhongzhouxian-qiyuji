@@ -31,7 +31,7 @@
             aiModel: 'meshy-t2',            // 智能拓扑最新模型(m2026-07)，简洁拓扑+原生分件，最适合3D打印
             modelType: 'smart-topology',    // 简洁拓扑，原生分件
             topology: 'triangle',           // meshy-t2仅支持三角面（Smart Topology输出为triangle-only）
-            targetPolycount: 80000,         // 提高面数，细节更丰富
+            targetPolycount: 15000,         // meshy-t2上限15000（标准线可设300000）
             shouldTexture: true,            // 生成纹理
             enablePbr: true,                // 生成PBR贴图
             symmetryMode: 'on',             // 强制对称，铛铛车左右对称
