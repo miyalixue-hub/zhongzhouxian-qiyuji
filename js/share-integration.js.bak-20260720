@@ -435,16 +435,8 @@
       var pkg = await collectPackage(studentName, creatureName);
       showToastMessage('⏳ 正在上传 (' + pkg.data.images.length + '张图 + ' + pkg.data.models.length + '个模型)...');
 
-      // 上传中提示
-      shareBtn.innerHTML = '⏳ 上传中...';
-      showToastMessage('⏳ 正在上传作品，请稍候...');
-
       var result = await uploadPackage(pkg);
       if (!result) { restoreBtn(shareBtn, origHtml); return; }
-
-      // 生成链接中提示
-      shareBtn.innerHTML = '⏳ 生成链接...';
-      showToastMessage('⏳ 正在生成分享链接...');
 
       var shareUrl = SHARE_PAGE_BASE + '?id=' + result.shareId;
       console.log('[Share] 分享链接:', shareUrl);

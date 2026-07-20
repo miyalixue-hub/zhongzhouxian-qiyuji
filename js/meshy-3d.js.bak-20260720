@@ -514,30 +514,16 @@
                     }
                 }, 15000);
                 
-                // 30秒二次提示
-                setTimeout(function() {
-                    if (!loadFired) {
-                        showToastMessage('⏳ 3D模型加载需要时间，请耐心等待...');
-                    }
-                }, 30000);
-                
-                // 60秒三次提示
-                setTimeout(function() {
-                    if (!loadFired) {
-                        showToastMessage('⏳ 模型较大，仍在加载中...');
-                    }
-                }, 60000);
-                
-                // 150秒超时：保留预览图而非默认SVG
+                // 90秒超时：保留预览图而非默认SVG
                 var loadTimeout = setTimeout(function() {
                     if (loadFired) return;
                     loadFired = true;
                     modelEl.removeEventListener('load', onLoad);
                     modelEl.removeEventListener('error', onError);
-                    console.warn('[Meshy] model-viewer 加载超时(150s)，保留预览图');
+                    console.warn('[Meshy] model-viewer 加载超时(90s)，保留预览图');
                     showToastMessage('⚠️ 3D交互加载超时，已保留预览图。可下载打印文件');
                     showThumbnailFallback();
-                }, 150000);
+                }, 90000);
                 
                 // 开始加载 3D 模型（model-viewer保持可见但在预览图后面）
                 modelEl.setAttribute('src', modelUrl);
