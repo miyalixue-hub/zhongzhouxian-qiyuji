@@ -19,6 +19,9 @@
                 // 首页：显示home-story，隐藏journey-wrapper
                 if (homeStoryEl) homeStoryEl.style.display = '';
                 if (jw) jw.style.display = 'none';
+                if (window.homeStoryController) {
+                    window.homeStoryController.showHome();
+                }
             } else if (viewName === 'zhengyangmen' || viewName === 'yongdingmen') {
                 // 站点页面：隐藏home-story和journey-wrapper
                 if (homeStoryEl) homeStoryEl.style.display = 'none';
