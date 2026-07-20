@@ -198,7 +198,7 @@
             { id: 'modern_retro', name: '现代复古版', desc: '保留经典元素·现代舒适感', visualDesc: '暗红色精致漆面搭配金色装饰线条的现代复刻有轨电车，大面积落地玻璃窗，车内有软垫座椅，车顶精致铜铃配LED氛围灯，兼具复古韵味与现代质感' }
         ];
         var tramDecors = [
-            { id: 'roof_bell', name: '车顶铜铃', desc: '铛铛声的来源', promptDesc: '车顶正中央悬挂一枚铜质铃铛' },
+            { id: 'roof_bell', name: '车顶铜铃', desc: '铛铛声的来源', promptDesc: '车顶前部有铜铃浮雕图案' },
             { id: 'front_lamp', name: '车头大灯', desc: '圆形老式车灯', promptDesc: '车头正前方安装有圆形老式大灯' },
             { id: 'side_painting', name: '侧面彩绘', desc: '中轴线图案/祥云/北京剪影', promptDesc: '车身两侧绘有精美传统彩绘图案' },
             { id: 'custom_plate', name: '车牌号码', desc: '自定义数字', promptDesc: '车身侧面带有车牌号码' }

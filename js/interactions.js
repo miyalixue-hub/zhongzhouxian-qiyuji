@@ -464,7 +464,7 @@
             var prompt = '中国传统工笔画风格，北京老式有轨铛铛车，' + eraName + '，' + colorName + '车身';
             if (eraVisualDesc) prompt += '，' + eraVisualDesc;
             if (decorDescs.length > 0) prompt += '，' + decorDescs.join('，');
-            prompt += '，纯白干净背景，车身为实心整体块状结构，侧面窗户为凹陷浮雕效果而非镂空，车轮清晰可见为独立圆柱体安装在车底，车头有圆形大灯，车顶平整，整体轮廓方正简洁，适合3D打印的实心模型风格，色彩饱满扎实，主体突出居中，8k高清';
+            prompt += '，纯白干净背景，车身为实心整体块状结构，侧面窗户为凹陷浮雕效果而非镂空，所有装饰元素均为浮雕或紧贴车体表面的实体结构，不得有漂浮或悬挂部件，车轮清晰可见为独立圆柱体安装在车底，车头有圆形大灯，车顶平整，整体轮廓方正简洁，适合3D打印的实心模型风格，色彩饱满扎实，主体突出居中，8k高清';
             
             var summaryHtml = '<div class="tram-prompt-summary">';
             summaryHtml += '<h3>🚃 铛铛车设计摘要</h3>';
@@ -1231,7 +1231,7 @@
                 var prompt = '中国传统工笔画风格，北京老式有轨铛铛车，' + eraName + '，' + colorName + '车身';
                 if (eraVisualDesc) prompt += '，' + eraVisualDesc;
                 if (decorDescs.length > 0) prompt += '，' + decorDescs.join('，');
-                prompt += '，纯白干净背景，车身为实心整体块状结构，侧面窗户为凹陷浮雕效果而非镂空，车轮清晰可见为独立圆柱体安装在车底，车头有圆形大灯，车顶平整，整体轮廓方正简洁，适合3D打印的实心模型风格，色彩饱满扎实，主体突出居中，8k高清';
+                prompt += '，纯白干净背景，车身为实心整体块状结构，侧面窗户为凹陷浮雕效果而非镂空，所有装饰元素均为浮雕或紧贴车体表面的实体结构，不得有漂浮或悬挂部件，车轮清晰可见为独立圆柱体安装在车底，车头有圆形大灯，车顶平整，整体轮廓方正简洁，适合3D打印的实心模型风格，色彩饱满扎实，主体突出居中，8k高清';
                 var summaryHtml = '<div class="tram-prompt-summary">';
                 summaryHtml += '<h3>🚃 铛铛车设计摘要</h3>';
                 summaryHtml += '<div class="prompt-row"><span class="prompt-label">车身颜色:</span> <span style="color:' + colorHex + ';">●</span> ' + colorName + '</div>';
