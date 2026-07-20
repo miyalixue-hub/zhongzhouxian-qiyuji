@@ -90,10 +90,8 @@
         </div>
     </header>
 
-    <!-- ====== 中轴线旅程地图 ====== -->
-    <main class="map-container journey-map-v2">
-        <!-- 中轴线（直线贯穿） -->
-        <div class="axis-line-v2"></div>
+    <!-- ====== 地图主体 ====== -->
+    <main class="map-container">
         
         <!-- 铛铛车导游（跟随当前站） -->
         <div class="tram-guide-v2" id="tram-guide-v2">
@@ -225,11 +223,157 @@
             </div>
         </div>
         
-        <!-- 底部旅程控制 -->
-        <div class="journey-control-v2" id="journey-control-v2" style="display:none;">
-            <div class="journey-progress-v2" id="journey-progress-v2">1 / 9</div>
-            <button class="journey-next-btn" id="journey-next-btn" onclick="nextJourneyStation()">开始旅程 →</button>
-        </div>
+        <!-- ====== 9站导览区域 ====== -->
+        <section class="station-guide">
+            <h2 class="station-guide-title">中轴线九站</h2>
+            <p class="station-guide-subtitle">从永定门到钟鼓楼，一条线串联半部北京城</p>
+
+            <!-- 站点1：永定门 -->
+            <div class="station-guide-card">
+                <div class="sgc-image">
+                    <img src="assets/stations/station-yongdingmen.png" alt="永定门">
+                </div>
+                <div class="sgc-content">
+                    <div class="sgc-header">
+                        <span class="sgc-number">01</span>
+                        <h3 class="sgc-title">永定门</h3>
+                        <span class="sgc-badge locked">🔒 即将开放</span>
+                    </div>
+                    <div class="sgc-subtitle">南大门 · 城防之始</div>
+                    <p class="sgc-description">中轴线的起点。名字里藏着这座城市最朴素的愿望——永远安定。明清两代，这里是皇帝南巡的出发地，也是游子归家的第一眼望见的城门。</p>
+                </div>
+            </div>
+
+            <!-- 站点2：天坛 -->
+            <div class="station-guide-card">
+                <div class="sgc-image">
+                    <img src="assets/stations/station-tiantan.png" alt="天坛">
+                </div>
+                <div class="sgc-content">
+                    <div class="sgc-header">
+                        <span class="sgc-number">02</span>
+                        <h3 class="sgc-title">天坛</h3>
+                        <span class="sgc-badge locked">🔒 即将开放</span>
+                    </div>
+                    <div class="sgc-subtitle">祭天之坛 · 天人感应</div>
+                    <p class="sgc-description">皇帝每年冬至来这里跟天"汇报工作"。祈年殿的三重蓝瓦，象征天、地、人。站在这里，你会明白什么叫"敬天法祖"。</p>
+                </div>
+            </div>
+
+            <!-- 站点3：先农坛 -->
+            <div class="station-guide-card">
+                <div class="sgc-image">
+                    <img src="assets/stations/station-xiantan.png" alt="先农坛">
+                </div>
+                <div class="sgc-content">
+                    <div class="sgc-header">
+                        <span class="sgc-number">03</span>
+                        <h3 class="sgc-title">先农坛</h3>
+                        <span class="sgc-badge locked">🔒 即将开放</span>
+                    </div>
+                    <div class="sgc-subtitle">亲耕之坛 · 劝课农桑</div>
+                    <p class="sgc-description">皇帝每年春天亲自下田，做做样子也好，真心实意也罢——至少这一天，天子跟农民站在了一起。这里是古代中国的"农业示范区"。</p>
+                </div>
+            </div>
+
+            <!-- 站点4：正阳门（已解锁） -->
+            <div class="station-guide-card unlocked">
+                <div class="sgc-image">
+                    <img src="assets/stations/station-zhengyangmen.png" alt="正阳门">
+                </div>
+                <div class="sgc-content">
+                    <div class="sgc-header">
+                        <span class="sgc-number">04</span>
+                        <h3 class="sgc-title">正阳门</h3>
+                        <span class="sgc-badge unlocked">✅ 已解锁</span>
+                    </div>
+                    <div class="sgc-subtitle">正门守护 · 蚣蝮与吸水兽</div>
+                    <p class="sgc-description">这哥们叫蚣蝮，龙的第九个儿子。它选了趴在桥边看水——因为它觉得，守住这条路比什么都重要。</p>
+                    <button class="sgc-enter-btn" onclick="event.stopPropagation(); goToStation();">进入正阳门 →</button>
+                </div>
+            </div>
+
+            <!-- 站点5：天安门 -->
+            <div class="station-guide-card">
+                <div class="sgc-image">
+                    <img src="assets/stations/station-tiananmen.png" alt="天安门">
+                </div>
+                <div class="sgc-content">
+                    <div class="sgc-header">
+                        <span class="sgc-number">05</span>
+                        <h3 class="sgc-title">天安门</h3>
+                        <span class="sgc-badge locked">🔒 即将开放</span>
+                    </div>
+                    <div class="sgc-subtitle">皇城南门 · 承天启运</div>
+                    <p class="sgc-description">明清两代皇城的正门。"天安"二字，承天启运，安邦定国。这里是皇帝颁布诏书的地方，也是新中国成立的见证者。</p>
+                </div>
+            </div>
+
+            <!-- 站点6：故宫 -->
+            <div class="station-guide-card">
+                <div class="sgc-image">
+                    <img src="assets/stations/station-palace.png" alt="故宫">
+                </div>
+                <div class="sgc-content">
+                    <div class="sgc-header">
+                        <span class="sgc-number">06</span>
+                        <h3 class="sgc-title">故宫</h3>
+                        <span class="sgc-badge locked">🔒 即将开放</span>
+                    </div>
+                    <div class="sgc-subtitle">紫禁之巅 · 九五之尊</div>
+                    <p class="sgc-description">明清两代24位皇帝的家。红墙金瓦之下，藏着六百年的权力与秘密。走在这里，每一步都踩在历史上。</p>
+                </div>
+            </div>
+
+            <!-- 站点7：景山 -->
+            <div class="station-guide-card">
+                <div class="sgc-image">
+                    <img src="assets/stations/station-jingshan.png" alt="景山">
+                </div>
+                <div class="sgc-content">
+                    <div class="sgc-header">
+                        <span class="sgc-number">07</span>
+                        <h3 class="sgc-title">景山</h3>
+                        <span class="sgc-badge locked">🔒 即将开放</span>
+                    </div>
+                    <div class="sgc-subtitle">万岁山 · 登高望远</div>
+                    <p class="sgc-description">中轴线上的最高点。站在这里，整条中轴线尽收眼底。这里是北京城的"龙脊"，也是俯瞰紫禁城的最佳位置。</p>
+                </div>
+            </div>
+
+            <!-- 站点8：万宁桥 -->
+            <div class="station-guide-card">
+                <div class="sgc-image">
+                    <img src="assets/stations/station-wanning-bridge.png" alt="万宁桥">
+                </div>
+                <div class="sgc-content">
+                    <div class="sgc-header">
+                        <span class="sgc-number">08</span>
+                        <h3 class="sgc-title">万宁桥</h3>
+                        <span class="sgc-badge locked">🔒 即将开放</span>
+                    </div>
+                    <div class="sgc-subtitle">中轴第一桥 · 七百年的石桥</div>
+                    <p class="sgc-description">元代留下来的老桥。中轴线上唯一一座还在使用的古桥。七百多年了，桥下的水还在流，桥上的人还在走。</p>
+                </div>
+            </div>
+
+            <!-- 站点9：钟鼓楼 -->
+            <div class="station-guide-card">
+                <div class="sgc-image">
+                    <img src="assets/stations/station-zhonggulou.png" alt="钟鼓楼">
+                </div>
+                <div class="sgc-content">
+                    <div class="sgc-header">
+                        <span class="sgc-number">09</span>
+                        <h3 class="sgc-title">钟鼓楼</h3>
+                        <span class="sgc-badge locked">🔒 即将开放</span>
+                    </div>
+                    <div class="sgc-subtitle">晨钟暮鼓 · 时间之塔</div>
+                    <p class="sgc-description">老北京的"报时中心"。鼓楼在前，钟楼在后，一鼓一钟，守着这座城市的日出日落。</p>
+                </div>
+            </div>
+        </section>
+        
     </main>
 
     <!-- ====== Toast提示 ====== -->
@@ -1481,96 +1625,43 @@
     <script src="js/home-story-config.js?v=20260714b"></script>
     <script src="js/home-story.js?v=20260714d"></script>
 <script>
-// ====== 旅程地图 V2 逻辑 ======
 (function() {
+    'use strict';
+
+    // 站点数据（保留用于向后兼容）
     var stations = [
-        { name: '永定门', dialogue: '永定门。中轴线最南头，起点。名字意思是"永远安定"。从这里出发，我们沿中轴线一路向北！' },
-        { name: '天坛', dialogue: '天坛。皇帝祭天的地方。屋顶是蓝色的——因为蓝色代表天。在这儿说话，据说老天爷能听到。' },
-        { name: '先农坛', dialogue: '先农坛。皇帝每年春天得在这亲自下地种一回田——对，皇帝种田。你想想那个画面……估计种得不怎么样。' },
-        { name: '正阳门', dialogue: '正阳门到了！看到那只灰不溜秋的小兽了吗？它叫蚣蝮，被忘了三百年，脾气不太好。不过如果你帮它找回纹饰……它可能会对你笑一下。' },
-        { name: '天安门', dialogue: '天安门。以前叫承天门，皇城的正门。普通人连靠近都不行。现在嘛，谁都能去拍照打卡。' },
-        { name: '故宫', dialogue: '故宫到了。全世界最大的宫殿，传说有 9999 间半房子。黄的顶、红的墙、白的石头底座——皇家标配。' },
-        { name: '景山', dialogue: '景山。爬上去能俯瞰整个故宫——金灿灿的屋顶铺满眼睛。不过今天没空爬山，继续往北走。' },
-        { name: '万宁桥', dialogue: '这座桥 700 多年了，中轴线上最老的建筑。全是石头砌的，到现在还结实着呢。' },
-        { name: '钟鼓楼', dialogue: '钟鼓楼到了。古时候没有闹钟，全北京城靠这俩楼知道几点——鼓楼打鼓，钟楼敲钟。旅程结束，准备冒险吧！', isFinal: true }
+        { name: '永定门', dialogue: '永定门。中轴线的起点。名字里藏着这座城市最朴素的愿望——永远安定。' },
+        { name: '天坛', dialogue: '天坛。皇帝每年冬至来这里跟天"汇报工作"。祈年殿的三重蓝瓦，象征天、地、人。' },
+        { name: '先农坛', dialogue: '先农坛。皇帝每年春天亲自下田，做做样子也好，真心实意也罢——至少这一天，天子跟农民站在了一起。' },
+        { name: '正阳门', dialogue: '这哥们叫蚣蝮，龙的第九个儿子。它选了趴在桥边看水——因为它觉得，守住这条路比什么都重要。', isFinal: true },
+        { name: '天安门', dialogue: '天安门。明清两代皇城的正门。"天安"二字，承天启运，安邦定国。' },
+        { name: '故宫', dialogue: '故宫。明清两代24位皇帝的家。红墙金瓦之下，藏着六百年的权力与秘密。' },
+        { name: '景山', dialogue: '景山。中轴线上的最高点。站在这里，整条中轴线尽收眼底。' },
+        { name: '万宁桥', dialogue: '万宁桥。元代留下来的老桥。中轴线上唯一一座还在使用的古桥。七百多年了，桥下的水还在流。' },
+        { name: '钟鼓楼', dialogue: '钟鼓楼。老北京的"报时中心"。鼓楼在前，钟楼在后，一鼓一钟，守着这座城市的日出日落。' }
     ];
-    
-    var currentStation = -1;
-    var guideBubble = document.getElementById('tram-guide-bubble');
-    var guideTitle = document.getElementById('tram-guide-title');
-    var guideBody = document.getElementById('tram-guide-body');
-    var progressEl = document.getElementById('journey-progress-v2');
-    var nextBtn = document.getElementById('journey-next-btn');
-    
-    function showStation(index) {
-        var station = stations[index];
-        currentStation = index;
-        
-        // 更新铛铛车对话
-        if (guideTitle && guideBody) {
-            guideTitle.textContent = station.name;
-            guideBody.textContent = station.dialogue;
-        }
-        
-        // 高亮当前卡片
-        var cards = document.querySelectorAll('.station-card-v2');
-        cards.forEach(function(card, i) {
-            card.classList.remove('active');
-            if (i === index) {
-                card.classList.add('active');
-                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        });
-        
-        // 更新进度和按钮
-        if (progressEl) {
-            progressEl.textContent = (index + 1) + ' / 9';
-        }
-        if (nextBtn) {
-            nextBtn.textContent = station.isFinal ? '开始冒险 →' : '下一站 →';
-        }
-    }
-    
-    window.nextJourneyStation = function() {
-        if (currentStation < stations.length - 1) {
-            showStation(currentStation + 1);
-        } else {
-            // 旅程完成，进入正阳门
-            localStorage.setItem('tram_journey_seen', 'true');
-            if (typeof showView === 'function') showView('zhengyangmen');
-            if (typeof showPage === 'function') showPage(2);
-        }
-    };
-    
+
+    // 启动旅程函数 - 由home-story的enterGame调用
     window.startJourney = function() {
+        console.log('[startJourney] Called');
         var wrapper = document.getElementById('journey-wrapper');
-        if (wrapper) wrapper.style.display = 'block';
-        if (wrapper) wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setTimeout(function() {
-            showStation(0);
-        }, 300);
-    };
-    
-    window.enterStation = function(index) {
-        if (index === 3) {
-            // 正阳门 - 跳转到正阳门页面
-            if (typeof showView === 'function') showView('zhengyangmen');
-            if (typeof showPage === 'function') showPage(2);
-        } else {
-            showToast();
+        if (wrapper) {
+            wrapper.style.display = 'block';
+            void wrapper.offsetHeight;
         }
+        // 滚动到旅程区域
+        if (wrapper) {
+            wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        // 标记旅程已看过
+        setTimeout(function() {
+            localStorage.setItem('tram_journey_seen', 'true');
+        }, 1000);
     };
-    
-    window.goToZhengyangmen = function() {
-        if (typeof showView === 'function') showView('zhengyangmen');
-        if (typeof showPage === 'function') showPage(2);
-    };
-    // 页面加载后自动初始化第一站
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() { showStation(0); });
-    } else {
-        showStation(0);
-    }
+
+    // 暴露stations供外部调用
+    window._journeyStations = stations;
+
 })();
 </script>
 
