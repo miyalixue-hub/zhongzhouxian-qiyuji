@@ -28,7 +28,7 @@
             // API Key 由 Worker 服务端管理（存储在 Worker Secrets）
             proxyUrl: 'https://api.mindbubble.cloud',
             // 3D模型参数 - 方案A（meshy-6 + smart-topology，最高打印质量）
-            aiModel: 'meshy-6',             // 最新模型，质量最好，适合3D打印
+            aiModel: 'meshy-t2',            // 智能拓扑最新模型(m2026-07)，简洁拓扑+原生分件，最适合3D打印
             modelType: 'smart-topology',    // 简洁拓扑，原生分件
             topology: 'quad',               // 四边形面片，表面更光滑
             targetPolycount: 80000,         // 提高面数，细节更丰富
