@@ -241,6 +241,35 @@
 
     </div>  <!-- 关闭 view-home -->
 
+    <!-- ====== 永定门视图 ====== -->
+    <div id="view-yongdingmen" style="display:none">
+    <a class="back-home-btn" href="javascript:void(0)" onclick="goBackToMap()" title="返回首页">返回首页</a>
+    
+    <div class="container" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;">
+        <div style="max-width:600px;text-align:center;">
+            <div style="font-size:4em;margin-bottom:20px;">🏯</div>
+            <h1 style="font-family:'KaiTi','STKaiti',serif;color:#c04830;font-size:2.5em;margin-bottom:10px;">永定门</h1>
+            <p style="font-family:'KaiTi','STKaiti',serif;color:#8b6e3e;font-size:1.3em;margin-bottom:30px;">中轴线的起点 · 永远安定的愿景</p>
+            
+            <div style="background:rgba(255,248,230,0.9);border:2px solid rgba(184,148,62,0.3);border-radius:16px;padding:30px;margin-bottom:30px;text-align:left;">
+                <p style="font-family:'KaiTi','STKaiti',serif;color:#3a2a1a;font-size:1.1em;line-height:1.8;margin-bottom:15px;">
+                    永定门，北京中轴线的最南端，明清两代京城的南大门。
+                </p>
+                <p style="font-family:'KaiTi','STKaiti',serif;color:#3a2a1a;font-size:1.1em;line-height:1.8;margin-bottom:15px;">
+                    "永定"二字，寄托着"永远安定"的美好愿景。从这里出发，一条中轴线纵贯全城，串联起天坛、先农坛、正阳门、故宫、景山、钟鼓楼……
+                </p>
+                <p style="font-family:'KaiTi','STKaiti',serif;color:#3a2a1a;font-size:1.1em;line-height:1.8;">
+                    你的中轴线探索之旅，就从这里开始。
+                </p>
+            </div>
+            
+            <button class="cover-btn" onclick="goToZhengyangmen()" style="background:linear-gradient(135deg,#c04830,#a03828);color:#fff;border:none;border-radius:30px;padding:15px 40px;font-size:1.2em;font-family:'KaiTi','STKaiti',serif;letter-spacing:2px;cursor:pointer;box-shadow:0 4px 15px rgba(192,72,48,0.4);">
+                继续探索正阳门 →
+            </button>
+        </div>
+    </div>
+    </div>  <!-- 关闭 view-yongdingmen -->
+
     <!-- ====== 正阳门视图 (神兽工坊) ====== -->
     <div id="view-zhengyangmen" style="display:none">
 <!-- 返回首页按钮 -->
@@ -1524,12 +1553,21 @@
     };
     
     window.enterStation = function(index) {
-        if (index === 0 || index === 3) {
-            // 已解锁的站点（永定门或正阳门）
-            goToStation();
+        if (index === 0) {
+            // 永定门 - 跳转到永定门页面
+            if (typeof showView === 'function') showView('yongdingmen');
+        } else if (index === 3) {
+            // 正阳门 - 跳转到正阳门页面
+            if (typeof showView === 'function') showView('zhengyangmen');
+            if (typeof showPage === 'function') showPage(2);
         } else {
             showToast();
         }
+    };
+    
+    window.goToZhengyangmen = function() {
+        if (typeof showView === 'function') showView('zhengyangmen');
+        if (typeof showPage === 'function') showPage(2);
     };
     // 页面加载后自动初始化第一站
     if (document.readyState === 'loading') {

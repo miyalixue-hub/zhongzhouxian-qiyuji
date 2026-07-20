@@ -7,8 +7,12 @@
         function showView(viewName) {
             document.getElementById('view-home').style.display = viewName === 'home' ? 'block' : 'none';
             document.getElementById('view-zhengyangmen').style.display = viewName === 'zhengyangmen' ? 'block' : 'none';
-            // 切换到正阳门时隐藏旅程区域
-            if (viewName === 'zhengyangmen') {
+            var viewYongdingmen = document.getElementById('view-yongdingmen');
+            if (viewYongdingmen) {
+                viewYongdingmen.style.display = viewName === 'yongdingmen' ? 'block' : 'none';
+            }
+            // 切换到正阳门或永定门时隐藏旅程区域
+            if (viewName === 'zhengyangmen' || viewName === 'yongdingmen') {
                 var jw = document.getElementById('journey-wrapper');
                 if (jw) jw.style.display = 'none';
                 var da = document.getElementById('journey-dialogue-area');
