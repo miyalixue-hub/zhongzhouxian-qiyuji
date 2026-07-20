@@ -43,6 +43,7 @@
         window.goToStation = goToStation;
         window.showView = showView;
         window.goBackToMap = goBackToMap;
+        window.showToast = showToast;
 
 
 /**
