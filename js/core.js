@@ -15,16 +15,7 @@
                 if (da) da.style.display = 'none';
             }
             window.scrollTo(0, 0);
-            if (viewName === 'home') {
-                // 恢复home-story显示，隐藏旅程区域
-                var homeStoryEl = document.getElementById('home-story');
-                if (homeStoryEl) homeStoryEl.style.display = '';
-                var journeyWrapper = document.getElementById('journey-wrapper');
-                if (journeyWrapper) journeyWrapper.style.display = 'none';
-                if (window.homeStoryController) {
-                    window.homeStoryController.showHome();
-                }
-            }
+            // home视图：journey-wrapper默认可见，home-story默认隐藏（已在HTML中设置）
         }
 
         function goBackToMap() {
@@ -130,10 +121,12 @@
          */
         window.addEventListener('load', function() {
             var fill = document.querySelector('.progress-fill');
-            fill.style.width = '0%';
-            setTimeout(function() {
-                fill.style.width = '11.11%';
-            }, 500);
+            if (fill) {
+                fill.style.width = '0%';
+                setTimeout(function() {
+                    fill.style.width = '11.11%';
+                }, 500);
+            }
         });
 
 // ============ 工具函数 ============

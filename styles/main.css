@@ -4984,6 +4984,12 @@
     box-shadow: 0 4px 20px rgba(192, 57, 43, 0.15);
 }
 
+.station-card-v2.active {
+    border-color: rgba(192, 57, 43, 0.6);
+    box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.15), 0 6px 24px rgba(192, 57, 43, 0.2);
+    transform: translateY(-3px) scale(1.02);
+}
+
 /* 卡片图片 */
 .card-image-v2 {
     width: 140px;
