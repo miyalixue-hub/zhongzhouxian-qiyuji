@@ -331,10 +331,10 @@
             if (state.isTramMode) {
                 // 铛铛车AI生成（不传纹饰参考图）
                 var tramStyles = [
-                    { name: '经典复古', desc: '原汁原味老北京', suffix: '，复古怀旧风格，老照片质感，暖黄色调，1920年代老北京氛围', bg: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' },
-                    { name: '现代简约', desc: '清新明快风格', suffix: '，现代简约插画风格，明亮清新的色彩，简洁线条，轻松愉快', bg: 'linear-gradient(135deg, #E3F2FD, #BBDEFB)' },
-                    { name: '金色华贵', desc: '皇家气派', suffix: '，皇家宫廷风格，金黄色调，华丽精致，故宫元素装饰', bg: 'linear-gradient(135deg, #FFF8E1, #FFE082)' },
-                    { name: '水墨丹青', desc: '传统国画风', suffix: '，中国传统水墨画风格，毛笔笔触，淡雅色调，国画质感', bg: 'linear-gradient(135deg, #f5f0e8, #e8dcc8)' }
+                    { name: '经典复古', desc: '原汁原味老北京', suffix: '，复古怀旧色调，暖黄色调，1920年代老北京氛围，做旧金属质感', bg: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' },
+                    { name: '现代简约', desc: '清新明快风格', suffix: '，明亮清新色彩，简洁线条表面，轻松愉快色调，光滑漆面质感', bg: 'linear-gradient(135deg, #E3F2FD, #BBDEFB)' },
+                    { name: '金色华贵', desc: '皇家气派', suffix: '，金黄色调，华丽精致表面，故宫元素浮雕装饰，宫廷漆面光泽', bg: 'linear-gradient(135deg, #FFF8E1, #FFE082)' },
+                    { name: '水墨丹青', desc: '素雅淡彩质感', suffix: '，淡雅色调，宣纸纹理表面质感，素雅水墨晕染效果', bg: 'linear-gradient(135deg, #f5f0e8, #e8dcc8)' }
                 ];
                 await generateAICandidatesGeneric(grid, basePrompt, tramStyles);
             } else {
@@ -349,10 +349,10 @@
                 console.log('[generateCandidates] 纹饰参考图:', patternRefImages);
                 
                 var beastStyles = [
-                    { name: '古石刻韵', desc: '石雕斑驳质感', suffix: '，中国古代石雕质感，青石材质，表面有岁月斑驳的痕迹，石刻线条流畅，博物馆文物摄影风格，柔和灯光', bg: 'linear-gradient(135deg, #e8e4dc, #d4cfc5)' },
-                    { name: '琉璃焕彩', desc: '宫城琉璃光泽', suffix: '，中国传统琉璃釉彩风格，表面有光泽质感，色彩明亮饱满，故宫琉璃瓦质感，光线折射微光', bg: 'linear-gradient(135deg, #fef9e7, #f5e6a3)' },
-                    { name: '青铜古韵', desc: '青铜器古朴感', suffix: '，中国古代青铜器质感，铜绿色锈迹斑驳，金属光泽，饕餮纹饰风格，博物馆展柜灯光', bg: 'linear-gradient(135deg, #e8efe8, #b8c9b8)' },
-                    { name: '水墨丹青', desc: '传统国画风', suffix: '，中国传统水墨画风格，毛笔笔触，宣纸质感，淡雅色调，留白意境', bg: 'linear-gradient(135deg, #f5f0e8, #e8dcc8)' }
+                    { name: '古石刻韵', desc: '石雕斑驳质感', suffix: '，青石材质表面，岁月斑驳痕迹，石刻线条流畅，柔和灯光下石雕文物质感', bg: 'linear-gradient(135deg, #e8e4dc, #d4cfc5)' },
+                    { name: '琉璃焕彩', desc: '宫城琉璃光泽', suffix: '，琉璃釉彩表面光泽质感，色彩明亮饱满，故宫琉璃瓦釉面光线折射', bg: 'linear-gradient(135deg, #fef9e7, #f5e6a3)' },
+                    { name: '青铜古韵', desc: '青铜器古朴感', suffix: '，铜绿色锈迹斑驳表面，金属光泽质感，饕餮纹饰浮雕风格，博物馆展柜灯光', bg: 'linear-gradient(135deg, #e8efe8, #b8c9b8)' },
+                    { name: '水墨丹青', desc: '素雅淡彩质感', suffix: '，素雅淡彩色调，宣纸质感表面纹理，水墨晕染效果，留白意境', bg: 'linear-gradient(135deg, #f5f0e8, #e8dcc8)' }
                 ];
                 await generateAICandidatesGeneric(grid, basePrompt, beastStyles, patternRefImages);
             }
@@ -531,7 +531,7 @@
             }
             
             var summonText = '我设计了一辆' + te.name + '铛铛车，' + tc.name + '车身' + (decorNames.length ? '，配备了' + decorNames.join('和') : '') + '，叮叮当当...';
-            var aiPrompt = '一辆北京老式有轨铛铛车，' + te.name + '，' + te.visualDesc + '，' + tc.name + '车身（' + tc.hex + '），' + (decorDescs.length ? decorDescs.join('，') + '，' : '') + '纯白干净背景，车身为实心整体块状结构，侧面窗户为凹陷浮雕效果而非镂空，所有装饰元素均为浮雕或紧贴车体表面的实体结构，不得有漂浮或悬挂部件，车轮清晰可见为独立圆柱体安装在车底，车头有圆形大灯，车顶平整，整体轮廓方正简洁，适合3D打印的实心模型风格，3D渲染风格，适合3D建模参考，8k高清，精致质感';
+            var aiPrompt = '一辆北京老式有轨铛铛车，' + te.name + '，' + te.visualDesc + '，' + tc.name + '车身（' + tc.hex + '），' + (decorDescs.length ? decorDescs.join('，') + '，' : '') + '正面3/4视角，纯白干净背景，车身为实心整体块状结构，矩形窗户为凹槽结构保留窗框但不穿透，所有装饰元素均为浮雕或紧贴车体表面的实体结构，不得有漂浮或悬挂部件，车轮清晰可见为独立圆柱体安装在车底，车头有圆形大灯，车顶平整，整体轮廓方正简洁，适合3D打印的实心模型风格，3D渲染风格，适合3D建模参考，8k高清，精致质感';
             
             var tags = document.querySelector('#page-9 .prompt-tags');
             if (tags) {
@@ -626,16 +626,16 @@
                 (colorNames.length ? '配色为' + colorNames.join('、') + '，' : '') + 
                 (elemNames.length ? '搭配' + elemNames.join('、') + '装饰。' : '');
 
-            var aiPrompt = '一只可爱的中国神话小神兽「' + cr.name + '」（' + cr.desc + '）' +
+            var aiPrompt = '一只中国神话小神兽「' + cr.name + '」（' + cr.desc + '）' +
                 (cr.location ? '，守护在' + cr.location + '，' : '，') +
-                (cr.pose ? cr.pose + '，' : '') +
+                (cr.pose ? cr.pose + '，正面3/4视角，身体各部位轮廓清晰分明，' : '正面3/4视角，身体各部位轮廓清晰分明，') +
                 (fortune.nature ? '它' + fortune.nature + '，' : '') +
                 (fortune.power ? '拥有' + fortune.power + '的神奇能力，' : '') +
                 (fortune.hobby ? '平时喜欢' + fortune.hobby + '，' : '') +
-                (patternDescList.length ? patternDescList.join('，') + '，纹样紧贴身体不要飘散在空中，' : '') +
+                (patternDescList.length ? patternDescList.join('，') + '，纹饰为浮雕式紧贴体表不飘散，' : '') +
                 (colorPromptParts.length ? '主色调为' + colorPromptParts.join('、') + '，' : '') +
                 (elemPromptParts.length ? '底座/配饰为' + elemPromptParts.join('、') + '，' : '') +
-                '3D渲染，干净背景，儿童插画风格，高质量，温馨可爱';
+                '整体为单一连通实体，无透明/渐变/悬浮部件，纯白干净背景，3D渲染风格，适合3D建模参考，高质量，8k高清，精致质感';
 
             var tags = document.querySelector('#page-9 .prompt-tags');
             if (tags) {
