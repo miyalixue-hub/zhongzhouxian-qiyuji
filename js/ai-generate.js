@@ -349,10 +349,10 @@
                 console.log('[generateCandidates] 纹饰参考图:', patternRefImages);
                 
                 var beastStyles = [
-                    { name: '古石刻韵', desc: '石雕斑驳质感', suffix: '，青石材质表面，岁月斑驳痕迹，石刻线条流畅，柔和灯光下石雕文物质感', bg: 'linear-gradient(135deg, #e8e4dc, #d4cfc5)' },
-                    { name: '琉璃焕彩', desc: '宫城琉璃光泽', suffix: '，琉璃釉彩表面光泽质感，色彩明亮饱满，故宫琉璃瓦釉面光线折射', bg: 'linear-gradient(135deg, #fef9e7, #f5e6a3)' },
-                    { name: '青铜古韵', desc: '青铜器古朴感', suffix: '，铜绿色锈迹斑驳表面，金属光泽质感，饕餮纹饰浮雕风格，博物馆展柜灯光', bg: 'linear-gradient(135deg, #e8efe8, #b8c9b8)' },
-                    { name: '水墨丹青', desc: '素雅淡彩质感', suffix: '，素雅淡彩色调，宣纸质感表面纹理，水墨晕染效果，留白意境', bg: 'linear-gradient(135deg, #f5f0e8, #e8dcc8)' }
+                    { name: '陶瓷文创', desc: '哑光陶瓷质感', suffix: '，chibi Q版大头小身比例，圆滚滚胖乎乎，哑光陶瓷质感，马卡龙柔和配色，光滑圆润表面，产品摄影，白色干净背景，柔和自然光，温馨可爱', bg: 'linear-gradient(135deg, #FFF8E1, #FFE0B2)' },
+                    { name: '琉璃焕彩', desc: '宫城琉璃光泽', suffix: '，中国传统琉璃釉彩风格，表面有光泽质感，色彩明亮饱满，故宫琉璃瓦质感，光线折射微光', bg: 'linear-gradient(135deg, #fef9e7, #f5e6a3)' },
+                    { name: '软萌手办', desc: 'Q版手办质感', suffix: '，chibi Q版造型，大头小身比例，圆滚滚胖乎乎，大眼睛友善微笑，PVC手办质感，哑光细腻表面，产品展示图，简洁背景，治愈系可爱风格', bg: 'linear-gradient(135deg, #F3E5F5, #E1BEE7)' },
+                    { name: '治愈生活', desc: '温暖生活场景', suffix: '，柔和圆润轮廓，温暖治愈色调，放在书桌上的生活场景，旁边有小植物和文具，柔和自然光，生活方式摄影，可爱治愈系风格', bg: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' }
                 ];
                 await generateAICandidatesGeneric(grid, basePrompt, beastStyles, patternRefImages);
             }
