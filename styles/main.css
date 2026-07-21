@@ -5005,14 +5005,11 @@
 }
 
 .sgc-description {
-    font-size: 12.5px;
-    line-height: 1.6;
+    font-size: 13px;
+    line-height: 1.75;
     color: #5a4a3a;
-    margin: 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    margin: 6px 0 0 0;
+    text-indent: 2em;
 }
 
 .sgc-enter-btn {
