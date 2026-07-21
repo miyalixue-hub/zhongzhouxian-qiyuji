@@ -628,6 +628,7 @@
 
             var aiPrompt = '一只中国神话小神兽「' + cr.name + '」（' + cr.desc + '）' +
                 (cr.location ? '，守护在' + cr.location + '，' : '，') +
+                (fortune.expression ? '面部表情为' + fortune.expression + '，' : '') +
                 (cr.pose ? cr.pose + '，正面3/4视角，身体各部位轮廓清晰分明，' : '正面3/4视角，身体各部位轮廓清晰分明，') +
                 (fortune.nature ? '它' + fortune.nature + '，' : '') +
                 (fortune.power ? '拥有' + fortune.power + '的神奇能力，' : '') +

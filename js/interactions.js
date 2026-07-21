@@ -3,6 +3,27 @@
  * 包含 init() 主入口和所有事件绑定
  */
 
+// 性格→表情映射：从天赋签nature推导视觉化面部表情描述
+function deriveExpressionFromNature(nature) {
+    if (!nature) return '';
+    var rules = [
+        { keywords: ['好奇','闻一闻','凑过去'], expr: '圆睁大眼，嘴巴微张，耳朵前倾，一脸好奇探索的表情' },
+        { keywords: ['憨厚','慢吞吞','可靠'], expr: '眯眼微笑，嘴角上扬，表情柔和憨厚，眼神温暖' },
+        { keywords: ['机灵','古怪','办法'], expr: '一只眼微眯，嘴角俏皮上扬，眉毛一高一低，古灵精怪的表情' },
+        { keywords: ['勇敢','无畏','冲在最前面'], expr: '剑眉上扬，目光坚定炯炯有神，嘴巴紧闭，英气勃发的表情' },
+        { keywords: ['贪吃','厨房','走不动'], expr: '嘴角流口水，脸颊圆鼓鼓，舌头微吐，馋嘴贪吃的表情' },
+        { keywords: ['睡懒觉','晒太阳','睡觉'], expr: '半闭眼，打哈欠，慵懒惺忪的神态，微微眯眼' },
+        { keywords: ['温柔','善良','心疼'], expr: '弯弯笑眼，嘴角含微笑，神态安详温柔，目光慈祥' },
+        { keywords: ['调皮','捣蛋','藏起来'], expr: '吐舌头，一只眼眨着，歪头坏笑，调皮捣蛋的表情' }
+    ];
+    for (var i = 0; i < rules.length; i++) {
+        for (var j = 0; j < rules[i].keywords.length; j++) {
+            if (nature.indexOf(rules[i].keywords[j]) !== -1) return rules[i].expr;
+        }
+    }
+    return '表情生动活泼，眼神灵动';
+}
+
         function init() {
             console.log('[INIT] Starting initialization...');
             try {
@@ -1078,6 +1099,7 @@
             power: '',
             hobby: '',
             origin: '',
+            expression: '',
             story: ''
         };
         
@@ -1087,6 +1109,7 @@
             fortune.power = oracleData.power[Math.floor(Math.random() * oracleData.power.length)];
             fortune.hobby = oracleData.hobby[Math.floor(Math.random() * oracleData.hobby.length)];
             fortune.origin = oracleData.origin[Math.floor(Math.random() * oracleData.origin.length)];
+            fortune.expression = deriveExpressionFromNature(fortune.nature);
             
             // Generate story
             fortune.story = `这只神兽${fortune.origin}。它${fortune.nature}，拥有${fortune.power}的能力。平时${fortune.hobby}，是正阳门下独一无二的存在。`;
@@ -1445,13 +1468,14 @@
                 hobby: ['喜欢在屋顶晒太阳，一看就是一下午','最爱吃糖葫芦，尤其是山楂味的','偷偷收集铜钱，床底下藏了一大罐','在城楼上数星星，每晚都数到睡着','喜欢听故事，尤其是老爷爷讲古','爱在护城河边钓鱼，虽然总是钓不到','喜欢在胡同里探险，每个角落都熟悉','爱画画，用爪子在沙地上画各种图案'],
                 origin: ['生于清晨第一缕阳光中，带着朝露的气息','诞生于雷雨交加之夜，伴随着闪电降临','伴随春风而来，桃花盛开的那天醒来','从正阳门的石缝里钻出来，带着古老的记忆','在月圆之夜凝聚月光而成，全身银光闪闪','从一幅古画中走出，带着千年的色彩','在孩童的笑声中诞生，天生就喜欢热闹','从护城河的水底浮起，带着水草的清香']
             };
-            var fortune = { nature: '', power: '', hobby: '', origin: '', story: '' };
+            var fortune = { nature: '', power: '', hobby: '', origin: '', expression: '', story: '' };
 
             function drawOracle() {
                 fortune.nature = oracleData.nature[Math.floor(Math.random() * oracleData.nature.length)];
                 fortune.power = oracleData.power[Math.floor(Math.random() * oracleData.power.length)];
                 fortune.hobby = oracleData.hobby[Math.floor(Math.random() * oracleData.hobby.length)];
                 fortune.origin = oracleData.origin[Math.floor(Math.random() * oracleData.origin.length)];
+                fortune.expression = deriveExpressionFromNature(fortune.nature);
                 fortune.story = '这只神兽' + fortune.origin + '。它' + fortune.nature + '，拥有' + fortune.power + '的能力。平时' + fortune.hobby + '，是正阳门下独一无二的存在。';
                 document.getElementById('oracle-nature').textContent = '天性：' + fortune.nature;
                 document.getElementById('oracle-power').textContent = '神力：' + fortune.power;
