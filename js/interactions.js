@@ -58,10 +58,10 @@
             handleMulti('.color-card', 'selectedColors', 3, '#color-hint');
             
             // 纹饰多选
-            var ph = document.createElement('div'); ph.className = 'selection-hint'; ph.id = 'pattern-hint'; ph.textContent = '💡 可选择1-3种纹饰';
+            var ph = document.createElement('div'); ph.className = 'selection-hint'; ph.id = 'pattern-hint'; ph.textContent = '💡 可选择1-8种纹饰';
             var pg = $('#page-3 .pattern-grid');
             if (pg) pg.parentNode.insertBefore(ph, pg);
-            handleMulti('.pattern-card', 'selectedPatterns', 3, '#pattern-hint');
+            handleMulti('.pattern-card', 'selectedPatterns', 8, '#pattern-hint');
             
             // 附加元素多选
             ph = document.createElement('div'); ph.className = 'selection-hint'; ph.id = 'element-hint'; ph.textContent = '💡 可选择1-3个附加元素';
